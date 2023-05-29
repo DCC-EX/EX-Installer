@@ -14,22 +14,23 @@ class ParentView(ctk.CTkFrame):
 
         # Define top level frames
         self.title_frame = ctk.CTkFrame(self, width=790, height=80)
-        self.main_frame = ctk.CTkFrame(self, width=790, height=400)
+        self.main_frame = ctk.CTkFrame(self, width=790, height=380)
+        self.next_back_frame = ctk.CTkFrame(self, width=790, height=40,
+                                            fg_color="#00353D", border_width=0)
         self.status_frame = ctk.CTkFrame(self, width=790, height=100)
 
-        # Configure layout
-        self.columnconfigure(0, weight=1)
-        self.rowconfigure((0, 1, 2), weight=1)
+        # Configure weights
+        self.title_frame.grid_columnconfigure(0, weight=1)
+        self.title_frame.grid_rowconfigure(0, weight=1)
+        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_rowconfigure(0, weight=1)
+        self.next_back_frame.grid_columnconfigure(0, weight=1)
+        self.next_back_frame.grid_rowconfigure(0, weight=1)
+        self.status_frame.grid_columnconfigure(0, weight=1)
+        self.status_frame.grid_rowconfigure(0, weight=1)
 
-        self.title_frame.grid(column=0, row=0, padx=5, pady=5, sticky="nsew")
-        self.main_frame.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
-        self.status_frame.grid(column=0, row=2, padx=5, pady=5, sticky="nsew")
-
-        # Define next/back button frame
-        self.next_back_frame = ctk.CTkFrame(self.main_frame, width=780, height=40, fg_color="#00353D")
-
-        # Layout frame
-        # self.main_frame.columnconfigure(0, weight=1)
-        # self.main_frame.rowconfigure(0, weight=1)
-
-        # self.next_back_frame.grid(column=0, row=100, sticky="s")
+        # Layout view
+        self.title_frame.grid(column=0, row=0, padx=5, pady=2, sticky="nsew")
+        self.main_frame.grid(column=0, row=1, padx=5, pady=(2, 0), sticky="nsew")
+        self.next_back_frame.grid(column=0, row=2, padx=5, pady=(0, 2), sticky="nsew")
+        self.status_frame.grid(column=0, row=3, padx=5, pady=2, sticky="nsew")

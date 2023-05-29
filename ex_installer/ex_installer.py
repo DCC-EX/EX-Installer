@@ -43,5 +43,8 @@ class EXInstaller(ctk.CTk):
         self.geometry("800x600")
         self.minsize(width=800, height=600)
 
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
         self.welcome = Welcome(self)
-        self.welcome.pack()
+        self.welcome.grid(column=0, row=0, sticky="nsew")
