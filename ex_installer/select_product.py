@@ -21,13 +21,10 @@ class SelectProduct(WindowLayout):
         self.set_title_logo(images.EX_INSTALLER_LOGO)
         self.set_title_text("Select the Product to install")
 
-        self.product_selection = ctk.StringVar(value=None)
-
         self.next_back.set_back_text("Select Device")
         self.next_back.set_back_command(lambda view="select_device": parent.switch_view(view))
 
-        self.next_back.set_next_text("Configure and install")
-        self.next_back.set_next_command(lambda view=self.product_selection.get(): parent.switch_view(view))
+        self.next_back.hide_next()
 
         self.select_product_frame = ctk.CTkFrame(self.main_frame, height=360)
         self.select_product_frame.grid(column=0, row=0, sticky="nsew")
@@ -51,7 +48,9 @@ class SelectProduct(WindowLayout):
         button_options = {"fg_color": "white", "border_color": "#00A3B9", "border_width": 2, "compound": "top"}
         self.ex_commandstation_button = ctk.CTkButton(self.select_product_frame,
                                                       text="Install EX-CommandStation",
-                                                      image=self.ex_commandstation_image, **button_options)
+                                                      image=self.ex_commandstation_image, **button_options,
+                                                      command=lambda product="ex_commandstation":
+                                                      parent.switch_view(product))
         self.ex_ioexpander_button = ctk.CTkButton(self.select_product_frame,
                                                   text="Install EX-IOExpander (coming soon)",
                                                   image=self.ex_ioexpander_image, **button_options,
