@@ -15,16 +15,16 @@
   "CTkButton": {
     "corner_radius": 5,
     "border_width": 0,
-    "fg_color": ["#3a7ebf", "#1f538d"],
-    "hover_color": ["#325882", "#14375e"],
+    "fg_color": ["#00A3B9", "#1f538d"],
+    "hover_color": ["#017E8F", "#14375e"],
     "border_color": ["#3E454A", "#949A9F"],
-    "text_color": ["#DCE4EE", "#DCE4EE"],
+    "text_color": ["white", "#DCE4EE"],
     "text_color_disabled": ["gray74", "gray60"]
   },
   "CTkLabel": {
     "corner_radius": 0,
     "fg_color": "transparent",
-    "text_color": ["gray14", "gray84"]
+    "text_color": ["#00353D", "gray84"]
   },
   "CTkEntry": {
     "corner_radius": 5,
@@ -137,18 +137,18 @@
   },
   "CTkFont": {
     "macOS": {
-      "family": "SF Display",
-      "size": 13,
+      "family": "Helvetica",
+      "size": 14,
       "weight": "normal"
     },
     "Windows": {
-      "family": "Roboto",
-      "size": 13,
+      "family": "Helvetica",
+      "size": 14,
       "weight": "normal"
     },
     "Linux": {
-      "family": "Roboto",
-      "size": 13,
+      "family": "Helvetica",
+      "size": 14,
       "weight": "normal"
     }
   }

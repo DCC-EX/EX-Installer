@@ -21,3 +21,7 @@ EX_FASTCLOCK_LOGO = IMAGE_PATH / "ex-fastclock.png"
 EX_INSTALLER_LOGO = IMAGE_PATH / "ex-installer.png"
 EX_IOEXPANDER_LOGO = IMAGE_PATH / "ex-ioexpander.png"
 EX_TURNTABLE_LOGO = IMAGE_PATH / "ex-turntable.png"
+
+"""Button arrows"""
+BACK_ARROW = IMAGE_PATH / "back-arrow.png"
+NEXT_ARROW = IMAGE_PATH / "next-arrow.png"
