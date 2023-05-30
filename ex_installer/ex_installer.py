@@ -65,7 +65,8 @@ class EXInstaller(ctk.CTk):
         """
         Function to switch views
         """
-        if self.frame:
-            self.frame.destroy()
-        self.frame = self.frames[frame_class](self)
-        self.frame.grid(column=0, row=0, sticky="nsew")
+        if frame_class:
+            if self.frame:
+                self.frame.destroy()
+            self.frame = self.frames[frame_class](self)
+            self.frame.grid(column=0, row=0, sticky="nsew")
