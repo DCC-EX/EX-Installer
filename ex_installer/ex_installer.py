@@ -10,7 +10,6 @@ import sys
 from . import images
 from . import theme
 from .arduino_cli import ArduinoCLI
-from .github_api import GitHubAPI
 from .welcome import Welcome
 from .manage_arduino_cli import ManageArduinoCLI
 from .select_device import SelectDevice
@@ -29,7 +28,6 @@ class EXInstaller(ctk.CTk):
     """
     # Create Arduino CLI and GitHub instances for the entire application
     acli = ArduinoCLI()
-    gapi = GitHubAPI()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
