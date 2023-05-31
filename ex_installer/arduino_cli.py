@@ -103,6 +103,16 @@ class ArduinoCLI:
         "STMicroelectronics Nucleo/STM32": "STMicroelectronics:stm32"
     }
 
+    supported_devices = {
+        "Arduino Mega or Mega 2560": "arduino:avr:mega",
+        "Arduino Uno": "arduino:avr:uno",
+        "Arduino Nano": "arduino:avr:nano",
+        "Arduino Nano (Old bootloader)": "arduino:avr:nano:cpu=atmega328",
+        "ESP32 Dev Kit": "esp32:esp32:esp32",
+        "STMicroelectronics Nucleo F411RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
+        "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
+    }
+
     def __init__(self, selected_device=None):
         self.selected_device = selected_device
         self.detected_devices = None

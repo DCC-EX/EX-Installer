@@ -15,6 +15,7 @@ from .manage_arduino_cli import ManageArduinoCLI
 from .select_device import SelectDevice
 from .select_product import SelectProduct
 from .ex_commandstation import EXCommandStation
+from .compile_upload import CompileUpload
 
 # Set theme and appearance, and deactive screen scaling
 ctk.set_default_color_theme(theme.DCC_EX_THEME)
@@ -48,23 +49,34 @@ class EXInstaller(ctk.CTk):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
-        self.frames = {
+        self.views = {
             "welcome": Welcome,
             "manage_arduino_cli": ManageArduinoCLI,
             "select_device": SelectDevice,
             "select_product": SelectProduct,
-            "ex_commandstation": EXCommandStation
+            "ex_commandstation": EXCommandStation,
         }
-        self.frame = None
+        self.view = None
 
         self.switch_view("welcome")
 
-    def switch_view(self, frame_class):
+    def switch_view(self, view_class):
         """
         Function to switch views
         """
-        if frame_class:
-            if self.frame:
-                self.frame.destroy()
-            self.frame = self.frames[frame_class](self)
-            self.frame.grid(column=0, row=0, sticky="nsew")
+        if view_class:
+            if self.view:
+                self.view.destroy()
+            self.view = self.views[view_class](self)
+            self.view.grid(column=0, row=0, sticky="nsew")
+
+    def compile_upload(self, product):
+        """
+        Function to switch to the compile and upload view
+        """
+        if product:
+            if self.view:
+                self.view.destroy()
+            self.view = CompileUpload(self)
+            self.view.set_product(product)
+            self.view.grid(column=0, row=0, sticky="nsew")
