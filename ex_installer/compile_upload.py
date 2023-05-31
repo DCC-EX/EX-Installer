@@ -19,9 +19,6 @@ class CompileUpload(WindowLayout):
 
         self.product = None
 
-        self.next_back.set_back_text("Select Product")
-        self.next_back.set_back_command(lambda view="select_product": parent.switch_view(view))
-
         self.next_back.hide_next()
 
         self.compile_upload_frame = ctk.CTkFrame(self.main_frame, height=360)
@@ -31,3 +28,5 @@ class CompileUpload(WindowLayout):
         self.product = product
         self.set_title_text(f"Upload {pd[self.product]['product_name']}")
         self.set_title_logo(pd[product]["product_logo"])
+        self.next_back.set_back_text(f"Configure {pd[self.product]['product_name']}")
+        self.next_back.set_back_command(lambda view=product: self.master.switch_view(view))

@@ -99,8 +99,14 @@ class ArduinoCLI:
     ]
 
     extra_platforms = {
-        "Espressif ESP32": "esp32:esp32",
-        "STMicroelectronics Nucleo/STM32": "STMicroelectronics:stm32"
+        "Espressif ESP32": {
+            "platform_id": "esp32:esp32",
+            "url": "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
+        },
+        "STMicroelectronics Nucleo/STM32": {
+            "platform_id": "STMicroelectronics:stm32",
+            "url": "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
+        }
     }
 
     supported_devices = {

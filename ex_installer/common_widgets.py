@@ -21,6 +21,9 @@ class WindowLayout(ctk.CTkFrame):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
+        # Get parent Arduino CLI instance
+        self.acli = parent.acli
+
         # Define top level frames
         self.title_frame = ctk.CTkFrame(self, width=790, height=80)
         self.main_frame = ctk.CTkFrame(self, width=790, height=400)
@@ -44,11 +47,15 @@ class WindowLayout(ctk.CTkFrame):
         self.status_frame.grid_columnconfigure(0, weight=1)
         self.status_frame.grid_rowconfigure(0, weight=1)
 
+        # Define common fonts
+        self.title_font = ctk.CTkFont(family="Helvetica", size=30, weight="normal")
+        self.heading_font = ctk.CTkFont(family="Helvetica", size=24, weight="bold")
+        self.button_font = ctk.CTkFont(family="Helvetica", size=14, weight="bold")
+
         # Setup title frame
         self.title_logo_label = ctk.CTkLabel(self.title_frame, text=None)
         self.title_logo_label.grid(column=0, row=0, padx=5, pady=5, sticky="w")
-        title_font = ctk.CTkFont(family="Helvetica", size=30, weight="normal")
-        self.title_label = ctk.CTkLabel(self.title_frame, text=None, font=title_font)
+        self.title_label = ctk.CTkLabel(self.title_frame, text=None, font=self.title_font)
         self.title_label.grid(column=1, row=0, padx=5, pady=5, sticky="w")
 
         # Setup next/back frame
