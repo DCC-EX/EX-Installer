@@ -93,10 +93,10 @@ class ArduinoCLI:
         "Windows64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip"
     }
 
-    extra_boards = [
-        "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json",
-        "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
-    ]
+    # extra_boards = [
+    #     "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json",
+    #     "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
+    # ]
 
     extra_platforms = {
         "Espressif ESP32": {

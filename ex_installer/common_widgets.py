@@ -32,7 +32,8 @@ class WindowLayout(ctk.CTkFrame):
         # Configure column/row weights for nice resizing
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=0)
-        self.grid_rowconfigure((1, 2), weight=1)
+        self.grid_rowconfigure(1, weight=1, minsize=400)
+        self.grid_rowconfigure(2, weight=1)
 
         # Layout view
         self.title_frame.grid(column=0, row=0, padx=5, pady=2, sticky="nsew")
