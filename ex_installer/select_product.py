@@ -32,7 +32,11 @@ class SelectProduct(WindowLayout):
         self.select_product_frame.grid(column=0, row=0, sticky="nsew")
 
         self.select_product_frame.grid_columnconfigure((0, 1), weight=1)
-        self.select_product_frame.grid_rowconfigure(0, weight=1)
+        self.select_product_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
+
+        # Create instruction label
+        self.instruction_label = ctk.CTkLabel(self.select_product_frame,
+                                              text="Click the logo to choose the product to install")
 
         # Create product logos
         self.ex_commandstation_logo = Image.open(images.EX_COMMANDSTATION_LOGO)
@@ -78,9 +82,10 @@ class SelectProduct(WindowLayout):
                                                  state="disabled")
 
         # Layout product buttons
-        grid_options = {"sticky": "ew", "padx": 10, "pady": 15}
-        self.ex_commandstation_button.grid(column=0, row=0, columnspan=2, **grid_options)
-        self.ex_ioexpander_button.grid(column=0, row=1, **grid_options)
-        self.ex_turntable_button.grid(column=1, row=1, **grid_options)
-        self.ex_dccinspector_button.grid(column=0, row=2, **grid_options)
-        self.ex_fastclock_button.grid(column=1, row=2, **grid_options)
+        grid_options = {"sticky": "ew", "padx": 10, "pady": 10}
+        self.instruction_label.grid(column=0, row=0, columnspan=2, padx=5, pady=5)
+        self.ex_commandstation_button.grid(column=0, row=1, columnspan=2, **grid_options)
+        self.ex_ioexpander_button.grid(column=0, row=2, **grid_options)
+        self.ex_turntable_button.grid(column=1, row=2, **grid_options)
+        self.ex_dccinspector_button.grid(column=0, row=3, **grid_options)
+        self.ex_fastclock_button.grid(column=1, row=3, **grid_options)
