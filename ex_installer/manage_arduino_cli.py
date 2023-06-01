@@ -51,26 +51,27 @@ class ManageArduinoCLI(WindowLayout):
         self.next_back.set_next_command(lambda view="select_device": parent.switch_view(view))
 
         # Create, grid, and configure container frame
-        self.select_product_frame = ctk.CTkFrame(self.main_frame, height=360)
-        self.select_product_frame.grid(column=0, row=0, sticky="nsew", ipadx=5, ipady=5)
-        self.select_product_frame.grid_columnconfigure((0, 1), weight=1)
-        self.select_product_frame.grid_rowconfigure((0, 1, 2), weight=1)
+        self.manage_cli_frame = ctk.CTkFrame(self.main_frame, height=360)
+        self.manage_cli_frame.grid(column=0, row=0, sticky="nsew", ipadx=5, ipady=5)
+        self.manage_cli_frame.grid_columnconfigure((0, 1), weight=1)
+        self.manage_cli_frame.grid_rowconfigure((0, 2), weight=4)
+        self.manage_cli_frame.grid_rowconfigure(1, weight=1)
 
         # Create state and instruction labels and manage CLI button
         label_options = {"wraplength": 780}
-        self.intro_label = ctk.CTkLabel(self.select_product_frame,
+        self.intro_label = ctk.CTkLabel(self.manage_cli_frame,
                                         text=self.intro_text,
                                         **label_options)
-        self.cli_state_label = ctk.CTkLabel(self.select_product_frame,
+        self.cli_state_label = ctk.CTkLabel(self.manage_cli_frame,
                                             **label_options)
-        self.instruction_label = ctk.CTkLabel(self.select_product_frame,
+        self.instruction_label = ctk.CTkLabel(self.manage_cli_frame,
                                               wraplength=390)
-        self.manage_cli_button = ctk.CTkButton(self.select_product_frame, width=200, height=30,
+        self.manage_cli_button = ctk.CTkButton(self.manage_cli_frame, width=200, height=30,
                                                text=None, font=self.button_font)
 
         # Create frame and widgets for additional platform support
         grid_options = {"padx": 5, "pady": 5}
-        self.extra_platforms_frame = ctk.CTkFrame(self.select_product_frame,
+        self.extra_platforms_frame = ctk.CTkFrame(self.manage_cli_frame,
                                                   border_width=2,
                                                   fg_color="#E5E5E5")
         self.extra_platforms_frame.grid_columnconfigure(0, weight=1)
