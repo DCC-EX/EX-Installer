@@ -7,6 +7,7 @@ Every view should include this module and base the layout on WindowLayout
 # Import Python modules
 import customtkinter as ctk
 from PIL import Image
+from queue import Queue
 
 # Import local modules
 from . import images
@@ -25,6 +26,15 @@ class WindowLayout(ctk.CTkFrame):
         # Get parent Arduino CLI instance
         self.acli = parent.acli
 
+        # Variables for process and queue monitoring
+        self.process_phase = None
+        self.process_status = None
+        self.process_topic = None
+        self.process_data = None
+
+        # Set up queue for process monitoring
+        self.queue = Queue()
+
         # Define fonts
         self.instruction_font = ctk.CTkFont(family="Helvetica",
                                             size=14,
@@ -41,13 +51,13 @@ class WindowLayout(ctk.CTkFrame):
 
         # Define top level frames
         self.title_frame = ctk.CTkFrame(self, width=790, height=80)
-        self.main_frame = ctk.CTkFrame(self, width=790, height=400)
-        self.status_frame = ctk.CTkFrame(self, width=790, height=100)
+        self.main_frame = ctk.CTkFrame(self, width=790, height=450)
+        self.status_frame = ctk.CTkFrame(self, width=790, height=50)
 
         # Configure column/row weights for nice resizing
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=0)
-        self.grid_rowconfigure(1, weight=1, minsize=400)
+        self.grid_rowconfigure(1, weight=1, minsize=450)
         self.grid_rowconfigure(2, weight=1)
 
         # Layout view
@@ -61,7 +71,7 @@ class WindowLayout(ctk.CTkFrame):
         self.main_frame.grid_columnconfigure(0, weight=1)
         self.main_frame.grid_rowconfigure(0, weight=1)
         self.status_frame.grid_columnconfigure(0, weight=1)
-        self.status_frame.grid_rowconfigure(0, weight=1)
+        self.status_frame.grid_rowconfigure((0, 1), weight=1)
 
         # Setup title frame
         self.title_logo_label = ctk.CTkLabel(self.title_frame, text=None)
@@ -73,6 +83,17 @@ class WindowLayout(ctk.CTkFrame):
         self.next_back = NextBack(self.main_frame, height=40,
                                   fg_color="#00353D", border_width=0)
         self.next_back.grid(column=0, row=1, sticky="sew")
+
+        # Setup status frame and widgets
+        self.status_label = ctk.CTkLabel(self.status_frame, text="Idle",
+                                         font=self.instruction_font, wraplength=780)
+        self.progress_bar = ctk.CTkProgressBar(self.status_frame, width=780, height=20,
+                                               mode="indeterminate", orientation="horizontal")
+
+        # Layout status frame
+        self.status_label.grid(column=0, row=0, padx=5, pady=5)
+        self.progress_bar.grid(column=0, row=1, padx=5, pady=5)
+        self.process_stop()
 
     def set_title_logo(self, logo):
         """
@@ -89,6 +110,37 @@ class WindowLayout(ctk.CTkFrame):
         Function to update the title text
         """
         self.title_label.configure(text=text)
+
+    def monitor_queue(self, queue, event):
+        """
+        Monitor the provided queue for status updates
+        """
+        while not queue.empty():
+            item = queue.get()
+            if item.status == "success" or item.status == "error":
+                self.process_status = item.status
+                self.process_topic = item.topic
+                self.process_data = item.data
+                self.event_generate(f"<<{event}>>")
+                return
+        self.after(100, self.monitor_queue, queue, event)
+
+    def process_start(self, next_phase, activity, event):
+        """
+        Starts a background process that requires monitoring and a progress bar
+        """
+        self.process_phase = next_phase
+        self.status_label.configure(text=activity, text_color="#00353D")
+        self.monitor_queue(self.queue, event)
+        self.progress_bar.start()
+
+    def process_stop(self):
+        self.progress_bar.stop()
+        self.status_label.configure(text="Idle")
+
+    def process_error(self, message):
+        self.progress_bar.stop()
+        self.status_label.configure(text=message, text_color="red")
 
 
 class NextBack(ctk.CTkFrame):

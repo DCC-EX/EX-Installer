@@ -18,7 +18,7 @@ from collections import namedtuple
 from .file_manager import ThreadedDownloader, ThreadedExtractor
 
 
-QueueMessage = namedtuple("QueueMessage", ["status", "details"])
+QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
 
 
 class ThreadedArduinoCLI(Thread):
@@ -34,7 +34,7 @@ class ThreadedArduinoCLI(Thread):
 
     def run(self, *args, **kwargs):
         self.queue.put(
-            QueueMessage("info", f"Arduino CLI parameters: {self.params}")
+            QueueMessage("info", "Run Arduino CLI", f"Arduino CLI parameters: {self.params}")
         )
         with self.arduino_cli_lock:
             try:
@@ -42,11 +42,11 @@ class ThreadedArduinoCLI(Thread):
                 self.output, self.error = self.process.communicate()
             except Exception as error:
                 self.queue.put(
-                    QueueMessage("error", str(error))
+                    QueueMessage("error", str(error), str(error))
                 )
             if self.error:
                 self.queue.put(
-                    QueueMessage("error", json.loads(self.error.decode()))
+                    QueueMessage("error", json.loads(self.error.decode()), json.loads(self.error.decode()))
                 )
             else:
                 if self.output:
@@ -54,18 +54,21 @@ class ThreadedArduinoCLI(Thread):
                     if "success" in details:
                         if details["success"] is True:
                             status = "success"
+                            topic = "Success"
                         else:
                             status = "error"
-                            details = details["error"]
-                            if "compiler_err" in details:
-                                print(details["compiler_err"])
+                            topic = details["error"]
+                            data = details["compiler_err"]
                     else:
                         status = "success"
+                        topic = "Success"
+                        data = details
                 else:
                     status = "success"
-                    details = "No output"
+                    topic = "Error"
+                    data = "No output"
                 self.queue.put(
-                    QueueMessage(status, details)
+                    QueueMessage(status, topic, data)
                 )
 
 
