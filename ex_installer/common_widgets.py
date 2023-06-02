@@ -26,18 +26,18 @@ class WindowLayout(ctk.CTkFrame):
         self.acli = parent.acli
 
         # Define fonts
-        self.theme_font = ctk.CTkFont(family=ctk.ThemeManager.theme["CTkFont"]["family"],
-                                      size=ctk.ThemeManager.theme["CTkFont"]["size"],
-                                      weight=ctk.ThemeManager.theme["CTkFont"]["weight"])
         self.instruction_font = ctk.CTkFont(family="Helvetica",
                                             size=14,
                                             weight="normal")
-        self.title_font = self.theme_font
-        self.title_font.configure(size=30)
-        self.heading_font = self.theme_font
-        self.heading_font.configure(size=24, weight="bold")
-        self.button_font = self.theme_font
-        self.button_font = ctk.CTkFont(size=13, weight="bold")
+        self.title_font = ctk.CTkFont(family="Helvetica",
+                                      size=30,
+                                      weight="normal")
+        self.heading_font = ctk.CTkFont(family="Helvetica",
+                                        size=24,
+                                        weight="bold")
+        self.button_font = ctk.CTkFont(family="Helvetica",
+                                       size=13,
+                                       weight="bold")
 
         # Define top level frames
         self.title_frame = ctk.CTkFrame(self, width=790, height=80)
