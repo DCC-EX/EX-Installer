@@ -35,7 +35,8 @@ class Welcome(WindowLayout):
         # Create welcome label
         self.welcome_label = ctk.CTkLabel(self.welcome_frame, wraplength=780,
                                           text=("The DCC-EX team have provided EX-Installer to make it as easy as " +
-                                                "possible to get up and running with our various products.\n\n"))
+                                                "possible to get up and running with our various products.\n\n"),
+                                          font=self.instruction_font)
 
         # Layout frame
         self.welcome_label.grid(column=0, row=0, padx=5, pady=5, sticky="nsew")

@@ -138,17 +138,17 @@
   "CTkFont": {
     "macOS": {
       "family": "Helvetica",
-      "size": 14,
+      "size": 13,
       "weight": "normal"
     },
     "Windows": {
       "family": "Helvetica",
-      "size": 14,
+      "size": 13,
       "weight": "normal"
     },
     "Linux": {
       "family": "Helvetica",
-      "size": 14,
+      "size": 13,
       "weight": "normal"
     }
   }

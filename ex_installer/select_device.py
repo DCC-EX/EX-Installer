@@ -79,7 +79,7 @@ class SelectDevice(WindowLayout):
         # Create detected device label and grid
         grid_options = {"padx": 5, "pady": 5}
         self.device_list_label = ctk.CTkLabel(self.device_list_frame,
-                                              text="Detected devices")
+                                              text="Select one from these detected devices")
         self.device_list_label.grid(column=0, row=0, columnspan=2, sticky="ew", **grid_options)
 
         # Create device list radio buttons, pulldown lists, and grid in frame

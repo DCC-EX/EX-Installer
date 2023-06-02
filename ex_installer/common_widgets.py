@@ -18,11 +18,26 @@ class WindowLayout(ctk.CTkFrame):
 
     All views must inherit from this
     """
+
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
         # Get parent Arduino CLI instance
         self.acli = parent.acli
+
+        # Define fonts
+        self.theme_font = ctk.CTkFont(family=ctk.ThemeManager.theme["CTkFont"]["family"],
+                                      size=ctk.ThemeManager.theme["CTkFont"]["size"],
+                                      weight=ctk.ThemeManager.theme["CTkFont"]["weight"])
+        self.instruction_font = ctk.CTkFont(family="Helvetica",
+                                            size=14,
+                                            weight="normal")
+        self.title_font = self.theme_font
+        self.title_font.configure(size=30)
+        self.heading_font = self.theme_font
+        self.heading_font.configure(size=24, weight="bold")
+        self.button_font = self.theme_font
+        self.button_font = ctk.CTkFont(size=13, weight="bold")
 
         # Define top level frames
         self.title_frame = ctk.CTkFrame(self, width=790, height=80)
@@ -47,11 +62,6 @@ class WindowLayout(ctk.CTkFrame):
         self.main_frame.grid_rowconfigure(0, weight=1)
         self.status_frame.grid_columnconfigure(0, weight=1)
         self.status_frame.grid_rowconfigure(0, weight=1)
-
-        # Define common fonts
-        self.title_font = ctk.CTkFont(family="Helvetica", size=30, weight="normal")
-        self.heading_font = ctk.CTkFont(family="Helvetica", size=24, weight="bold")
-        self.button_font = ctk.CTkFont(family="Helvetica", size=14, weight="bold")
 
         # Setup title frame
         self.title_logo_label = ctk.CTkLabel(self.title_frame, text=None)
