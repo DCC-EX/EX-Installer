@@ -5,10 +5,13 @@ Module for the various images in use
 from pathlib import Path
 import sys
 
-if getattr(sys, "frozen", False):
-    IMAGE_PATH = Path(sys.executable).parent / "images"
-else:
-    IMAGE_PATH = Path(__file__).parent
+try:
+    IMAGE_PATH = Path(sys._MEIPASS) / "images"
+except Exception:
+    if getattr(sys, "frozen", False):
+        IMAGE_PATH = Path(sys.executable).parent / "images"
+    else:
+        IMAGE_PATH = Path(__file__).parent
 
 """DCC-EX icons"""
 DCC_EX_ICON_ICO = IMAGE_PATH / "dccex.ico"
