@@ -38,6 +38,15 @@ class ManageArduinoCLI(WindowLayout):
         """
         super().__init__(parent, *args, **kwargs)
 
+        # Set up event handlers
+        event_callbacks = {
+            "<<Check_Arduino_CLI>>": self.check_arduino_cli
+        }
+        for sequence, callback in event_callbacks.items():
+            self.bind_class("bind_events", sequence, callback)
+        new_tags = self.bindtags() + ("bind_events",)
+        self.bindtags(new_tags)
+
         # Set title and logo
         self.set_title_logo(images.EX_INSTALLER_LOGO)
         self.set_title_text("Manage the Arduino CLI")
@@ -100,11 +109,31 @@ class ManageArduinoCLI(WindowLayout):
                                            font=ctk.CTkFont(weight="normal"))
             self.instruction_label.configure(text=self.refresh_instruction_text)
             self.manage_cli_button.configure(text="Refresh Arduino CLI")
-            # self.next_back.enable_next()
+            self.check_arduino_cli("get_cli_info")
         else:
             self.cli_state_label.configure(text=self.not_installed_text,
                                            text_color="#FF5C00",
                                            font=ctk.CTkFont(weight="bold"))
             self.instruction_label.configure(text=self.install_instruction_text)
             self.manage_cli_button.configure(text="Install Arduino CLI")
-            # self.next_back.disable_next()
+
+    def check_arduino_cli(self, event):
+        """
+        Function to check if the Arduino CLI is installed and if so, what version it is
+
+        On completion, will move to the Manage Arduino CLI screen
+        """
+        if event == "get_cli_info":
+            self.next_back.disable_next()
+            self.process_start("check_arduino_cli", "Getting Arduino CLI details", "Check_Arduino_CLI")
+            self.disable_input_states(self)
+            self.acli.get_version(self.acli.cli_file_path(), self.queue)
+        elif self.process_phase == "check_arduino_cli":
+            if self.process_status == "success":
+                self.process_stop()
+                self.restore_input_states()
+            elif self.process_status == "error":
+                self.process_error("Failed to check if the Arduino CLI is installed")
+                self.restore_input_states(self.widget_states)
+            else:
+                self.process_error("An unknown error occurred")

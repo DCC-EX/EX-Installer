@@ -8,6 +8,7 @@ Every view should include this module and base the layout on WindowLayout
 import customtkinter as ctk
 from PIL import Image
 from queue import Queue
+from pprint import pprint
 
 # Import local modules
 from . import images
@@ -34,6 +35,9 @@ class WindowLayout(ctk.CTkFrame):
 
         # Set up queue for process monitoring
         self.queue = Queue()
+
+        # Variable for storing widget states while processes run
+        self.widget_states = []
 
         # Define fonts
         self.instruction_font = ctk.CTkFont(family="Helvetica",
@@ -141,6 +145,23 @@ class WindowLayout(ctk.CTkFrame):
     def process_error(self, message):
         self.progress_bar.stop()
         self.status_label.configure(text=message, text_color="red")
+
+    def disable_input_states(self, widget):
+        children = widget.winfo_children()
+        for child in children:
+            if isinstance(child, (ctk.CTkButton, ctk.CTkComboBox, ctk.CTkCheckBox, ctk.CTkEntry,
+                                  ctk.CTkRadioButton, ctk.CTkSwitch, ctk.CTkTextbox)):
+                widget_state = {
+                    "widget": child,
+                    "state": child.cget("state")
+                }
+                self.widget_states.append(widget_state)
+                child.configure(state="disabled")
+            self.disable_input_states(child)
+
+    def restore_input_states(self):
+        for widget in self.widget_states:
+            widget["widget"].configure(state=widget["state"])
 
 
 class NextBack(ctk.CTkFrame):
