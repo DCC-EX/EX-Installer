@@ -116,6 +116,7 @@ class ManageArduinoCLI(WindowLayout):
                                            font=ctk.CTkFont(weight="bold"))
             self.instruction_label.configure(text=self.install_instruction_text)
             self.manage_cli_button.configure(text="Install Arduino CLI")
+            self.next_back.disable_next()
 
     def check_arduino_cli(self, event):
         """
@@ -124,7 +125,6 @@ class ManageArduinoCLI(WindowLayout):
         On completion, will move to the Manage Arduino CLI screen
         """
         if event == "get_cli_info":
-            self.next_back.disable_next()
             self.process_start("check_arduino_cli", "Getting Arduino CLI details", "Check_Arduino_CLI")
             self.disable_input_states(self)
             self.acli.get_version(self.acli.cli_file_path(), self.queue)
