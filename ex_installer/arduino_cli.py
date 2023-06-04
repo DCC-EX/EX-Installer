@@ -38,7 +38,8 @@ class ThreadedArduinoCLI(Thread):
         )
         with self.arduino_cli_lock:
             try:
-                self.process = subprocess.Popen(self.process_params, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                self.process = subprocess.Popen(self.process_params, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                shell=False)
                 self.output, self.error = self.process.communicate()
             except Exception as error:
                 self.queue.put(
