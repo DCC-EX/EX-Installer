@@ -52,6 +52,9 @@ class WindowLayout(ctk.CTkFrame):
         self.button_font = ctk.CTkFont(family="Helvetica",
                                        size=13,
                                        weight="bold")
+        self.action_button_font = ctk.CTkFont(family="Helvetica",
+                                              size=16,
+                                              weight="bold")
 
         # Define top level frames
         self.title_frame = ctk.CTkFrame(self, width=790, height=80)

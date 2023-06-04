@@ -96,11 +96,6 @@ class ArduinoCLI:
         "Windows64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip"
     }
 
-    # extra_boards = [
-    #     "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json",
-    #     "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
-    # ]
-
     extra_platforms = {
         "Espressif ESP32": {
             "platform_id": "esp32:esp32",
@@ -181,7 +176,20 @@ class ArduinoCLI:
             acli.start()
         else:
             queue.put(
-                QueueMessage("error", "Arduino CLI is not installed")
+                QueueMessage("error", "Arduino CLI is not installed", "Arduino CLI is not installed")
+            )
+
+    def get_platforms(self, file_path, queue):
+        """
+        Function to retrieve the current platforms installed with the Arduino CLI
+        """
+        if self.is_installed(file_path):
+            params = ["core", "list", "--format", "jsonmini"]
+            acli = ThreadedArduinoCLI(file_path, params, queue)
+            acli.start()
+        else:
+            queue.put(
+                QueueMessage("error", "Arduino CLI is not installed", "Arduino CLI is not installed")
             )
 
     def download_cli(self, queue):
@@ -226,8 +234,11 @@ class ArduinoCLI:
         Overwrites existing configuration options
         """
         params = ["config", "init", "--format", "jsonmini", "--overwrite"]
-        if len(self.extra_boards) > 0:
-            _url_list = ",".join(self.extra_boards)
+        if len(self.extra_platforms) > 0:
+            platform_list = []
+            for extra_platform in self.extra_platforms:
+                platform_list.append(self.extra_platforms[extra_platform]["url"])
+            _url_list = ",".join(platform_list)
             params += ["--additional-urls", _url_list]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()

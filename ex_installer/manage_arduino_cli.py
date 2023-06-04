@@ -4,6 +4,7 @@ Module for managing the Arduino CLI page view
 
 # Import Python modules
 import customtkinter as ctk
+from pprint import pprint
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -16,7 +17,7 @@ class ManageArduinoCLI(WindowLayout):
     intro_text = ("The Arduino CLI is utilised to compile and upload any DCC-EX products " +
                   "to your Arduino device. EX-Installer is able to manage the installation " +
                   "and management of the Arduino CLI for you at the click of a button.")
-    installed_text = f"The Arduino CLI version {version} is currently installed"
+    installed_text = f"The Arduino CLI is currently installed"
     not_installed_text = "The Arduino CLI is currently not installed"
     install_instruction_text = ("To install the Arduino CLI, simply click the install button to start.\n\n" +
                                 "If you are using an Espressif or STMicroelectronics device, you will need to " +
@@ -40,12 +41,18 @@ class ManageArduinoCLI(WindowLayout):
 
         # Set up event handlers
         event_callbacks = {
-            "<<Check_Arduino_CLI>>": self.check_arduino_cli
+            "<<Check_Arduino_CLI>>": self.check_arduino_cli,
+            "<<Manage_CLI>>": self.manage_cli
         }
         for sequence, callback in event_callbacks.items():
             self.bind_class("bind_events", sequence, callback)
         new_tags = self.bindtags() + ("bind_events",)
         self.bindtags(new_tags)
+
+        # Set up dictionary to store packages to install/refresh
+        self.package_dict = {
+            "Arduino AVR": "arduino:avr"
+        }
 
         # Set title and logo
         self.set_title_logo(images.EX_INSTALLER_LOGO)
@@ -75,8 +82,8 @@ class ManageArduinoCLI(WindowLayout):
                                             **label_options)
         self.instruction_label = ctk.CTkLabel(self.manage_cli_frame,
                                               wraplength=390)
-        self.manage_cli_button = ctk.CTkButton(self.manage_cli_frame, width=200, height=30,
-                                               text=None, font=self.button_font)
+        self.manage_cli_button = ctk.CTkButton(self.manage_cli_frame, width=200, height=50,
+                                               text=None, font=self.action_button_font)
 
         # Create frame and widgets for additional platform support
         grid_options = {"padx": 5, "pady": 5}
@@ -90,7 +97,9 @@ class ManageArduinoCLI(WindowLayout):
         switch_options = {"onvalue": "on", "offvalue": "off"}
         for index, platform in enumerate(self.acli.extra_platforms):
             self.extra_platforms_frame.grid_rowconfigure(index+1, weight=1)
-            switch = ctk.CTkSwitch(self.extra_platforms_frame, text=platform, **switch_options)
+            switch_var = ctk.StringVar(value="off")
+            switch = ctk.CTkSwitch(self.extra_platforms_frame, variable=switch_var, text=platform, **switch_options)
+            switch.configure(command=lambda object=switch: self.update_package_list(object))
             switch.grid(column=0, row=index+1, sticky="w", **grid_options)
 
         # Layout frame
@@ -108,15 +117,28 @@ class ManageArduinoCLI(WindowLayout):
                                            text_color="#00353D",
                                            font=ctk.CTkFont(weight="normal"))
             self.instruction_label.configure(text=self.refresh_instruction_text)
-            self.manage_cli_button.configure(text="Refresh Arduino CLI")
+            self.manage_cli_button.configure(text="Refresh Arduino CLI",
+                                             command=lambda event="refresh_cli": self.manage_cli(event))
             self.check_arduino_cli("get_cli_info")
         else:
             self.cli_state_label.configure(text=self.not_installed_text,
                                            text_color="#FF5C00",
                                            font=ctk.CTkFont(weight="bold"))
             self.instruction_label.configure(text=self.install_instruction_text)
-            self.manage_cli_button.configure(text="Install Arduino CLI")
+            self.manage_cli_button.configure(text="Install Arduino CLI",
+                                             command=lambda event="install_cli": self.manage_cli(event))
             self.next_back.disable_next()
+
+    def update_package_list(self, switch):
+        """
+        Maintain the list of packages to install/refresh when switches updated
+        """
+        if switch.cget("variable").get() == "on":
+            if not switch.cget("text") in self.package_dict:
+                self.package_dict[switch.cget("text")] = self.acli.extra_platforms[switch.cget("text")]["platform_id"]
+        elif switch.cget("variable").get() == "off":
+            if switch.cget("text") in self.package_dict:
+                del self.package_dict[switch.cget("text")]
 
     def check_arduino_cli(self, event):
         """
@@ -125,15 +147,73 @@ class ManageArduinoCLI(WindowLayout):
         On completion, will move to the Manage Arduino CLI screen
         """
         if event == "get_cli_info":
-            self.process_start("check_arduino_cli", "Getting Arduino CLI details", "Check_Arduino_CLI")
+            self.process_start("check_arduino_cli", "Checking Arduino CLI version", "Check_Arduino_CLI")
             self.disable_input_states(self)
             self.acli.get_version(self.acli.cli_file_path(), self.queue)
         elif self.process_phase == "check_arduino_cli":
             if self.process_status == "success":
-                self.process_stop()
-                self.restore_input_states()
+                if "VersionString" in self.process_data:
+                    text = self.cli_state_label.cget("text") + f" (version {self.process_data['VersionString']})"
+                    self.cli_state_label.configure(text=text)
+                self.process_start("get_platforms", "Obtaining list of installed platforms", "Check_Arduino_CLI")
+                self.acli.get_platforms(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
                 self.process_error("Failed to check if the Arduino CLI is installed")
-                self.restore_input_states(self.widget_states)
+                self.restore_input_states()
             else:
                 self.process_error("An unknown error occurred")
+        elif self.process_phase == "get_platforms":
+            if self.process_status == "success":
+                if type(self.process_data) is list:
+                    for child in self.extra_platforms_frame.winfo_children():
+                        if isinstance(child, ctk.CTkSwitch):
+                            for platform in self.process_data:
+                                if self.acli.extra_platforms[child.cget("text")]["platform_id"] == platform["id"]:
+                                    child.cget("variable").set("on")
+                                    self.update_package_list(child)
+                self.restore_input_states()
+                self.process_stop()
+            elif self.process_status == "error":
+                self.process_error("Failed to get list of installed platforms")
+                self.restore_input_states()
+
+    def manage_cli(self, event):
+        """
+        Manage the Arduino CLI
+        """
+        pprint(event)
+        print(self.process_phase)
+        print(self.process_status)
+        if event == "install_cli":
+            print("Install")
+            pass
+        elif event == "refresh_cli" or self.process_phase == "refresh_cli":
+            if self.process_status == "success" or event == "refresh_cli":
+                self.process_start("config_cli", "Configuring the Arduino CLI", "Manage_CLI")
+                for widget in self.extra_platforms_frame.winfo_children():
+                    if isinstance(widget, ctk.CTkSwitch):
+                        if not widget.cget("text") in self.package_dict and widget.cget("variable").get() == "on":
+                            self.package_dict[widget.cget("text")] = (
+                                self.acli.extra_platforms[widget.cget("text")["platform_id"]]
+                                )
+                self.acli.initialise_config(self.acli.cli_file_path(), self.queue)
+            elif self.process_status == "error":
+                self.process_error(f"Error {self.process_phase}")
+        elif self.process_phase == "config_cli":
+            if self.process_status == "success":
+                self.process_start("update_index", "Updating core index", "Manage_CLI")
+                self.acli.update_index(self.acli.cli_file_path(), self.queue)
+            elif self.process_status == "error":
+                self.process_error("Error configuring the Arduino CLI")
+        elif self.process_phase == "update_index" or self.process_phase == "install_packages":
+            if self.process_status == "success":
+                if self.package_dict:
+                    package = next(iter(self.package_dict))
+                    self.process_start("install_packages", f"Installing package {package}", "Manage_CLI")
+                    print(f"Install {package}")
+                    self.acli.install_package(self.acli.cli_file_path(), self.package_dict[package], self.queue)
+                    del self.package_dict[package]
+                else:
+                    self.process_stop()
+            elif self.process_status == "error":
+                self.process_error("Error updating core index")
