@@ -38,8 +38,12 @@ class ThreadedArduinoCLI(Thread):
         )
         with self.arduino_cli_lock:
             try:
+                startupinfo = None
+                if platform.system() == "Windows":
+                    startupinfo = subprocess.STARTUPINFO()
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
                 self.process = subprocess.Popen(self.process_params, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-                                                shell=False)
+                                                startupinfo=startupinfo)
                 self.output, self.error = self.process.communicate()
             except Exception as error:
                 self.queue.put(
