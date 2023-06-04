@@ -4,7 +4,6 @@ Module for managing the Arduino CLI page view
 
 # Import Python modules
 import customtkinter as ctk
-from pprint import pprint
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -13,12 +12,11 @@ from . import images
 
 class ManageArduinoCLI(WindowLayout):
     # Define text to use in labels
-    version = "1.2.3"
     intro_text = ("The Arduino CLI is utilised to compile and upload any DCC-EX products " +
                   "to your Arduino device. EX-Installer is able to manage the installation " +
                   "and management of the Arduino CLI for you at the click of a button.")
-    installed_text = f"The Arduino CLI is currently installed"
-    not_installed_text = "The Arduino CLI is currently not installed"
+    installed_text = "The Arduino CLI is installed"
+    not_installed_text = "The Arduino CLI is not installed"
     install_instruction_text = ("To install the Arduino CLI, simply click the install button to start.\n\n" +
                                 "If you are using an Espressif or STMicroelectronics device, you will need to " +
                                 "enable support for these by selecting the appropriate additional platform option.\n\n"
@@ -119,6 +117,7 @@ class ManageArduinoCLI(WindowLayout):
             self.instruction_label.configure(text=self.refresh_instruction_text)
             self.manage_cli_button.configure(text="Refresh Arduino CLI",
                                              command=lambda event="refresh_cli": self.manage_cli(event))
+            self.next_back.enable_next()
             self.check_arduino_cli("get_cli_info")
         else:
             self.cli_state_label.configure(text=self.not_installed_text,
@@ -181,13 +180,20 @@ class ManageArduinoCLI(WindowLayout):
         """
         Manage the Arduino CLI
         """
-        pprint(event)
-        print(self.process_phase)
-        print(self.process_status)
         if event == "install_cli":
-            print("Install")
-            pass
-        elif event == "refresh_cli" or self.process_phase == "refresh_cli":
+            self.disable_input_states(self)
+            self.process_start("download_cli", "Downloading the Arduino CLI", "Manage_CLI")
+            self.acli.download_cli(self.queue)
+        elif self.process_phase == "download_cli":
+            if self.process_status == "success":
+                download_file = self.process_data
+                self.process_start("extract_cli", "Installing the Arduino CLI", "Manage_CLI")
+                self.acli.install_cli(download_file, self.acli.cli_file_path(), self.queue)
+            elif self.process_status == "error":
+                self.process_error("Error downloading the Arduino CLI")
+        elif event == "refresh_cli" or self.process_phase == "extract_cli":
+            if event == "refresh_cli":
+                self.disable_input_states(self)
             if self.process_status == "success" or event == "refresh_cli":
                 self.process_start("config_cli", "Configuring the Arduino CLI", "Manage_CLI")
                 for widget in self.extra_platforms_frame.winfo_children():
@@ -198,7 +204,7 @@ class ManageArduinoCLI(WindowLayout):
                                 )
                 self.acli.initialise_config(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error(f"Error {self.process_phase}")
+                self.process_error("Error installing the Arduino CLI")
         elif self.process_phase == "config_cli":
             if self.process_status == "success":
                 self.process_start("update_index", "Updating core index", "Manage_CLI")
@@ -210,10 +216,23 @@ class ManageArduinoCLI(WindowLayout):
                 if self.package_dict:
                     package = next(iter(self.package_dict))
                     self.process_start("install_packages", f"Installing package {package}", "Manage_CLI")
-                    print(f"Install {package}")
                     self.acli.install_package(self.acli.cli_file_path(), self.package_dict[package], self.queue)
                     del self.package_dict[package]
                 else:
-                    self.process_stop()
+                    self.process_start("upgrade_platforms", "Upgrading Arduino platforms", "Manage_CLI")
+                    self.acli.upgrade_platforms(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
                 self.process_error("Error updating core index")
+        elif self.process_phase == "upgrade_platforms":
+            if self.process_status == "success":
+                self.process_start("refresh_list", "Refreshing Arduino CLI board list", "Manage_CLI")
+                self.acli.list_boards(self.acli.cli_file_path(), self.queue)
+            elif self.process_status == "error":
+                self.process_error("Error upgrading platforms")
+        elif self.process_phase == "refresh_list":
+            if self.process_status == "success":
+                self.process_stop()
+                self.restore_input_states()
+                self.set_state()
+            elif self.process_status == "error":
+                self.process_error("Error refreshing board list")

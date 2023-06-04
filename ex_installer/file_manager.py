@@ -16,7 +16,7 @@ from collections import namedtuple
 import re
 
 
-QueueMessage = namedtuple("QueueMessage", ["status", "details"])
+QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
 
 
 class ThreadedDownloader(Thread):
@@ -31,7 +31,7 @@ class ThreadedDownloader(Thread):
 
     def run(self, *args, **kwargs):
         self.queue.put(
-            QueueMessage("info", f"Downloading {self.url}")
+            QueueMessage("info", f"Downloading {self.url}", f"Downloading {self.url}")
         )
         with self.download_lock:
             _response = requests.get(self.url, stream=True)
@@ -40,16 +40,16 @@ class ThreadedDownloader(Thread):
                     with open(self.target, "wb") as _file:
                         _file.write(_response.raw.read())
                     self.queue.put(
-                        QueueMessage("success", self.target)
+                        QueueMessage("success", "Downloaded successfully", self.target)
                     )
                     print("Success")
                 except Exception as error:
                     self.queue.put(
-                        QueueMessage("error", str(error))
+                        QueueMessage("error", "Download error", str(error))
                     )
             else:
                 self.queue.put(
-                    QueueMessage("error",
+                    QueueMessage("error", "Download error",
                                  f"Downloading failed with status code {_response.status_code}: {_response.text}")
                 )
 
@@ -66,7 +66,7 @@ class ThreadedExtractor(Thread):
 
     def run(self, *args, **kwargs):
         self.queue.put(
-            QueueMessage("info", f"Extracting {self.archive_file}")
+            QueueMessage("info", f"Extracting {self.archive_file}", f"Extracting {self.archive_file}")
         )
         with self.extractor_lock:
             if platform.system() == "Windows":
@@ -82,11 +82,11 @@ class ThreadedExtractor(Thread):
                     else:
                         dir_name = self.target_dir
                     self.queue.put(
-                        QueueMessage("success", dir_name)
+                        QueueMessage("success", "Extraction successful", dir_name)
                     )
                 except Exception as error:
                     self.queue.put(
-                        QueueMessage("error", str(error))
+                        QueueMessage("error", "Extraction error", str(error))
                     )
             else:
                 try:
@@ -99,11 +99,11 @@ class ThreadedExtractor(Thread):
                     archive.extractall(self.target_dir)
                     archive.close()
                     self.queue.put(
-                        QueueMessage("success", dir_name)
+                        QueueMessage("success", "Extraction successful", dir_name)
                     )
                 except Exception as error:
                     self.queue.put(
-                        QueueMessage("error", str(error))
+                        QueueMessage("error", "Extraction error", str(error))
                     )
 
 

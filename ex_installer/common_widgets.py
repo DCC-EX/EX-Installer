@@ -8,7 +8,6 @@ Every view should include this module and base the layout on WindowLayout
 import customtkinter as ctk
 from PIL import Image
 from queue import Queue
-from pprint import pprint
 
 # Import local modules
 from . import images
