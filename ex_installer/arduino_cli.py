@@ -124,7 +124,7 @@ class ArduinoCLI:
 
     def __init__(self, selected_device=None):
         self.selected_device = selected_device
-        self.detected_devices = None
+        self.detected_devices = []
 
     def cli_file_path(self):
         """

@@ -75,10 +75,13 @@ class ManageArduinoCLI(WindowLayout):
         label_options = {"wraplength": 780}
         self.intro_label = ctk.CTkLabel(self.manage_cli_frame,
                                         text=self.intro_text,
+                                        font=self.instruction_font,
                                         **label_options)
         self.cli_state_label = ctk.CTkLabel(self.manage_cli_frame,
+                                            font=self.instruction_font,
                                             **label_options)
         self.instruction_label = ctk.CTkLabel(self.manage_cli_frame,
+                                              font=self.instruction_font,
                                               wraplength=390)
         self.manage_cli_button = ctk.CTkButton(self.manage_cli_frame, width=200, height=50,
                                                text=None, font=self.action_button_font)
@@ -113,7 +116,7 @@ class ManageArduinoCLI(WindowLayout):
         if self.acli.is_installed(self.acli.cli_file_path()):
             self.cli_state_label.configure(text=self.installed_text,
                                            text_color="#00353D",
-                                           font=ctk.CTkFont(weight="normal"))
+                                           font=self.instruction_font)
             self.instruction_label.configure(text=self.refresh_instruction_text)
             self.manage_cli_button.configure(text="Refresh Arduino CLI",
                                              command=lambda event="refresh_cli": self.manage_cli(event))
@@ -122,7 +125,7 @@ class ManageArduinoCLI(WindowLayout):
         else:
             self.cli_state_label.configure(text=self.not_installed_text,
                                            text_color="#FF5C00",
-                                           font=ctk.CTkFont(weight="bold"))
+                                           font=self.bold_instruction_font)
             self.instruction_label.configure(text=self.install_instruction_text)
             self.manage_cli_button.configure(text="Install Arduino CLI",
                                              command=lambda event="install_cli": self.manage_cli(event))

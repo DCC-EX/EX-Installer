@@ -36,7 +36,8 @@ class SelectProduct(WindowLayout):
 
         # Create instruction label
         self.instruction_label = ctk.CTkLabel(self.select_product_frame,
-                                              text="Click the logo to choose the product to install")
+                                              text="Click the logo to choose the product to install",
+                                              font=self.instruction_font)
 
         # Create product logos
         self.ex_commandstation_logo = Image.open(images.EX_COMMANDSTATION_LOGO)
