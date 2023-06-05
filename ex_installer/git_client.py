@@ -59,13 +59,26 @@ class GitClient:
                 print("Not repo")
         return repo
 
-    def validate_repo(self, repo, remote):
+    def validate_remote(self, repo, repo_url):
         """
-        Function to validate repo is still using the provided remote
+        Function to validate repo is still using the provided remote URL for the origin
 
-        Returns True (remote still valid) or False (remote invalid or multiple)
+        Returns a list of (True|False, Details of error)
         """
-        pass
+        is_valid = False
+        details = ""
+        if isinstance(repo, pygit2.Repository):
+            if len(list(repo.remotes)) == 1:
+                remote = repo.remotes[0]
+                if remote.name == "origin" and remote.url == repo_url:
+                    is_valid = True
+                else:
+                    details = f"Remote details are invalid ({remote.name} {remote.url})"
+            else:
+                details = "More than one remotes are in use"
+        else:
+            details = f"{repo} is not a valid Git repository"
+        return (is_valid, details)
 
     def check_local_changes(self, remote):
         """

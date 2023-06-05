@@ -196,21 +196,25 @@ class EXCommandStation(WindowLayout):
 
     def start(self):
         """
-        Function to run when loading to check for:
+        Function to run when loading to check:
 
-        - product directory already exists
-        - product directory is already a cloned repo
-        - any existing configuration files
+        - if the product directory already exists
+        - if the product directory is already a cloned repo
+        - if the cloned repo is configured correctly
         - any locally modified files that would interfere with Git commands
+        - any existing configuration files
         """
         if os.path.exists(self.ex_commandstation_dir) and os.path.isdir(self.ex_commandstation_dir):
             repo = self.git.get_repo(self.ex_commandstation_dir)
             if repo:
-                print("Branches")
-                pprint(vars(repo.branches))
-                print("References")
-                pprint(vars(repo.references))
-                print("Remotes")
-                pprint(vars(repo.remotes))
+                validate_remote = self.git.validate_remote(self.ex_commandstation_dir, pd["ex_commandstation"]["repo_url"])
+                if validate_remote[0]:
+                    print("Valid remote")
+                else:
+                    print(f"Invalid remote: {validate_remote[1]}")
+            # if self.git.validate_remote(repo, pd["ex_commandstation"]["repo_url"]):
+            #     print("Valid remote")
+            # else:
+            #     print("Invalid remote")
         else:
             print("Need to clone")

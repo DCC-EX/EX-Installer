@@ -161,10 +161,11 @@ class SelectDevice(WindowLayout):
                 self.restore_input_states()
 
     def update_board(self, index, name):
-        self.acli.detected_devices[index]["matching_boards"][0]["name"] = name
-        self.acli.detected_devices[index]["matching_boards"][0]["fqbn"] = self.acli.supported_devices[name]
-        self.selected_device.set(index)
-        self.select_device()
+        if name != "Select the correct device":
+            self.acli.detected_devices[index]["matching_boards"][0]["name"] = name
+            self.acli.detected_devices[index]["matching_boards"][0]["fqbn"] = self.acli.supported_devices[name]
+            self.selected_device.set(index)
+            self.select_device()
 
     def select_device(self):
         self.acli.selected_device = None
