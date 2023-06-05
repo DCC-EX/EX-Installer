@@ -9,6 +9,7 @@ from PIL import Image
 # Import local modules
 from .common_widgets import WindowLayout
 from . import images
+from .product_details import product_details as pd
 
 
 class SelectProduct(WindowLayout):
@@ -64,7 +65,7 @@ class SelectProduct(WindowLayout):
                                                       text=None,
                                                       image=self.ex_commandstation_image, **button_options,
                                                       command=lambda product="ex_commandstation":
-                                                      parent.switch_view(product))
+                                                      self.check_product_device(product))
         self.ex_ioexpander_button = ctk.CTkButton(self.select_product_frame,
                                                   text="(coming soon)",
                                                   image=self.ex_ioexpander_image, **button_options,
@@ -90,3 +91,13 @@ class SelectProduct(WindowLayout):
         self.ex_turntable_button.grid(column=1, row=2, **grid_options)
         self.ex_dccinspector_button.grid(column=0, row=3, **grid_options)
         self.ex_fastclock_button.grid(column=1, row=3, **grid_options)
+
+    def check_product_device(self, product):
+        device_fqbn = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"]
+        device_name = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["name"]
+        product_name = pd[product]["product_name"]
+        if device_fqbn not in pd[product]["supported_devices"]:
+            self.process_error(f"Device type {device_name} is not supported for use with {product_name}\n" +
+                               "Return to the Select Device screen and select a supported device")
+        else:
+            self.master.switch_view(product)

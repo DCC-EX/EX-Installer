@@ -22,6 +22,9 @@ QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
 
 
 class ThreadedArduinoCLI(Thread):
+    """
+    Class to run Arduino CLI commands in a separate thread, returning results to the provided queue
+    """
 
     arduino_cli_lock = Lock()
 

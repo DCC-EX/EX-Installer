@@ -16,6 +16,7 @@ multidict==6.0.4
 pefile==2023.2.7
 Pillow==9.5.0
 pycparser==2.21
+pygit2==1.12.1
 pyinstaller==5.11.0
 pyinstaller-hooks-contrib==2023.3
 PyJWT==2.7.0

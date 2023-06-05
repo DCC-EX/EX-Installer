@@ -4,10 +4,13 @@ Module for the EX-CommandStation page view
 
 # Import Python modules
 import customtkinter as ctk
+import os
+from pprint import pprint
 
 # Import local modules
 from .common_widgets import WindowLayout
 from .product_details import product_details as pd
+from .file_manager import FileManager as fm
 
 
 class EXCommandStation(WindowLayout):
@@ -71,6 +74,10 @@ class EXCommandStation(WindowLayout):
         Initialise view
         """
         super().__init__(parent, *args, **kwargs)
+
+        # Get the local directory to work in
+        local_repo_dir = pd["ex_commandstation"]["repo_name"].split("/")[1]
+        self.ex_commandstation_dir = fm.get_install_dir(local_repo_dir)
 
         # Set up title
         self.set_title_logo(pd["ex_commandstation"]["product_logo"])
@@ -182,3 +189,28 @@ class EXCommandStation(WindowLayout):
         self.display_switch.grid(column=0, row=4, **grid_options)
         self.display_combo.grid(column=1, row=4, sticky="w", **grid_options)
         self.wifi_frame.grid(column=0, row=5, columnspan=2, sticky="ew", **grid_options)
+
+        print(self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"])
+
+        self.start()
+
+    def start(self):
+        """
+        Function to run when loading to check for:
+
+        - product directory already exists
+        - product directory is already a cloned repo
+        - any existing configuration files
+        - any locally modified files that would interfere with Git commands
+        """
+        if os.path.exists(self.ex_commandstation_dir) and os.path.isdir(self.ex_commandstation_dir):
+            repo = self.git.get_repo(self.ex_commandstation_dir)
+            if repo:
+                print("Branches")
+                pprint(vars(repo.branches))
+                print("References")
+                pprint(vars(repo.references))
+                print("Remotes")
+                pprint(vars(repo.remotes))
+        else:
+            print("Need to clone")

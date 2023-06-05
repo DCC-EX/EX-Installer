@@ -23,8 +23,9 @@ class WindowLayout(ctk.CTkFrame):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
-        # Get parent Arduino CLI instance
+        # Get parent Arduino CLI and Git client instances
         self.acli = parent.acli
+        self.git = parent.git
 
         # Variables for process and queue monitoring
         self.process_phase = None
