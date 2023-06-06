@@ -46,13 +46,6 @@ class EXCommandStation(WindowLayout):
     hardware_text = ("Select the appropriate options on this page to suit the hardware devices you are using with " +
                      "your EX-CommandStation device.\n\n")
 
-    # Regular expressions to find user config files
-    config_files = [
-        r"(^config\.h$)",
-        r"(^myHal\.cpp$)",
-        r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
-    ]
-
     # List of supported displays and config lines for config.h
     supported_displays = {
         "LCD - 16 columns x 2 rows": "#define LCD_DRIVER 0x27,16,2",
@@ -76,78 +69,117 @@ class EXCommandStation(WindowLayout):
         super().__init__(parent, *args, **kwargs)
 
         # Get the local directory to work in
-        local_repo_dir = pd["ex_commandstation"]["repo_name"].split("/")[1]
+        self.product = "ex_commandstation"
+        local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
         self.ex_commandstation_dir = fm.get_install_dir(local_repo_dir)
 
         # Set up title
-        self.set_title_logo(pd["ex_commandstation"]["product_logo"])
+        self.set_title_logo(pd[self.product]["product_logo"])
         self.set_title_text("Install EX-CommandStation")
 
         # Set up next/back buttons
         self.next_back.set_back_text("Select Product")
         self.next_back.set_back_command(lambda view="select_product": parent.switch_view(view))
-        self.next_back.set_next_text("Compile and upload")
-        self.next_back.set_next_command(lambda product="ex_commandstation": parent.compile_upload(product))
+        self.next_back.set_next_text("Configuration")
+        self.next_back.set_next_command(None)
 
-        # Set up, configure, and grid container frame
-        self.ex_commandstation_frame = ctk.CTkFrame(self.main_frame, height=360)
-        self.ex_commandstation_frame.grid_columnconfigure((0, 1, 2), weight=1)
-        self.ex_commandstation_frame.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
-        self.ex_commandstation_frame.grid(column=0, row=0, sticky="nsew")
+        # Set up and grid container frames
+        self.version_frame = ctk.CTkFrame(self.main_frame, height=360)
+        self.config_frame = ctk.CTkFrame(self.main_frame, height=360)
+        self.version_frame.grid(column=0, row=0, sticky="nsew")
+        self.config_frame.grid(column=0, row=0, sticky="nsew")
 
+        # Set up frame contents
+        self.setup_version_frame()
+        self.setup_config_frame()
+
+        # print(self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"])
+
+        self.start()
+
+    def setup_version_frame(self):
         grid_options = {"padx": 5, "pady": 5}
 
         # Set up version instructions
-        self.version_label = ctk.CTkLabel(self.ex_commandstation_frame, text=self.version_text,
+        self.version_label = ctk.CTkLabel(self.version_frame, text=self.version_text,
                                           wraplength=780, font=self.instruction_font)
 
-        # Set up select version frame and radio buttons
-        self.version_frame = ctk.CTkFrame(self.ex_commandstation_frame,
-                                          border_width=2,
-                                          fg_color="#E5E5E5")
-        self.version_frame.grid_columnconfigure((0, 1), weight=1)
-        self.version_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
+        # Set up select version radio frame and radio buttons
+        self.version_radio_frame = ctk.CTkFrame(self.version_frame,
+                                                border_width=2,
+                                                fg_color="#E5E5E5")
+        self.version_radio_frame.grid_columnconfigure((0, 1), weight=1)
+        self.version_radio_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
 
         self.select_version = ctk.IntVar(value=0)
-        self.latest_prod_radio = ctk.CTkRadioButton(self.version_frame, variable=self.select_version,
+        self.latest_prod_radio = ctk.CTkRadioButton(self.version_radio_frame, variable=self.select_version,
                                                     text=f"Latest Production ({self.latest_prod}) - Recommended!",
                                                     font=ctk.CTkFont(weight="bold"), value=0)
-        self.latest_devel_radio = ctk.CTkRadioButton(self.version_frame, variable=self.select_version,
+        self.latest_devel_radio = ctk.CTkRadioButton(self.version_radio_frame, variable=self.select_version,
                                                      text=f"Latest Development ({self.latest_devel})", value=1)
-        self.select_version_radio = ctk.CTkRadioButton(self.version_frame, variable=self.select_version,
+        self.select_version_radio = ctk.CTkRadioButton(self.version_radio_frame, variable=self.select_version,
                                                        text="Select a specific version", value=2)
-        self.select_version_combo = ctk.CTkComboBox(self.version_frame, values=self.dummy_version_list, width=150)
+        self.select_version_combo = ctk.CTkComboBox(self.version_radio_frame, values=self.dummy_version_list, width=150)
 
-        # Layout version frame
-        self.version_frame.grid_columnconfigure((0, 1), weight=1)
-        self.version_frame.grid_rowconfigure((0, 1, 2), weight=1)
+        # Layout radio frame
         self.latest_prod_radio.grid(column=0, row=0, columnspan=2, sticky="w", **grid_options)
         self.latest_devel_radio.grid(column=0, row=1, columnspan=2, sticky="w", **grid_options)
         self.select_version_radio.grid(column=0, row=2, sticky="w", **grid_options)
         self.select_version_combo.grid(column=1, row=2, sticky="e", **grid_options)
 
+        # Set up configuration options
+        self.config_radio_frame = ctk.CTkFrame(self.version_frame)
+        self.config_option = ctk.IntVar(value=0)
+        self.configure_radio = ctk.CTkRadioButton(self.config_radio_frame, variable=self.config_option,
+                                                  text="Configure options on the next screen", value=0)
+        self.use_config_radio = ctk.CTkRadioButton(self.config_radio_frame, variable=self.config_option,
+                                                   text="Use my existing configuration files", value=1)
+        self.config_path = ctk.StringVar(value=None)
+        self.config_file_entry = ctk.CTkEntry(self.config_radio_frame, textvariable=self.config_path,
+                                              width=300)
+        self.browse_button = ctk.CTkButton(self.config_radio_frame, text="Browse",
+                                           width=80, command=self.browse_configdir)
+
+        # Configure and layout config frame
+        self.config_radio_frame.grid_columnconfigure((0, 1), weight=1)
+        self.config_radio_frame.grid_rowconfigure((0, 1), weight=1)
+        self.configure_radio.grid(column=0, row=0, columnspan=3, sticky="w", **grid_options)
+        self.use_config_radio.grid(column=0, row=1, sticky="w", **grid_options)
+        self.config_file_entry.grid(column=1, row=1, **grid_options)
+        self.browse_button.grid(column=2, row=1, sticky="w", **grid_options)
+
+        # Configure and layout version frame
+        self.version_frame.grid_columnconfigure(0, weight=1)
+        self.version_frame.grid_rowconfigure((0, 1, 2), weight=1)
+        self.version_label.grid(column=0, row=0, **grid_options)
+        self.version_radio_frame.grid(column=0, row=1, **grid_options)
+        self.config_radio_frame.grid(column=0, row=2, **grid_options)
+
+    def setup_config_frame(self):
+        grid_options = {"padx": 5, "pady": 5}
+
         # Set up hardware instruction label
-        self.hardware_label = ctk.CTkLabel(self.ex_commandstation_frame, text=self.hardware_text,
+        self.hardware_label = ctk.CTkLabel(self.config_frame, text=self.hardware_text,
                                            wraplength=780, font=self.instruction_font)
 
         # Set up motor driver widgets
-        self.motor_driver_label = ctk.CTkLabel(self.ex_commandstation_frame, text="Select your motor shield/driver")
-        self.motor_driver_combo = ctk.CTkComboBox(self.ex_commandstation_frame, values=list(self.motorshield_list),
+        self.motor_driver_label = ctk.CTkLabel(self.config_frame, text="Select your motor shield/driver")
+        self.motor_driver_combo = ctk.CTkComboBox(self.config_frame, values=list(self.motorshield_list),
                                                   width=300)
 
         # Set up display widgets
-        self.display_switch = ctk.CTkSwitch(self.ex_commandstation_frame, text="I have a display",
-                                            onvalue="on", offvalue="off")
-        self.display_combo = ctk.CTkComboBox(self.ex_commandstation_frame, values=list(self.supported_displays),
+        self.display_switch = ctk.CTkSwitch(self.config_frame, text="I have a display",
+                                            onvalue="on", offvalue="off", command=self.set_display)
+        self.display_combo = ctk.CTkComboBox(self.config_frame, values=list(self.supported_displays),
                                              width=300)
 
         # Set up WiFi widgets
         self.wifi_type = ctk.IntVar(self, value=-1)
         self.wifi_ssid = ctk.StringVar(self, value=None)
         self.wifi_pwd = ctk.StringVar(self, value=None)
-        self.wifi_frame = ctk.CTkFrame(self.ex_commandstation_frame, border_width=0)
-        self.wifi_switch = ctk.CTkSwitch(self.wifi_frame, text="I have WiFi",
-                                         onvalue="on", offvalue="off")
+        self.wifi_frame = ctk.CTkFrame(self.config_frame, border_width=0)
+        self.wifi_switch = ctk.CTkSwitch(self.config_frame, text="I have WiFi",
+                                         onvalue="on", offvalue="off", command=self.set_wifi)
         self.wifi_options_frame = ctk.CTkFrame(self.wifi_frame,
                                                border_width=2,
                                                fg_color="#E5E5E5")
@@ -172,7 +204,6 @@ class EXCommandStation(WindowLayout):
         self.wifi_options_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.wifi_options_frame.grid_rowconfigure((0, 1, 2), weight=1)
         self.wifi_options_frame.grid(column=1, row=0)
-        self.wifi_switch.grid(column=0, row=0)
         self.wifi_ap_radio.grid(column=0, row=0, columnspan=4, sticky="w", **grid_options)
         self.wifi_st_radio.grid(column=0, row=1, columnspan=4, sticky="w", **grid_options)
         self.wifi_ssid_label.grid(column=0, row=2, **grid_options)
@@ -181,22 +212,59 @@ class EXCommandStation(WindowLayout):
         self.wifi_pwd_entry.grid(column=3, row=2, **grid_options)
 
         # Layout frame
-        self.version_label.grid(column=0, row=0, columnspan=2, **grid_options)
-        self.version_frame.grid(column=0, row=1, columnspan=2, **grid_options)
         self.hardware_label.grid(column=0, row=2, columnspan=2, **grid_options)
         self.motor_driver_label.grid(column=0, row=3, **grid_options)
         self.motor_driver_combo.grid(column=1, row=3, sticky="w", **grid_options)
         self.display_switch.grid(column=0, row=4, **grid_options)
         self.display_combo.grid(column=1, row=4, sticky="w", **grid_options)
-        self.wifi_frame.grid(column=0, row=5, columnspan=2, sticky="ew", **grid_options)
-
-        print(self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"])
-
-        self.start()
+        self.wifi_switch.grid(column=0, row=5)
+        self.wifi_frame.grid(column=1, row=5, sticky="e", **grid_options)
 
     def start(self):
         """
-        Function to run when loading to check:
+        Function to run on first start
+        """
+        self.config_frame.grid_remove()
+        self.next_back.set_next_command(self.display_config_screen)
+        self.set_display()
+        self.set_wifi()
+        self.check_local_repo()
+
+    def set_display(self):
+        """
+        Sets display options on or off
+        """
+        if self.display_switch.get() == "on":
+            self.display_combo.grid()
+        else:
+            self.display_combo.grid_remove()
+
+    def set_wifi(self):
+        """
+        Sets WiFi options on or off
+        """
+        if self.wifi_switch.get() == "on":
+            self.wifi_frame.grid()
+        else:
+            self.wifi_frame.grid_remove()
+
+    def browse_configdir(self):
+        """
+        Opens a directory browser dialogue to select the folder containing config files
+        """
+        directory = ctk.filedialog.askdirectory()
+        if directory:
+            self.config_path.set(directory)
+
+    def display_config_screen(self):
+        self.version_frame.grid_remove()
+        self.config_frame.grid()
+        self.next_back.set_next_text("Compile and upload")
+        self.next_back.set_next_command(lambda product=self.product: self.master.compile_upload(product))
+
+    def check_local_repo(self):
+        """
+        Function to check for a local repository:
 
         - if the product directory already exists
         - if the product directory is already a cloned repo
@@ -205,16 +273,15 @@ class EXCommandStation(WindowLayout):
         - any existing configuration files
         """
         if os.path.exists(self.ex_commandstation_dir) and os.path.isdir(self.ex_commandstation_dir):
-            repo = self.git.get_repo(self.ex_commandstation_dir)
-            if repo:
-                validate_remote = self.git.validate_remote(self.ex_commandstation_dir, pd["ex_commandstation"]["repo_url"])
-                if validate_remote[0]:
-                    print("Valid remote")
-                else:
-                    print(f"Invalid remote: {validate_remote[1]}")
-            # if self.git.validate_remote(repo, pd["ex_commandstation"]["repo_url"]):
-            #     print("Valid remote")
-            # else:
-            #     print("Invalid remote")
+            validate_remote = self.git.validate_local_repo(self.ex_commandstation_dir, pd[self.product]["repo_url"])
+            if not validate_remote[0]:
+                self.process_error(validate_remote[1])
+                self.next_back.disable_next()
+            else:
+                config_files = fm.get_config_files(self.ex_commandstation_dir, pd[self.product]["config_files"])
+                if config_files:
+                    file_list = ", ".join(config_files)
+                    self.process_error(f"Existing config files found: {file_list}")
+                    self.next_back.disable_next()
         else:
-            print("Need to clone")
+            print("Need to clone repo")

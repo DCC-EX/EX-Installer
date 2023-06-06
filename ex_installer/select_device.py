@@ -97,10 +97,10 @@ class SelectDevice(WindowLayout):
             self.list_device_button.configure(text="Refresh Device List")
             self.no_device_label.grid_remove()
             self.device_list_frame.grid()
-        if not self.acli.selected_device:
-            self.next_back.disable_next()
-        else:
-            self.next_back.enable_next()
+        # if not self.acli.selected_device:
+        #     self.next_back.disable_next()
+        # else:
+        #     self.next_back.enable_next()
 
     def list_devices(self, event):
         """
@@ -173,5 +173,5 @@ class SelectDevice(WindowLayout):
         if not self.acli.detected_devices[device]["matching_boards"][0]["name"] == "Unknown":
             self.acli.selected_device = device
             self.next_back.enable_next()
-        else:
-            self.next_back.disable_next()
+        # else:
+        #     self.next_back.disable_next()

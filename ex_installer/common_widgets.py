@@ -145,14 +145,23 @@ class WindowLayout(ctk.CTkFrame):
         self.progress_bar.start()
 
     def process_stop(self):
+        """
+        Stops the progress bar and resets status text
+        """
         self.progress_bar.stop()
         self.status_label.configure(text="Idle")
 
     def process_error(self, message):
+        """
+        Stops the progress bar, sets status text, and makes font red
+        """
         self.progress_bar.stop()
         self.status_label.configure(text=message, text_color="red")
 
     def disable_input_states(self, widget):
+        """
+        Stores current state of all child input widgets then sets to disabled
+        """
         children = widget.winfo_children()
         for child in children:
             if isinstance(child, (ctk.CTkButton, ctk.CTkComboBox, ctk.CTkCheckBox, ctk.CTkEntry,
@@ -166,6 +175,9 @@ class WindowLayout(ctk.CTkFrame):
             self.disable_input_states(child)
 
     def restore_input_states(self):
+        """
+        Restores the state of all widgets
+        """
         for widget in self.widget_states:
             widget["widget"].configure(state=widget["state"])
 

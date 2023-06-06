@@ -188,6 +188,14 @@ class FileManager:
 
     @staticmethod
     def get_config_files(dir, pattern_list):
+        """
+        Function to check for the existence of existing configuration files
+        
+        Returns False if no files, otherwise a list of file names matching the provided list of patterns
+
+        Pattern list must contain a valid Python regular expression with grouping
+        A match is made on one group only (group 1)
+        """
         if os.path.exists(dir):
             config_files = []
             for file in os.listdir(dir):

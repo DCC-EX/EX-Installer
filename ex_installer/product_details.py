@@ -19,6 +19,11 @@ product_details = {
             "esp32:esp32:esp32",
             "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
             "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
+        ],
+        "config_files": [
+            r"(^config\.h$)",
+            r"(^myHal\.cpp$)",
+            r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
         ]
     }
 }
