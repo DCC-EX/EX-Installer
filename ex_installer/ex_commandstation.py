@@ -228,7 +228,7 @@ class EXCommandStation(WindowLayout):
         self.next_back.set_next_command(self.display_config_screen)
         self.set_display()
         self.set_wifi()
-        self.check_local_repo()
+        # self.check_local_repo()
 
     def set_display(self):
         """

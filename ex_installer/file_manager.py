@@ -190,7 +190,7 @@ class FileManager:
     def get_config_files(dir, pattern_list):
         """
         Function to check for the existence of existing configuration files
-        
+
         Returns False if no files, otherwise a list of file names matching the provided list of patterns
 
         Pattern list must contain a valid Python regular expression with grouping
@@ -238,3 +238,31 @@ class FileManager:
             return file_path
         except Exception as error:
             return str(error)
+
+    @staticmethod
+    def dir_is_git_repo(dir):
+        """
+        Check if directory exists and contains a .git file
+
+        Returns True if so, False if not
+        """
+        git_file = os.path.join(dir, ".git")
+        if os.path.exists(dir) and os.path.isdir(dir):
+            if os.path.exists(git_file):
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    @staticmethod
+    def dir_is_empty(dir):
+        """
+        Check if directory is empty
+
+        Returns True if so, False if not
+        """
+        if os.listdir(dir) > 0:
+            return False
+        else:
+            return True

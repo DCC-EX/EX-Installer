@@ -14,6 +14,16 @@ from pprint import pprint
 QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
 
 
+@staticmethod
+def get_exception(error):
+    """
+    Get an exception into text to add to the queue
+    """
+    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+    message = template.format(type(error).__name__, error.args)
+    return message
+
+
 class ThreadedGitClient(Thread):
     """
     Class for running GitHub API tasks in a separate thread
@@ -52,38 +62,25 @@ class GitClient:
         """
         Validate the provided directory is a repo
 
-        Returns repo object or False if not a repo
+        Returns a tuple of (True|False, None|message)
         """
+        git_file = os.path.join(repo_dir, ".git")
         if os.path.exists(repo_dir) and os.path.isdir(repo_dir):
-            repo = pygit2.Repository(pygit2.discover_repository(repo_dir))
-            if isinstance(repo, pygit2.Repository):
-                return repo
-            else:
-                return False
-        else:
-            return False
-
-    @staticmethod
-    def validate_remote(repo, repo_url):
-        """
-        Function to validate repo is still using the provided remote URL for the origin
-
-        Returns a list of (True|False, Details of error)
-        """
-        is_valid = False
-        details = ""
-        if isinstance(repo, pygit2.Repository):
-            if len(list(repo.remotes)) == 1:
-                remote = repo.remotes[0]
-                if remote.name == "origin" and remote.url == repo_url:
-                    is_valid = True
+            if os.path.exists(git_file):
+                try:
+                    repo = pygit2.Repository(git_file)
+                except Exception as error:
+                    message = get_exception(error)
                 else:
-                    details = f"Remote GitHub repository is invalid (Remote {remote.name}: URL {remote.url})"
+                    if isinstance(repo, pygit2.Repository):
+                        return repo
+                    else:
+                        return False
             else:
-                details = "More than one remotes are in use"
+                return False, ("Directory is not a Git repository")
         else:
-            details = f"{repo} is not a valid Git repository"
-        return (is_valid, details)
+            message("Directory does not exist")
+            return False, message
 
     @staticmethod
     def check_local_changes(repo):
@@ -141,3 +138,11 @@ class GitClient:
         else:
             details(f"{local_dir} is not a valid Git repository")
         return (status, details)
+    
+    def clone_repo(repo_url, repo_dir):
+        """
+        Clone a remote repo using a separate thread
+
+        Returns the repo instance if successful
+        """
+
