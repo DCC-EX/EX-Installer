@@ -305,6 +305,7 @@ class EXCommandStation(WindowLayout):
             self.git.clone_repo(pd[self.product]["repo_url"], self.ex_commandstation_dir, self.queue)
         elif self.process_phase == "clone_repo" or event == "get_latest":
             if self.process_status == "success" or event == "get_latest":
+                self.repo = self.git.get_repo(self.ex_commandstation_dir)
                 branch_ref = self.git.get_branch_ref(self.repo, self.branch_name)
                 try:
                     self.repo.checkout(refname=branch_ref)
