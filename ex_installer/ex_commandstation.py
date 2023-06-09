@@ -5,7 +5,6 @@ Module for the EX-CommandStation page view
 # Import Python modules
 import customtkinter as ctk
 import os
-from pprint import pprint
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -19,19 +18,6 @@ class EXCommandStation(WindowLayout):
     """
 
     # Dummy variables for layout design
-    dummy_version_list = [
-        "v4.2.53-Devel",
-        "v4.2.45-Devel",
-        "v4.2.25-Devel",
-        "v4.1.6-Prod",
-        "v4.1.5-Prod",
-        "v4.0.0-Prod"
-    ]
-
-    latest_prod = "v4.1.6-Prod"
-
-    latest_devel = "v4.2.53-Devel"
-
     motorshield_list = {
         "STANDARD": "#define STANDARD\n",
         "EX8874": "#define EX8874\n",
@@ -129,13 +115,13 @@ class EXCommandStation(WindowLayout):
 
         self.select_version = ctk.IntVar(value=0)
         self.latest_prod_radio = ctk.CTkRadioButton(self.version_radio_frame, variable=self.select_version,
-                                                    text=f"Latest Production ({self.latest_prod}) - Recommended!",
+                                                    text="Latest Production - Recommended!",
                                                     font=ctk.CTkFont(weight="bold"), value=0)
         self.latest_devel_radio = ctk.CTkRadioButton(self.version_radio_frame, variable=self.select_version,
-                                                     text=f"Latest Development ({self.latest_devel})", value=1)
+                                                     text="Latest Development", value=1)
         self.select_version_radio = ctk.CTkRadioButton(self.version_radio_frame, variable=self.select_version,
                                                        text="Select a specific version", value=2)
-        self.select_version_combo = ctk.CTkComboBox(self.version_radio_frame, values=self.dummy_version_list, width=150)
+        self.select_version_combo = ctk.CTkComboBox(self.version_radio_frame, values=["Select a version"], width=150)
 
         # Layout radio frame
         self.latest_prod_radio.grid(column=0, row=0, columnspan=2, sticky="w", **grid_options)
@@ -291,7 +277,6 @@ class EXCommandStation(WindowLayout):
         - if not, clone repo
         - get list of versions, latest prod, and latest devel versions
         """
-        pprint(event)
         if event == "setup_local_repo":
             self.disable_input_states(self)
             if os.path.exists(self.ex_commandstation_dir) and os.path.isdir(self.ex_commandstation_dir):
@@ -318,10 +303,18 @@ class EXCommandStation(WindowLayout):
         elif event == "clone_repo":
             self.process_start("clone_repo", "Clone repository", "Setup_Local_Repo")
             self.git.clone_repo(pd[self.product]["repo_url"], self.ex_commandstation_dir, self.queue)
-        elif self.process_phase == "clone_repo":
-            if self.process_status == "success":
-                self.process_start("pull_latest", "Get latest software updates", "Setup_Local_Repo")
-                self.git.pull_latest(self.repo, self.branch_name, self.queue)
+        elif self.process_phase == "clone_repo" or event == "get_latest":
+            if self.process_status == "success" or event == "get_latest":
+                branch_ref = self.git.get_branch_ref(self.repo, self.branch_name)
+                try:
+                    self.repo.checkout(refname=branch_ref)
+                except Exception as error:
+                    message = self.get_exception(error)
+                    self.process_error(message)
+                    self.restore_input_states()
+                else:
+                    self.process_start("pull_latest", "Get latest software updates", "Setup_Local_Repo")
+                    self.git.pull_latest(self.repo, self.branch_name, self.queue)
             elif self.process_status == "error":
                 self.process_error(self.process_data)
                 self.restore_input_states()
@@ -338,4 +331,17 @@ class EXCommandStation(WindowLayout):
         """
         Function to obtain versions available in the repo
         """
-        pass
+        self.latest_prod = self.git.get_latest_prod(self.repo)
+        if self.latest_prod:
+            self.latest_prod_radio.configure(text=f"Latest Production ({self.latest_prod[0]}) - Recommended!")
+        else:
+            self.latest_prod_radio.grid_remove()
+        self.latest_devel = self.git.get_latest_devel(self.repo)
+        if self.latest_devel:
+            self.latest_devel_radio.configure(text=f"Latest Development ({self.latest_devel[0]})")
+        else:
+            self.latest_devel_radio.grid_remove()
+        self.version_list = self.git.get_repo_versions(self.repo)
+        if self.version_list:
+            version_select = list(self.version_list.keys())
+            self.select_version_combo.configure(values=version_select)

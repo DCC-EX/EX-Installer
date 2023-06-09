@@ -13,16 +13,6 @@ from queue import Queue
 from . import images
 
 
-@staticmethod
-def get_exception(error):
-    """
-    Get an exception into text to add to the queue
-    """
-    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
-    message = template.format(type(error).__name__, error.args)
-    return message
-
-
 class WindowLayout(ctk.CTkFrame):
     """
     Class to define the window layout
@@ -192,6 +182,15 @@ class WindowLayout(ctk.CTkFrame):
         """
         for widget in self.widget_states:
             widget["widget"].configure(state=widget["state"])
+
+    @staticmethod
+    def get_exception(error):
+        """
+        Get an exception into text to add to the queue
+        """
+        template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+        message = template.format(type(error).__name__, error.args)
+        return message
 
 
 class NextBack(ctk.CTkFrame):

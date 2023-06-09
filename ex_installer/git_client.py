@@ -211,7 +211,7 @@ class GitClient:
     @staticmethod
     def get_latest_prod(repo, tag_name="Prod"):
         """
-        Retrieves the latest Production tagged version from the 
+        Retrieves the latest Production tagged version from the repo
 
         If no tags or no Prod tags, returns False
         """
