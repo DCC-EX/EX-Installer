@@ -116,12 +116,16 @@ class EXCommandStation(WindowLayout):
         self.select_version = ctk.IntVar(value=0)
         self.latest_prod_radio = ctk.CTkRadioButton(self.version_radio_frame, variable=self.select_version,
                                                     text="Latest Production - Recommended!",
-                                                    font=ctk.CTkFont(weight="bold"), value=0)
+                                                    font=ctk.CTkFont(weight="bold"), value=0,
+                                                    command=self.set_version)
         self.latest_devel_radio = ctk.CTkRadioButton(self.version_radio_frame, variable=self.select_version,
-                                                     text="Latest Development", value=1)
+                                                     text="Latest Development", value=1,
+                                                     command=self.set_version)
         self.select_version_radio = ctk.CTkRadioButton(self.version_radio_frame, variable=self.select_version,
-                                                       text="Select a specific version", value=2)
-        self.select_version_combo = ctk.CTkComboBox(self.version_radio_frame, values=["Select a version"], width=150)
+                                                       text="Select a specific version", value=2,
+                                                       command=self.set_version)
+        self.select_version_combo = ctk.CTkComboBox(self.version_radio_frame, values=["Select a version"], width=150,
+                                                    command=self.set_select_version)
 
         # Layout radio frame
         self.latest_prod_radio.grid(column=0, row=0, columnspan=2, sticky="w", **grid_options)
@@ -133,9 +137,11 @@ class EXCommandStation(WindowLayout):
         self.config_radio_frame = ctk.CTkFrame(self.version_frame)
         self.config_option = ctk.IntVar(value=0)
         self.configure_radio = ctk.CTkRadioButton(self.config_radio_frame, variable=self.config_option,
-                                                  text="Configure options on the next screen", value=0)
+                                                  text="Configure options on the next screen", value=0,
+                                                  command=self.set_next_config)
         self.use_config_radio = ctk.CTkRadioButton(self.config_radio_frame, variable=self.config_option,
-                                                   text="Use my existing configuration files", value=1)
+                                                   text="Use my existing configuration files", value=1,
+                                                   command=self.set_next_config)
         self.config_path = ctk.StringVar(value=None)
         self.config_file_entry = ctk.CTkEntry(self.config_radio_frame, textvariable=self.config_path,
                                               width=300)
@@ -226,10 +232,7 @@ class EXCommandStation(WindowLayout):
         """
         Function to run on first start
         """
-        self.config_frame.grid_remove()
-        self.next_back.set_next_command(self.display_config_screen)
-        self.set_display()
-        self.set_wifi()
+        self.display_version_screen()
         self.setup_local_repo("setup_local_repo")
 
     def set_display(self):
@@ -257,12 +260,31 @@ class EXCommandStation(WindowLayout):
         directory = ctk.filedialog.askdirectory()
         if directory:
             self.config_path.set(directory)
+            self.config_option.set(1)
+            self.set_next_config()
+
+    def display_version_screen(self):
+        """
+        Displays the version selection frame
+        """
+        self.config_frame.grid_remove()
+        self.version_frame.grid()
+        self.set_next_config()
+        self.next_back.set_back_text("Select Product")
+        self.next_back.set_back_command(lambda view="select_product": self.master.switch_view(view))
 
     def display_config_screen(self):
+        """
+        Displays the configuration options frame
+        """
         self.version_frame.grid_remove()
         self.config_frame.grid()
+        self.set_display()
+        self.set_wifi()
         self.next_back.set_next_text("Compile and upload")
-        self.next_back.set_next_command(lambda product=self.product: self.master.compile_upload(product))
+        self.next_back.set_next_command(self.create_copy_config_files)
+        self.next_back.set_back_text("Select version")
+        self.next_back.set_back_command(self.display_version_screen)
 
     def setup_local_repo(self, event):
         """
@@ -331,12 +353,15 @@ class EXCommandStation(WindowLayout):
     def set_versions(self, repo):
         """
         Function to obtain versions available in the repo
+
+        Once versions obtained, set appropriately
         """
         self.latest_prod = self.git.get_latest_prod(self.repo)
         if self.latest_prod:
             self.latest_prod_radio.configure(text=f"Latest Production ({self.latest_prod[0]}) - Recommended!")
         else:
             self.latest_prod_radio.grid_remove()
+            self.select_version.set(-1)
         self.latest_devel = self.git.get_latest_devel(self.repo)
         if self.latest_devel:
             self.latest_devel_radio.configure(text=f"Latest Development ({self.latest_devel[0]})")
@@ -346,3 +371,83 @@ class EXCommandStation(WindowLayout):
         if self.version_list:
             version_select = list(self.version_list.keys())
             self.select_version_combo.configure(values=version_select)
+        self.set_version()
+
+    def set_version(self):
+        """
+        Function to checkout the selected version according to the radio buttons
+        """
+        if self.select_version.get() == 0:
+            self.repo.checkout(refname=self.latest_prod[1])
+            self.next_back.enable_next()
+        elif self.select_version.get() == 1:
+            self.repo.checkout(refname=self.latest_devel[1])
+            self.next_back.enable_next()
+        elif self.select_version.get() == 2:
+            if self.select_version_combo.get() != "Select a version":
+                self.repo.checkout(refname=self.version_list[self.select_version_combo.get()]["ref"])
+                self.next_back.enable_next()
+            else:
+                self.next_back.disable_next()
+
+    def set_select_version(self, value):
+        """
+        Function to set select a specific version when setting via combobox
+        """
+        if self.select_version.get() != 2:
+            self.select_version.set(2)
+        self.set_version()
+
+    def set_next_config(self):
+        """
+        Function to select what configuration to do next
+        """
+        if self.config_option.get() == 0:
+            self.next_back.set_next_command(self.display_config_screen)
+            self.next_back.set_next_text("Configuration")
+            self.next_back.enable_next()
+        elif self.config_option.get() == 1:
+            self.next_back.set_next_command(self.create_copy_config_files)
+            self.next_back.set_next_text("Compile and upload")
+            self.validate_config_dir()
+
+    def validate_config_dir(self):
+        """
+        Function to validate the selected directory for config files:
+
+        - Is a valid directory
+        - Contains at least the specified minimum config files
+        """
+        if self.config_path.get():
+            config_files = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
+            if config_files:
+                self.next_back.enable_next()
+            else:
+                file_names = ", ".join(pd[self.product]["minimum_config_files"])
+                self.process_error(("Selected configuration directory is missing the required files: " +
+                                   f"{file_names}"))
+                self.next_back.disable_next()
+        else:
+            self.next_back.disable_next()
+
+    def create_copy_config_files(self):
+        """
+        Function to either create config files or copy from specified directory
+        """
+        if self.config_option.get() == 0:
+            print("Create config files here")
+            self.master.compile_upload(self.product)
+        elif self.config_option.get() == 1:
+            copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
+            if copy_list:
+                extra_list = fm.get_config_files(self.config_path.get(), pd[self.product]["other_config_files"])
+                if extra_list:
+                    copy_list += extra_list
+                file_copy = fm.copy_config_files(self.config_path.get(), self.ex_commandstation_dir, copy_list)
+                if file_copy:
+                    file_list = ", ".join(file_copy)
+                    self.process_error(f"Failed to copy one or more files: {file_list}")
+                else:
+                    self.master.compile_upload(self.product)
+            else:
+                self.process_error("Selected configuration directory is missing the required files")

@@ -20,8 +20,11 @@ product_details = {
             "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
             "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
         ],
-        "config_files": [
-            r"(^config\.h$)",
+        "minimum_config_files": [
+            "config.h"
+            # r"(^config\.h$)"
+        ],
+        "other_config_files": [
             r"(^myHal\.cpp$)",
             r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
         ]

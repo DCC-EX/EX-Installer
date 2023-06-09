@@ -14,6 +14,7 @@ from zipfile import ZipFile, Path
 from threading import Thread, Lock
 from collections import namedtuple
 import re
+import shutil
 
 
 QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
@@ -193,18 +194,25 @@ class FileManager:
 
         Returns False if no files, otherwise a list of file names matching the provided list of patterns
 
-        Pattern list must contain a valid Python regular expression with grouping
-        A match is made on one group only (group 1)
+        Pattern list can contain either:
+        - a valid Python regular expression with grouping, where a match is made on one group only (group 1)
+        - a file name
+
+        This is a valid example of a pattern: r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
+        This is an invalid example of a pattern: r"^config\.h$"
+        This would be valid, but better to just provide filename: r"^(config\.h)$"
         """
         if os.path.exists(dir):
             config_files = []
             for file in os.listdir(dir):
                 for pattern in pattern_list:
                     file_match = re.search(pattern, file)
-                    if file_match:
+                    if file_match and len(file_match.groups()) > 0:
                         filename = file_match[1]
                         if filename:
                             config_files.append(filename)
+                    elif file == pattern:
+                        config_files.append(file)
             return config_files
         else:
             return False
@@ -250,3 +258,23 @@ class FileManager:
             return False
         else:
             return True
+
+    @staticmethod
+    def copy_config_files(source_dir, dest_dir, file_list):
+        """
+        Copy the specified list of files from source to destination directory
+
+        Returns None if successful, otherwise a list of files that failed to copy
+        """
+        failed_files = []
+        for file in file_list:
+            source = os.path.join(source_dir, file)
+            dest = os.path.join(dest_dir, file)
+            try:
+                shutil.copy(source, dest)
+            except Exception:
+                failed_files.append(file)
+        if len(failed_files) > 0:
+            return failed_files
+        else:
+            return None
