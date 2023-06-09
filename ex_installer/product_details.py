@@ -9,8 +9,8 @@ product_details = {
         "product_name": "EX-CommandStation",
         "product_logo": images.EX_COMMANDSTATION_LOGO,
         "repo_name": "DCC-EX/CommandStation-EX",
+        "default_branch": "master",
         "repo_url": "https://github.com/DCC-EX/CommandStation-EX.git",
-        "archive_url": "https://github.com/DCC-EX/CommandStation-EX/archive/refs/tags/",
         "supported_devices": [
             "arduino:avr:uno",
             "arduino:avr:nano",

@@ -7,9 +7,9 @@ This model enables cloning and selecting versions from GitHub repositories using
 # Import Python modules
 import pygit2
 from threading import Thread, Lock
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 import os
-from pprint import pprint
+import re
 
 QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
 
@@ -26,29 +26,32 @@ def get_exception(error):
 
 class ThreadedGitClient(Thread):
     """
-    Class for running GitHub API tasks in a separate thread
+    Class for running pygit2 tasks in a separate thread
     """
 
     api_lock = Lock()
 
-    def __init__(self, query, queue):
+    def __init__(self, task_name, task, queue, *args):
         super().__init__()
-        self.query = query
+        self.task_name = task_name
+        self.task = task
         self.queue = queue
+        self.args = args
 
     def run(self, *args, **kwargs):
         self.queue.put(
-            QueueMessage("info", f"Run API query {self.query}")
+            QueueMessage("info", self.task_name, f"Run pygit2 task {str(self.task)} with params {self.args}")
         )
         with self.api_lock:
             try:
-                output = self.query
+                output = self.task(*self.args)
                 self.queue.put(
-                    QueueMessage("success", output)
+                    QueueMessage("success", self.task_name, output)
                 )
             except Exception as error:
+                message = get_exception(error)
                 self.queue.put(
-                    QueueMessage("error", str(error))
+                    QueueMessage("error", self.task_name, message)
                 )
 
 
@@ -65,22 +68,15 @@ class GitClient:
         Returns a tuple of (True|False, None|message)
         """
         git_file = os.path.join(repo_dir, ".git")
-        if os.path.exists(repo_dir) and os.path.isdir(repo_dir):
-            if os.path.exists(git_file):
-                try:
-                    repo = pygit2.Repository(git_file)
-                except Exception as error:
-                    message = get_exception(error)
-                else:
-                    if isinstance(repo, pygit2.Repository):
-                        return repo
-                    else:
-                        return False
-            else:
-                return False, ("Directory is not a Git repository")
+        try:
+            repo = pygit2.Repository(git_file)
+        except Exception:
+            return False
         else:
-            message("Directory does not exist")
-            return False, message
+            if isinstance(repo, pygit2.Repository):
+                return repo
+            else:
+                return False
 
     @staticmethod
     def check_local_changes(repo):
@@ -108,41 +104,136 @@ class GitClient:
         return file_list
 
     @staticmethod
-    def validate_local_repo(local_dir, remote_url):
+    def dir_is_git_repo(dir):
         """
-        Function to validate a local repository is ok to use, checks:
+        Check if directory exists and contains a .git file
 
-        - if the product directory is already a cloned repo
-        - if the cloned repo is configured correctly
-        - any locally modified files that would interfere with Git commands
-
-        Returns a list of (True|False, Details)
-
-        True = repo is good to use
-        False = repo has issues
-        Details = empty for no issues, otherwise string of issue details
+        Returns True if so, False if not
         """
-        repo = GitClient.get_repo(local_dir)
-        status = False
-        details = ""
-        if repo:
-            validate_remote = GitClient.validate_remote(repo, remote_url)
-            if validate_remote[0]:
-                local_changes = GitClient.check_local_changes(repo)
-                if not local_changes:
-                    status = True
-                else:
-                    details = "Repository has unstaged local change(s): " + ", ".join(local_changes)
+        git_file = os.path.join(dir, ".git")
+        if os.path.exists(dir) and os.path.isdir(dir):
+            if os.path.exists(git_file):
+                return True
             else:
-                details = (validate_remote[1])
+                return False
         else:
-            details(f"{local_dir} is not a valid Git repository")
-        return (status, details)
-    
-    def clone_repo(repo_url, repo_dir):
+            return False
+
+    @staticmethod
+    def clone_repo(repo_url, repo_dir, queue):
         """
         Clone a remote repo using a separate thread
 
-        Returns the repo instance if successful
+        Returns the repo instance in queue data if successful
         """
+        task_name = "clone_repo"
+        thread = ThreadedGitClient(task_name, pygit2.clone_repository, queue, repo_url, repo_dir)
+        thread.start()
 
+    @staticmethod
+    def pull(repo, remote_name="origin", branch="master"):
+        """
+        Function to pull the latest updates from the provided repo
+
+        Expects a pygit2 repo object and a branch name
+        """
+        for remote in repo.remotes:
+            if remote.name == remote_name:
+                remote.fetch()
+                remote_master_id = repo.lookup_reference('refs/remotes/origin/%s' % (branch)).target
+                merge_result, _ = repo.merge_analysis(remote_master_id)
+                # Up to date, do nothing
+                if merge_result & pygit2.GIT_MERGE_ANALYSIS_UP_TO_DATE:
+                    return True
+                # We can just fastforward
+                elif merge_result & pygit2.GIT_MERGE_ANALYSIS_FASTFORWARD:
+                    repo.checkout_tree(repo.get(remote_master_id))
+                    try:
+                        master_ref = repo.lookup_reference('refs/heads/%s' % (branch))
+                        master_ref.set_target(remote_master_id)
+                    except KeyError:
+                        repo.create_branch(branch, repo.get(remote_master_id))
+                    repo.head.set_target(remote_master_id)
+                    return True
+                else:
+                    # raise AssertionError('Unknown merge analysis result')
+                    return False
+
+    @staticmethod
+    def pull_latest(repo, branch, queue):
+        """
+        Pull latest updates from a repo
+
+        Threaded version of pull
+
+        Requires a pygit2 repo object and a branch name
+        """
+        task_name = "pull"
+        thread = ThreadedGitClient(task_name, GitClient.pull, queue, repo, "origin", branch)
+        thread.start()
+
+    @staticmethod
+    def get_branch_ref(repo, name):
+        """
+        Gets the ref for the named branch
+        """
+        branch = repo.lookup_branch(name)
+        refname = repo.lookup_reference(branch.name)
+        return refname
+
+    @staticmethod
+    def get_repo_versions(repo):
+        """
+        Gets all version tags from the specified repo
+
+        Returns either an ordered dictionary (descending) or False if there are no tags
+        """
+        versions_unsorted = {}
+        version_list = {}
+        version_match = r"v(\d+)\.(\d+)\.(\d+)-(Prod|Devel)"
+        refs = repo.references.iterator(2)
+        for ref in refs:
+            version = re.search(version_match, ref.shorthand)
+            if version:
+                numbers = {"major": int(version[1]),
+                           "minor": int(version[2]),
+                           "patch": int(version[3]),
+                           "type": version[4],
+                           "ref": ref.name}
+                versions_unsorted[ref.shorthand] = numbers
+                version_list = OrderedDict(sorted(versions_unsorted.items(),
+                                           key=lambda t: (t[1]["major"],
+                                                          t[1]["minor"],
+                                                          t[1]["patch"]),
+                                           reverse=True))
+        return version_list
+
+    @staticmethod
+    def get_latest_prod(repo, tag_name="Prod"):
+        """
+        Retrieves the latest Production tagged version from the 
+
+        If no tags or no Prod tags, returns False
+        """
+        prod_version = None
+        version_list = GitClient.get_repo_versions(repo)
+        for version in version_list:
+            if version_list[version]["type"] == "Prod":
+                prod_version = (version, version_list[version]["ref"])
+                break
+        return prod_version
+
+    @staticmethod
+    def get_latest_devel(repo, tag_name="Devel"):
+        """
+        Retrieves the latest Development tagged version from the repo
+
+        If no tags or no Devel tags, returns False
+        """
+        devel_version = None
+        version_list = GitClient.get_repo_versions(repo)
+        for version in version_list:
+            if version_list[version]["type"] == "Devel":
+                devel_version = (version, version_list[version]["ref"])
+                break
+        return devel_version

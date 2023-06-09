@@ -68,10 +68,26 @@ class EXCommandStation(WindowLayout):
         """
         super().__init__(parent, *args, **kwargs)
 
+        # Set up event handlers
+        event_callbacks = {
+            "<<Setup_Local_Repo>>": self.setup_local_repo
+        }
+        for sequence, callback in event_callbacks.items():
+            self.bind_class("bind_events", sequence, callback)
+        new_tags = self.bindtags() + ("bind_events",)
+        self.bindtags(new_tags)
+
         # Get the local directory to work in
         self.product = "ex_commandstation"
         local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
         self.ex_commandstation_dir = fm.get_install_dir(local_repo_dir)
+
+        # Set up required variables
+        self.branch_name = pd[self.product]["default_branch"]
+        self.repo = None
+        self.version_list = None
+        self.latest_prod = None
+        self.latest_devel = None
 
         # Set up title
         self.set_title_logo(pd[self.product]["product_logo"])
@@ -228,7 +244,7 @@ class EXCommandStation(WindowLayout):
         self.next_back.set_next_command(self.display_config_screen)
         self.set_display()
         self.set_wifi()
-        # self.check_local_repo()
+        self.setup_local_repo("setup_local_repo")
 
     def set_display(self):
         """
@@ -262,26 +278,64 @@ class EXCommandStation(WindowLayout):
         self.next_back.set_next_text("Compile and upload")
         self.next_back.set_next_command(lambda product=self.product: self.master.compile_upload(product))
 
-    def check_local_repo(self):
+    def setup_local_repo(self, event):
         """
-        Function to check for a local repository:
+        Function to setup the local repository
 
-        - if the product directory already exists
-        - if the product directory is already a cloned repo
-        - if the cloned repo is configured correctly
-        - any locally modified files that would interfere with Git commands
-        - any existing configuration files
+        Process:
+        - check if the product directory already exists
+        - if so
+            - if the product directory is already a cloned repo
+            - any locally modified files that would interfere with Git commands
+            - any existing configuration files
+        - if not, clone repo
+        - get list of versions, latest prod, and latest devel versions
         """
-        if os.path.exists(self.ex_commandstation_dir) and os.path.isdir(self.ex_commandstation_dir):
-            validate_remote = self.git.validate_local_repo(self.ex_commandstation_dir, pd[self.product]["repo_url"])
-            if not validate_remote[0]:
-                self.process_error(validate_remote[1])
-                self.next_back.disable_next()
+        pprint(event)
+        if event == "setup_local_repo":
+            self.disable_input_states(self)
+            if os.path.exists(self.ex_commandstation_dir) and os.path.isdir(self.ex_commandstation_dir):
+                if self.git.dir_is_git_repo(self.ex_commandstation_dir):
+                    self.repo = self.git.get_repo(self.ex_commandstation_dir)
+                    if self.repo:
+                        changes = self.git.check_local_changes(self.repo)
+                        if changes:
+                            self.process_error(f"Local changes detected: f{changes}")
+                            self.restore_input_states()
+                        else:
+                            self.setup_local_repo("get_latest")
+                    else:
+                        self.process_error(f"{self.ex_commandstation_dir} appears to be a Git repository but is not")
+                        self.restore_input_states()
+                else:
+                    if fm.dir_is_empty(self.ex_commandstation_dir):
+                        self.setup_local_repo("clone_repo")
+                    else:
+                        self.process_error(f"{self.ex_commandstation_dir} contains files but is not a repo")
+                        self.restore_input_states()
             else:
-                config_files = fm.get_config_files(self.ex_commandstation_dir, pd[self.product]["config_files"])
-                if config_files:
-                    file_list = ", ".join(config_files)
-                    self.process_error(f"Existing config files found: {file_list}")
-                    self.next_back.disable_next()
-        else:
-            print("Need to clone repo")
+                self.setup_local_repo("clone_repo")
+        elif event == "clone_repo":
+            self.process_start("clone_repo", "Clone repository", "Setup_Local_Repo")
+            self.git.clone_repo(pd[self.product]["repo_url"], self.ex_commandstation_dir, self.queue)
+        elif self.process_phase == "clone_repo":
+            if self.process_status == "success":
+                self.process_start("pull_latest", "Get latest software updates", "Setup_Local_Repo")
+                self.git.pull_latest(self.repo, self.branch_name, self.queue)
+            elif self.process_status == "error":
+                self.process_error(self.process_data)
+                self.restore_input_states()
+        elif self.process_phase == "pull_latest":
+            if self.process_status == "success":
+                self.set_versions(self.repo)
+                self.process_stop()
+                self.restore_input_states()
+            elif self.process_status == "error":
+                self.process_error("Could not pull latest updates from GitHub")
+                self.restore_input_states()
+
+    def set_versions(self, repo):
+        """
+        Function to obtain versions available in the repo
+        """
+        pass

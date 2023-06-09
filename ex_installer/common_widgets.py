@@ -13,6 +13,16 @@ from queue import Queue
 from . import images
 
 
+@staticmethod
+def get_exception(error):
+    """
+    Get an exception into text to add to the queue
+    """
+    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+    message = template.format(type(error).__name__, error.args)
+    return message
+
+
 class WindowLayout(ctk.CTkFrame):
     """
     Class to define the window layout
@@ -150,6 +160,7 @@ class WindowLayout(ctk.CTkFrame):
         """
         self.progress_bar.stop()
         self.status_label.configure(text="Idle")
+        self.process_phase = None
 
     def process_error(self, message):
         """
@@ -157,6 +168,7 @@ class WindowLayout(ctk.CTkFrame):
         """
         self.progress_bar.stop()
         self.status_label.configure(text=message, text_color="red")
+        self.process_phase = None
 
     def disable_input_states(self, widget):
         """
