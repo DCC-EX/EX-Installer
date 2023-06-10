@@ -17,13 +17,6 @@ class EXCommandStation(WindowLayout):
     Class for the EX-CommandStation view
     """
 
-    # Dummy variables for layout design
-    motorshield_list = {
-        "STANDARD": "#define STANDARD\n",
-        "EX8874": "#define EX8874\n",
-        "POLOLU": "#define POLOLU\n"
-    }
-
     # Instruction text
     version_text = ("For most users we recommended staying with the latest Production release, however you can " +
                     "install other versions if you know what you're doing, or if a version has been suggested by " +
@@ -44,7 +37,6 @@ class EXCommandStation(WindowLayout):
     default_config_options = [
         '#define IP_PORT 2560\n',
         '#define WIFI_HOSTNAME "dccex"\n',
-        '#define WIFI_CHANNEL 1\n'
         '#define SCROLLMODE 1\n'
     ]
 
@@ -171,33 +163,40 @@ class EXCommandStation(WindowLayout):
                                            wraplength=780, font=self.instruction_font)
 
         # Set up motor driver widgets
-        self.motor_driver_label = ctk.CTkLabel(self.config_frame, text="Select your motor shield/driver")
-        self.motor_driver_combo = ctk.CTkComboBox(self.config_frame, values=list(self.motorshield_list),
-                                                  width=300)
+        self.motor_driver_label = ctk.CTkLabel(self.config_frame, text="Select your motor driver")
+        self.motor_driver_combo = ctk.CTkComboBox(self.config_frame, values=["Select motor driver"],
+                                                  width=300, command=self.check_motor_driver)
 
         # Set up display widgets
-        self.display_switch = ctk.CTkSwitch(self.config_frame, text="I have a display",
-                                            onvalue="on", offvalue="off", command=self.set_display)
+        self.display_enabled = ctk.StringVar(self, value="off")
+        self.display_switch = ctk.CTkSwitch(self.config_frame, text="I have a display", width=150,
+                                            onvalue="on", offvalue="off", variable=self.display_enabled,
+                                            command=self.set_display)
         self.display_combo = ctk.CTkComboBox(self.config_frame, values=list(self.supported_displays),
                                              width=300)
 
         # Set up WiFi widgets
-        self.wifi_type = ctk.IntVar(self, value=-1)
+        self.wifi_type = ctk.IntVar(self, value=0)
         self.wifi_ssid = ctk.StringVar(self, value=None)
         self.wifi_pwd = ctk.StringVar(self, value=None)
+        self.wifi_channel = ctk.StringVar(self, value=1)
+        self.wifi_enabled = ctk.StringVar(self, value="off")
         self.wifi_frame = ctk.CTkFrame(self.config_frame, border_width=0)
-        self.wifi_switch = ctk.CTkSwitch(self.config_frame, text="I have WiFi",
-                                         onvalue="on", offvalue="off", command=self.set_wifi)
+        self.wifi_switch = ctk.CTkSwitch(self.config_frame, text="I have WiFi", width=150,
+                                         onvalue="on", offvalue="off", variable=self.wifi_enabled,
+                                         command=self.set_wifi)
         self.wifi_options_frame = ctk.CTkFrame(self.wifi_frame,
                                                border_width=2,
                                                fg_color="#E5E5E5")
         self.wifi_ap_radio = ctk.CTkRadioButton(self.wifi_options_frame,
                                                 text="Use my EX-CommandStation as an access point",
                                                 variable=self.wifi_type,
+                                                command=self.set_wifi_widgets,
                                                 value=0)
         self.wifi_st_radio = ctk.CTkRadioButton(self.wifi_options_frame,
                                                 text="Connect my EX-CommandStation to my existing wireless network",
                                                 variable=self.wifi_type,
+                                                command=self.set_wifi_widgets,
                                                 value=1)
         self.wifi_ssid_label = ctk.CTkLabel(self.wifi_options_frame, text="WiFi SSID:")
         self.wifi_ssid_entry = ctk.CTkEntry(self.wifi_options_frame, textvariable=self.wifi_ssid,
@@ -205,12 +204,28 @@ class EXCommandStation(WindowLayout):
         self.wifi_pwd_label = ctk.CTkLabel(self.wifi_options_frame, text="WiFi Password:")
         self.wifi_pwd_entry = ctk.CTkEntry(self.wifi_options_frame, textvariable=self.wifi_pwd,
                                            width=200, fg_color="white")
+        self.wifi_channel_frame = ctk.CTkFrame(self.wifi_options_frame, border_width=2)
+        self.wifi_channel_label = ctk.CTkLabel(self.wifi_channel_frame, text="Select WiFi channel:")
+        self.wifi_channel_minus = ctk.CTkButton(self.wifi_channel_frame, text="-", width=30,
+                                                command=self.decrement_channel)
+        self.wifi_channel_plus = ctk.CTkButton(self.wifi_channel_frame, text="+", width=30,
+                                               command=self.increment_channel)
+        self.wifi_channel_entry = ctk.CTkEntry(self.wifi_channel_frame, textvariable=self.wifi_channel,
+                                               width=30, fg_color="white", state="disabled", justify="center")
+
+        # Ethernet switch
+        self.ethernet_enabled = ctk.StringVar(self, value="off")
+        self.ethernet_switch = ctk.CTkSwitch(self.config_frame, text="I have ethernet", width=150,
+                                             onvalue="on", offvalue="off", variable=self.ethernet_enabled,
+                                             command=self.set_ethernet)
 
         # Layout WiFi frame
         self.wifi_frame.grid_columnconfigure((0, 1), weight=1)
         self.wifi_frame.grid_rowconfigure(0, weight=1)
         self.wifi_options_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
-        self.wifi_options_frame.grid_rowconfigure((0, 1, 2), weight=1)
+        self.wifi_options_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
+        self.wifi_channel_frame.grid_columnconfigure(0, weight=1)
+        self.wifi_channel_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
         self.wifi_options_frame.grid(column=1, row=0)
         self.wifi_ap_radio.grid(column=0, row=0, columnspan=4, sticky="w", **grid_options)
         self.wifi_st_radio.grid(column=0, row=1, columnspan=4, sticky="w", **grid_options)
@@ -218,15 +233,21 @@ class EXCommandStation(WindowLayout):
         self.wifi_ssid_entry.grid(column=1, row=2, **grid_options)
         self.wifi_pwd_label.grid(column=2, row=2, **grid_options)
         self.wifi_pwd_entry.grid(column=3, row=2, **grid_options)
+        self.wifi_channel_frame.grid(column=0, row=3, columnspan=4, **grid_options)
+        self.wifi_channel_label.grid(column=0, row=0, **grid_options)
+        self.wifi_channel_minus.grid(column=1, row=0, sticky="e")
+        self.wifi_channel_entry.grid(column=2, row=0)
+        self.wifi_channel_plus.grid(column=3, row=0, sticky="w", padx=(0, 5))
 
         # Layout frame
         self.hardware_label.grid(column=0, row=2, columnspan=2, **grid_options)
-        self.motor_driver_label.grid(column=0, row=3, **grid_options)
+        self.motor_driver_label.grid(column=0, row=3, stick="e", **grid_options)
         self.motor_driver_combo.grid(column=1, row=3, sticky="w", **grid_options)
-        self.display_switch.grid(column=0, row=4, **grid_options)
+        self.display_switch.grid(column=0, row=4, sticky="e", **grid_options)
         self.display_combo.grid(column=1, row=4, sticky="w", **grid_options)
-        self.wifi_switch.grid(column=0, row=5)
-        self.wifi_frame.grid(column=1, row=5, sticky="e", **grid_options)
+        self.wifi_switch.grid(column=0, row=5, sticky="e", **grid_options)
+        self.wifi_frame.grid(column=1, row=5, sticky="w", **grid_options)
+        self.ethernet_switch.grid(column=0, row=6, sticky="e", **grid_options)
 
     def start(self):
         """
@@ -249,9 +270,54 @@ class EXCommandStation(WindowLayout):
         Sets WiFi options on or off
         """
         if self.wifi_switch.get() == "on":
+            if self.ethernet_switch.get() == "on":
+                self.ethernet_switch.deselect()
             self.wifi_frame.grid()
+            self.set_wifi_widgets()
         else:
             self.wifi_frame.grid_remove()
+
+    def set_wifi_widgets(self):
+        """
+        Function to display correct widgets for WiFi config
+        """
+        if self.wifi_type.get() == 0:
+            self.wifi_ssid_label.grid_remove()
+            self.wifi_ssid_entry.grid_remove()
+            self.wifi_pwd_label.grid_remove()
+            self.wifi_pwd_entry.grid_remove()
+        elif self.wifi_type.get() == 1:
+            self.wifi_ssid_label.grid()
+            self.wifi_ssid_entry.grid()
+            self.wifi_pwd_label.grid()
+            self.wifi_pwd_entry.grid()
+
+    def set_ethernet(self):
+        """
+        Function to enable Ethernet support
+        """
+        if self.ethernet_switch.get() == "on":
+            if self.wifi_switch.get() == "on":
+                self.wifi_switch.deselect()
+                self.set_wifi()
+
+    def decrement_channel(self):
+        """
+        Function to decrement the WiFi channel
+        """
+        value = int(self.wifi_channel.get())
+        if value > 1:
+            value -= 1
+            self.wifi_channel.set(value)
+
+    def increment_channel(self):
+        """
+        Function to increment the WiFi channel
+        """
+        value = int(self.wifi_channel.get())
+        if value < 11:
+            value += 1
+            self.wifi_channel.set(value)
 
     def browse_configdir(self):
         """
@@ -281,6 +347,8 @@ class EXCommandStation(WindowLayout):
         self.config_frame.grid()
         self.set_display()
         self.set_wifi()
+        self.get_motor_drivers()
+        self.check_motor_driver(self.motor_driver_combo.get())
         self.next_back.set_next_text("Compile and upload")
         self.next_back.set_next_command(self.create_copy_config_files)
         self.next_back.set_back_text("Select version")
@@ -429,6 +497,27 @@ class EXCommandStation(WindowLayout):
                 self.next_back.disable_next()
         else:
             self.next_back.disable_next()
+
+    def get_motor_drivers(self):
+        """
+        Function to read the defined motor driver definition from MotorDrivers.h
+        """
+        self.motordriver_list = []
+        match = r'^.+?\s(.+?)\sF\(".+?"\).*$'
+        definition_file = fm.get_filepath(self.ex_commandstation_dir, "MotorDrivers.h")
+        def_list = fm.get_list_from_file(definition_file, match)
+        if def_list:
+            self.motordriver_list += def_list
+        self.motor_driver_combo.configure(values=self.motordriver_list)
+
+    def check_motor_driver(self, value):
+        """
+        Function ensure a motor driver has been selected
+        """
+        if value == "Select motor driver":
+            self.next_back.disable_next()
+        else:
+            self.next_back.enable_next()
 
     def create_copy_config_files(self):
         """
