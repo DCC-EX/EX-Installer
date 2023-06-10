@@ -577,15 +577,15 @@ class EXCommandStation(WindowLayout):
                 else:
                     line = '#define WIFI_PASSWORD "' + self.wifi_pwd.get() + '"\n'
                     config_list.append(line)
-                if int(self.wifi_channel.get()) < 1 or int(self.wifi_channel.get()) > 11:
-                    param_errors.append("WiFi channel must be from 1 to 11")
-                else:
-                    line = "#define WIFI_CHANNEL " + self.wifi_channel.get() + "\n"
-                    config_list.append(line)
             if self.ethernet_switch.get() == "on":
                 param_errors.append("Can not have both Ethernet and WiFi enabled")
             else:
                 config_list.append("#define ENABLE_WIFI true\n")
+            if int(self.wifi_channel.get()) < 1 or int(self.wifi_channel.get()) > 11:
+                param_errors.append("WiFi channel must be from 1 to 11")
+            else:
+                line = "#define WIFI_CHANNEL " + self.wifi_channel.get() + "\n"
+                config_list.append(line)
         if self.ethernet_switch.get() == "on":
             if self.wifi_switch.get() == "on":
                 param_errors.append("Can not have both Ethernet and WiFi enabled")
