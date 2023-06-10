@@ -238,6 +238,13 @@ class FileManager:
 
     @staticmethod
     def write_config_file(file_path, contents):
+        """Function to write the list of contents to a config file
+
+        Pass the full path to the file and the list of lines to write
+        Writes utf-8 encoded
+
+        Returns the same file path if successful, otherwise the exception error message
+        """
         try:
             file = open(file_path, "w", encoding="utf-8")
             for line in contents:

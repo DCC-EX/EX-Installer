@@ -177,8 +177,8 @@ class EXCommandStation(WindowLayout):
 
         # Set up WiFi widgets
         self.wifi_type = ctk.IntVar(self, value=0)
-        self.wifi_ssid = ctk.StringVar(self, value=None)
-        self.wifi_pwd = ctk.StringVar(self, value=None)
+        self.wifi_ssid = ctk.StringVar(self, value="Enter your WiFi SSID/name")
+        self.wifi_pwd = ctk.StringVar(self, value="Enter your WiFi password")
         self.wifi_channel = ctk.StringVar(self, value=1)
         self.wifi_enabled = ctk.StringVar(self, value="off")
         self.wifi_frame = ctk.CTkFrame(self.config_frame, border_width=0)
@@ -350,7 +350,7 @@ class EXCommandStation(WindowLayout):
         self.get_motor_drivers()
         self.check_motor_driver(self.motor_driver_combo.get())
         self.next_back.set_next_text("Compile and upload")
-        self.next_back.set_next_command(self.create_copy_config_files)
+        self.next_back.set_next_command(self.create_config_file)
         self.next_back.set_back_text("Select version")
         self.next_back.set_back_command(self.display_version_screen)
 
@@ -475,7 +475,7 @@ class EXCommandStation(WindowLayout):
             self.next_back.set_next_text("Configuration")
             self.next_back.enable_next()
         elif self.config_option.get() == 1:
-            self.next_back.set_next_command(self.create_copy_config_files)
+            self.next_back.set_next_command(self.copy_config_files)
             self.next_back.set_next_text("Compile and upload")
             self.validate_config_dir()
 
@@ -519,7 +519,7 @@ class EXCommandStation(WindowLayout):
         else:
             self.next_back.enable_next()
 
-    def create_copy_config_files(self):
+    def copy_config_files(self):
         """
         Function to either create config files or copy from specified directory
         """
@@ -540,3 +540,82 @@ class EXCommandStation(WindowLayout):
                     self.master.compile_upload(self.product)
             else:
                 self.process_error("Selected configuration directory is missing the required files")
+
+    def generate_config(self):
+        """
+        Function to validate options and return any errors
+
+        Validates all parameters have been set and generates config.h defines
+
+        Returns a tuple of (True|False, error_list|config_list)
+        """
+        param_errors = []
+        config_list = []
+        if self.motor_driver_combo.get() == "Select motor driver":
+            param_errors.append("Motor driver not set")
+        else:
+            line = "#define MOTOR_SHIELD_TYPE " + self.motor_driver_combo.get() + "\n"
+            config_list.append(line)
+        if self.display_switch.get() == "on":
+            if not self.display_combo.get():
+                param_errors.append("Display type not selected")
+            else:
+                line = self.supported_displays[self.display_combo.get()] + "\n"
+                config_list.append(line)
+        if self.wifi_switch.get() == "on":
+            if self.wifi_type.get() == 0:
+                config_list.append('#define WIFI_SSID "Your network name"\n')
+                config_list.append('#define WIFI_PASSWORD "Your network passwd"\n')
+            elif self.wifi_type.get() == 1:
+                if self.wifi_ssid.get() == "Enter your WiFi SSID/name":
+                    param_errors.append("WiFi SSID/name not set")
+                else:
+                    line = '#define WIFI_SSID "' + self.wifi_ssid.get() + '"\n'
+                    config_list.append(line)
+                if self.wifi_pwd.get() == "Enter your WiFi password":
+                    param_errors.append("WiFi password not set")
+                else:
+                    line = '#define WIFI_PASSWORD "' + self.wifi_pwd.get() + '"\n'
+                    config_list.append(line)
+                if int(self.wifi_channel.get()) < 1 or int(self.wifi_channel.get()) > 11:
+                    param_errors.append("WiFi channel must be from 1 to 11")
+                else:
+                    line = "#define WIFI_CHANNEL " + self.wifi_channel.get() + "\n"
+                    config_list.append(line)
+            if self.ethernet_switch.get() == "on":
+                param_errors.append("Can not have both Ethernet and WiFi enabled")
+            else:
+                config_list.append("#define ENABLE_WIFI true\n")
+        if self.ethernet_switch.get() == "on":
+            if self.wifi_switch.get() == "on":
+                param_errors.append("Can not have both Ethernet and WiFi enabled")
+            else:
+                config_list.append("#define ENABLE_ETHERNET true\n")
+        if len(param_errors) > 0:
+            return (False, param_errors)
+        else:
+            return (True, config_list)
+
+    def create_config_file(self):
+        """
+        Function to create config.h file and progress to upload
+
+        - Check for config errors
+        - Checks for the existence of user config files
+        - Prompts to back those up if they exist
+        - If they exist, delete before create to ensure no conflicts
+        """
+        (config, list) = self.generate_config()
+        if config:
+            file_contents = ["// EX-CommandStation config.h generated by EX-Installer\n\n"]
+            file_contents += self.default_config_options
+            file_contents += list
+            config_file_path = fm.get_filepath(self.ex_commandstation_dir, "config.h")
+            write_config = fm.write_config_file(config_file_path, file_contents)
+            if write_config == config_file_path:
+                self.master.compile_upload(self.product)
+            else:
+                self.process_error(f"Could not write config.h: {write_config}")
+        else:
+            message = ", ".join(list)
+            self.process_error(message)
