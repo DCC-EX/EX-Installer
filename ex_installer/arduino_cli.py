@@ -63,6 +63,7 @@ class ThreadedArduinoCLI(Thread):
                         if details["success"] is True:
                             status = "success"
                             topic = "Success"
+                            data = details["compiler_out"]
                         else:
                             status = "error"
                             topic = details["error"]
