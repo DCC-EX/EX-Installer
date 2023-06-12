@@ -29,6 +29,14 @@ class ThreadedArduinoCLI(Thread):
     arduino_cli_lock = Lock()
 
     def __init__(self, acli_path, params, queue):
+        """
+        Initialise the object
+        
+        Need to provide:
+        - full path the Arduino CLI executable/binary
+        - a list of valid parameters
+        - the queue instance to update
+        """
         super().__init__()
         self.params = params
         self.process_params = [acli_path]
@@ -36,6 +44,13 @@ class ThreadedArduinoCLI(Thread):
         self.queue = queue
 
     def run(self, *args, **kwargs):
+        """
+        Override for Thread.run()
+
+        Creates a thread and executes with the provided parameters
+
+        Results are placed in the provided queue object
+        """
         self.queue.put(
             QueueMessage("info", "Run Arduino CLI", f"Arduino CLI parameters: {self.params}")
         )
@@ -87,16 +102,22 @@ class ArduinoCLI:
 
     This class exposes the various methods to interact with the Arduino CLI including:
 
-    - get_cli_file() - returns the full file path to where the Arduino CLI should reside
-    - is_installed(<path to cli>) - checks the CLI is installed and executable, returns True/False
+    - cli_file_path() - returns the full file path to where the Arduino CLI should reside
+    - is_installed() - checks the CLI is installed and executable, returns True/False
+    - get_version() - gets the Arduino CLI version, returns to the provided queue
+    - get_platforms() - gets the list of installed platforms
     - download_cli() - downloads the appropriate CLI for the operating system, returns the file path
-    - install_cli(<download>, <path to cli>) - extracts the CLI to the specified file path from download file path
-    - upgrade_platforms(<path to cli>) - performs the core upgrade to ensure all are up to date
-    - init_config(<path to cli>) - adds additional URLs to the CLI config
-    - update_index(<path to cli>) - performs the core update-index and initial board list
-    - install_packages(<path to cli>) - installs the packages for for all boards including extras
-    - list_boards(<path to cli>) - lists all connected boards, returns list of dictionaries for boards
+    - install_cli() - extracts the CLI to the specified file path from download file path
+    - initialise_config() - adds additional URLs to the CLI config
+    - update_index() - performs the core update-index and initial board list
+    - get_package_list() - gets the list of platform packages to install
+    - install_package() - installs the provided packages
+    - upgrade_platforms() - performs the core upgrade to ensure all are up to date
+    - list_boards() - lists all connected boards, returns list of dictionaries for boards
+    - upload_sketch() - compiles and uploads the provided sketch to the provided device
     """
+
+    # Dictionary of Arduino CLI archives for the appropriate platform
     arduino_downloads = {
         "Linux32": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_32bit.tar.gz",
         "Linux64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_64bit.tar.gz",
@@ -105,6 +126,7 @@ class ArduinoCLI:
         "Windows64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip"
     }
 
+    # Dictionary for additional board/platform support for the Arduino CLI
     extra_platforms = {
         "Espressif ESP32": {
             "platform_id": "esp32:esp32",
@@ -116,6 +138,7 @@ class ArduinoCLI:
         }
     }
 
+    # Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices
     supported_devices = {
         "Arduino Mega or Mega 2560": "arduino:avr:mega",
         "Arduino Uno": "arduino:avr:uno",
@@ -127,6 +150,11 @@ class ArduinoCLI:
     }
 
     def __init__(self, selected_device=None):
+        """
+        Initialise the Arduino CLI instance
+
+        The instance retains the current list of detected devices and the current selected device (if any)
+        """
         self.selected_device = selected_device
         self.detected_devices = []
 
@@ -178,6 +206,8 @@ class ArduinoCLI:
     def get_version(self, file_path, queue):
         """
         Function to retrieve the version of the Arduino CLI
+
+        If obtaining the version is successful it will be in the queue's "data" field
         """
         if self.is_installed(file_path):
             params = ["version", "--format", "jsonmini"]
@@ -191,6 +221,8 @@ class ArduinoCLI:
     def get_platforms(self, file_path, queue):
         """
         Function to retrieve the current platforms installed with the Arduino CLI
+
+        If successful, the list will be in the queue's "data" field
         """
         if self.is_installed(file_path):
             params = ["core", "list", "--format", "jsonmini"]
@@ -204,6 +236,10 @@ class ArduinoCLI:
     def download_cli(self, queue):
         """
         Download the Arduino CLI
+
+        If successful, the archive's path will be in the queue's "data" field
+
+        If error, the error will be in the queue's "data" field
         """
         if not platform.system():
             raise ValueError("Unsupported operating system")

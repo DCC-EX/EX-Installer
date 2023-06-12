@@ -4,6 +4,7 @@ Module for the Compile and Upload page view
 
 # Import Python modules
 import customtkinter as ctk
+import sys
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -51,6 +52,10 @@ class CompileUpload(WindowLayout):
                                         font=self.instruction_font, wraplength=780)
         self.instruction_label = ctk.CTkLabel(self.compile_upload_frame, text=self.instruction_text,
                                               font=self.instruction_font, wraplength=780)
+        self.congrats_label = ctk.CTkLabel(self.compile_upload_frame, text="Congratulations!",
+                                           font=self.heading_font)
+        self.success_label = ctk.CTkLabel(self.compile_upload_frame, text=None,
+                                          font=self.instruction_font)
         self.upload_button = ctk.CTkButton(self.compile_upload_frame, width=200, height=50,
                                            text="Upload", font=self.action_button_font,
                                            command=lambda event="upload_software": self.upload_software(event))
@@ -60,7 +65,9 @@ class CompileUpload(WindowLayout):
         self.compile_upload_frame.grid_columnconfigure(0, weight=1)
         self.compile_upload_frame.grid_rowconfigure((0, 1, 2), weight=1)
         self.intro_label.grid(column=0, row=0, **grid_options)
+        self.congrats_label.grid(column=0, row=0, **grid_options)
         self.instruction_label.grid(column=0, row=1, **grid_options)
+        self.success_label.grid(column=0, row=1, **grid_options)
         self.upload_button.grid(column=0, row=2, **grid_options)
 
     def set_product(self, product):
@@ -70,10 +77,14 @@ class CompileUpload(WindowLayout):
         self.product = product
         self.set_title_text(f"Upload {pd[self.product]['product_name']}")
         self.set_title_logo(pd[product]["product_logo"])
+        self.congrats_label.grid_remove()
+        self.success_label.grid_remove()
         self.next_back.set_back_text(f"Configure {pd[self.product]['product_name']}")
         self.next_back.set_back_command(lambda view=product: self.master.switch_view(view))
-        self.intro_label.configure(text=(f"{pd[self.product]['product_name']} is now ready to be uploaded to your " +
-                                         "Arduino device."))
+        text = (f"{pd[self.product]['product_name']} is now ready to be uploaded to your " +
+                f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']} " +
+                f"attached to {self.acli.detected_devices[self.acli.selected_device]['port']}")
+        self.intro_label.configure(text=text)
         local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
         self.install_dir = fm.get_install_dir(local_repo_dir)
 
@@ -83,7 +94,8 @@ class CompileUpload(WindowLayout):
         """
         if event == "upload_software":
             self.disable_input_states(self)
-            self.process_start("uploading", f"Compiling and uploading {pd[self.product]['product_name']} to your device",
+            self.process_start("uploading",
+                               f"Compiling and uploading {pd[self.product]['product_name']} to your device",
                                "Upload_Software")
             self.acli.upload_sketch(self.acli.cli_file_path(),
                                     self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"],
@@ -94,6 +106,23 @@ class CompileUpload(WindowLayout):
             if self.process_status == "success":
                 self.process_stop()
                 self.restore_input_states()
+                self.upload_success()
             elif self.process_status == "error":
                 self.process_error("Error uploading software")
                 self.restore_input_states()
+
+    def upload_success(self):
+        """
+        Function to display successful outcome after upload
+        """
+        self.intro_label.grid_remove()
+        self.instruction_label.grid_remove()
+        self.congrats_label.grid()
+        text = (f"{pd[self.product]['product_name']} has successfully been uploaded to your " +
+                f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']}")
+        self.success_label.configure(text=text)
+        self.success_label.grid()
+        self.next_back.enable_next()
+        self.next_back.show_next()
+        self.next_back.set_next_text("Close EX-Installer")
+        self.next_back.set_next_command(sys.exit)

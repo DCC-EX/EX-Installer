@@ -149,6 +149,7 @@ class SelectDevice(WindowLayout):
                             text = "Unknown or clone detected"
                         else:
                             text = self.acli.detected_devices[index]["matching_boards"][0]["name"]
+                            text += " on " + self.acli.detected_devices[index]["port"]
                         radio_button = ctk.CTkRadioButton(self.device_list_frame, text=text,
                                                           variable=self.selected_device, value=index,
                                                           command=self.select_device)
