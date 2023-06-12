@@ -45,30 +45,37 @@ class CompileUpload(WindowLayout):
 
         # Set up text variables
         self.intro_text = None
-        self.instruction_text = ("Instructions here")
+        self.instruction_text = ("Please ensure your device is connected to your USB port and then " +
+                                 "click the Upload button to commence installing the software.")
 
         # Create widgets
         self.intro_label = ctk.CTkLabel(self.compile_upload_frame, text=self.intro_text,
                                         font=self.instruction_font, wraplength=780)
         self.instruction_label = ctk.CTkLabel(self.compile_upload_frame, text=self.instruction_text,
                                               font=self.instruction_font, wraplength=780)
-        self.congrats_label = ctk.CTkLabel(self.compile_upload_frame, text="Congratulations!",
+        self.congrats_label = ctk.CTkLabel(self.compile_upload_frame, text=None,
                                            font=self.heading_font)
         self.success_label = ctk.CTkLabel(self.compile_upload_frame, text=None,
                                           font=self.instruction_font)
         self.upload_button = ctk.CTkButton(self.compile_upload_frame, width=200, height=50,
                                            text="Upload", font=self.action_button_font,
                                            command=lambda event="upload_software": self.upload_software(event))
+        self.details_label = ctk.CTkLabel(self.compile_upload_frame, text="Results will be shown below:",
+                                          font=self.instruction_font)
+        self.details_textbox = ctk.CTkTextbox(self.compile_upload_frame, border_width=2, border_spacing=5,
+                                              fg_color="#E5E5E5", width=780, height=180, state="disabled")
 
         # Layout frame
         grid_options = {"padx": 5, "pady": 5}
         self.compile_upload_frame.grid_columnconfigure(0, weight=1)
-        self.compile_upload_frame.grid_rowconfigure((0, 1, 2), weight=1)
+        self.compile_upload_frame.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
         self.intro_label.grid(column=0, row=0, **grid_options)
         self.congrats_label.grid(column=0, row=0, **grid_options)
         self.instruction_label.grid(column=0, row=1, **grid_options)
         self.success_label.grid(column=0, row=1, **grid_options)
         self.upload_button.grid(column=0, row=2, **grid_options)
+        self.details_label.grid(column=0, row=3, **grid_options)
+        self.details_textbox.grid(column=0, row=4, **grid_options)
 
     def set_product(self, product):
         """
@@ -94,6 +101,7 @@ class CompileUpload(WindowLayout):
         """
         if event == "upload_software":
             self.disable_input_states(self)
+            self.set_details("")
             self.process_start("uploading",
                                f"Compiling and uploading {pd[self.product]['product_name']} to your device",
                                "Upload_Software")
@@ -106,10 +114,17 @@ class CompileUpload(WindowLayout):
             if self.process_status == "success":
                 self.process_stop()
                 self.restore_input_states()
+                self.set_details(self.process_data)
                 self.upload_success()
             elif self.process_status == "error":
                 self.process_error("Error uploading software")
                 self.restore_input_states()
+                self.set_details(self.process_data)
+                self.upload_error()
+            self.next_back.enable_next()
+            self.next_back.show_next()
+            self.next_back.set_next_text("Close EX-Installer")
+            self.next_back.set_next_command(sys.exit)
 
     def upload_success(self):
         """
@@ -117,12 +132,31 @@ class CompileUpload(WindowLayout):
         """
         self.intro_label.grid_remove()
         self.instruction_label.grid_remove()
+        self.congrats_label.configure(text="Congratulations!")
         self.congrats_label.grid()
         text = (f"{pd[self.product]['product_name']} has successfully been uploaded to your " +
                 f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']}")
         self.success_label.configure(text=text)
         self.success_label.grid()
-        self.next_back.enable_next()
-        self.next_back.show_next()
-        self.next_back.set_next_text("Close EX-Installer")
-        self.next_back.set_next_command(sys.exit)
+
+    def upload_error(self):
+        """
+        Function to display unsuccessful outcome after upload error
+        """
+        self.intro_label.grid_remove()
+        self.instruction_label.grid_remove()
+        self.congrats_label.configure(text="Error!")
+        self.congrats_label.grid()
+        text = (f"{pd[self.product]['product_name']} was not successfully uploaded to your " +
+                f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']}")
+        self.success_label.configure(text=text)
+        self.success_label.grid()
+
+    def set_details(self, text):
+        """
+        Function to update the contents of the details textbox
+        """
+        self.details_textbox.configure(state="normal")
+        self.details_textbox.delete("0.0", "end")
+        self.details_textbox.insert("0.0", text)
+        self.details_textbox.configure(state="disabled")

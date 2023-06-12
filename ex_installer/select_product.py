@@ -93,10 +93,8 @@ class SelectProduct(WindowLayout):
         self.ex_fastclock_button.grid(column=1, row=3, **grid_options)
 
     def check_product_device(self, product):
-        # device_fqbn = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"]
-        device_fqbn = "arduino:avr:mega"
-        # device_name = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["name"]
-        device_name = "Arduino Mega"
+        device_fqbn = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"]
+        device_name = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["name"]
         product_name = pd[product]["product_name"]
         if device_fqbn not in pd[product]["supported_devices"]:
             self.process_error(f"Device type {device_name} is not supported for use with {product_name}\n" +

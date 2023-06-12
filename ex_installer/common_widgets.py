@@ -167,7 +167,7 @@ class WindowLayout(ctk.CTkFrame):
         children = widget.winfo_children()
         for child in children:
             if isinstance(child, (ctk.CTkButton, ctk.CTkComboBox, ctk.CTkCheckBox, ctk.CTkEntry,
-                                  ctk.CTkRadioButton, ctk.CTkSwitch, ctk.CTkTextbox)):
+                                  ctk.CTkRadioButton, ctk.CTkSwitch)):
                 widget_state = {
                     "widget": child,
                     "state": child.cget("state")
