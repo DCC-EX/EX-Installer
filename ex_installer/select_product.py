@@ -5,6 +5,7 @@ Module for the Select Product page view
 # Import Python modules
 import customtkinter as ctk
 from PIL import Image
+import logging
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -18,6 +19,10 @@ class SelectProduct(WindowLayout):
     """
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+        self.log.debug("Start view")
 
         # Set up title
         self.set_title_logo(images.EX_INSTALLER_LOGO)

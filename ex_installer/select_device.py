@@ -4,6 +4,7 @@ Module for the Select Device page view
 
 # Import Python modules
 import customtkinter as ctk
+import logging
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -24,6 +25,10 @@ class SelectDevice(WindowLayout):
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+        self.log.debug("Start view")
 
         # Set up event handlers
         event_callbacks = {
@@ -176,5 +181,8 @@ class SelectDevice(WindowLayout):
         if not self.acli.detected_devices[device]["matching_boards"][0]["name"] == "Unknown":
             self.acli.selected_device = device
             self.next_back.enable_next()
+            self.log.debug("Selected %s on port %s",
+                           self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["name"],
+                           self.acli.detected_devices[self.acli.selected_device]["port"])
         else:
             self.next_back.disable_next()

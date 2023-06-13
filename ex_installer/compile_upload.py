@@ -5,6 +5,7 @@ Module for the Compile and Upload page view
 # Import Python modules
 import customtkinter as ctk
 import sys
+import logging
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -22,6 +23,10 @@ class CompileUpload(WindowLayout):
         Initialise view
         """
         super().__init__(parent, *args, **kwargs)
+
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+        self.log.debug("Start view")
 
         # Set up event handlers
         event_callbacks = {

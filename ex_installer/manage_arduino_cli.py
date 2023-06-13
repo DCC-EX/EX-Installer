@@ -4,6 +4,7 @@ Module for managing the Arduino CLI page view
 
 # Import Python modules
 import customtkinter as ctk
+import logging
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -36,6 +37,10 @@ class ManageArduinoCLI(WindowLayout):
         Set up the Manage Arduino CLI view
         """
         super().__init__(parent, *args, **kwargs)
+
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+        self.log.debug("Start view")
 
         # Set up event handlers
         event_callbacks = {

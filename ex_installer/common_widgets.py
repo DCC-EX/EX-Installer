@@ -24,8 +24,9 @@ class WindowLayout(ctk.CTkFrame):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
-        # Set up logging
-        _log = logging.getLogger(__name__)
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+        self.log.debug("Start view")
 
         # Get parent Arduino CLI and Git client instances
         self.acli = parent.acli
