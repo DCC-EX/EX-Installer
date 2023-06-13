@@ -31,7 +31,7 @@ class ThreadedArduinoCLI(Thread):
     def __init__(self, acli_path, params, queue):
         """
         Initialise the object
-        
+
         Need to provide:
         - full path the Arduino CLI executable/binary
         - a list of valid parameters

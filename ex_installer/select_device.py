@@ -141,12 +141,14 @@ class SelectDevice(WindowLayout):
                                                           command=lambda x: self.update_board(index, multi_combo.get()))
                             multi_combo.grid(column=1, row=index+1, sticky="e", **grid_options)
                             text = "Multiple matches detected"
+                            text += " on " + self.acli.detected_devices[index]["port"]
                         elif self.acli.detected_devices[index]["matching_boards"][0]["name"] == "Unknown":
                             unknown_combo = ctk.CTkComboBox(self.device_list_frame, values=supported_boards, width=300,
                                                             command=lambda x: self.update_board(index,
                                                                                                 unknown_combo.get()))
                             unknown_combo.grid(column=1, row=index+1, sticky="e", **grid_options)
                             text = "Unknown or clone detected"
+                            text += " on " + self.acli.detected_devices[index]["port"]
                         else:
                             text = self.acli.detected_devices[index]["matching_boards"][0]["name"]
                             text += " on " + self.acli.detected_devices[index]["port"]

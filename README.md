@@ -87,8 +87,8 @@ The build commands should be executed in a command prompt or terminal window in 
 
 Windows command:
 
-`pyinstaller --windowed --clean --onefile --icon=ex_installer\images\dccex-logo.png ex_installer.py --name "EX-Installer-<platform>" --add-data "<repository>\ex_installer\images\*;images" --add-data "<repository>\ex_installer\theme\dcc-ex-theme.json;theme/." --add-data "<repository>\venv\Lib\site-packages\customtkinter;customtkinter"`
+`pyinstaller --windowed --clean --onefile --icon=ex_installer\images\dccex-logo.png ex_installer\__main__.py --name "EX-Installer-<platform>" --add-data "<repository>\ex_installer\images\*;images" --add-data "<repository>\ex_installer\theme\dcc-ex-theme.json;theme/." --add-data "<repository>\venv\Lib\site-packages\customtkinter;customtkinter"`
 
 Linux command:
 
-`pyinstaller --windowed --clean --onefile --icon=ex_installer/images/dccex-logo.png ex_installer.py --name "EX-Installer-<platform>" --add-data "<repository>/ex_installer/images/*:images" --add-data "<repository>/ex_installer/theme/dcc-ex-theme.json:theme/." --add-data "<repository>/venv/lib/python3.8/site-packages/customtkinter:customtkinter" --hidden-import="PIL._tkinter_finder"`
+`pyinstaller --windowed --clean --onefile --icon=ex_installer/images/dccex-logo.png ex_installer/__main__.py --name "EX-Installer-<platform>" --add-data "<repository>/ex_installer/images/*:images" --add-data "<repository>/ex_installer/theme/dcc-ex-theme.json:theme/." --add-data "<repository>/venv/lib/python3.8/site-packages/customtkinter:customtkinter" --hidden-import="PIL._tkinter_finder"`

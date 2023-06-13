@@ -8,6 +8,7 @@ Every view should include this module and base the layout on WindowLayout
 import customtkinter as ctk
 from PIL import Image
 from queue import Queue
+import logging
 
 # Import local modules
 from . import images
@@ -22,6 +23,9 @@ class WindowLayout(ctk.CTkFrame):
 
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
+
+        # Set up logging
+        _log = logging.getLogger(__name__)
 
         # Get parent Arduino CLI and Git client instances
         self.acli = parent.acli
