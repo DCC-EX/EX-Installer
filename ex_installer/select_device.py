@@ -5,6 +5,7 @@ Module for the Select Device page view
 # Import Python modules
 import customtkinter as ctk
 import logging
+from pprint import pprint
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -98,6 +99,7 @@ class SelectDevice(WindowLayout):
             self.list_device_button.configure(text="Scan for Devices")
             self.no_device_label.grid()
             self.device_list_frame.grid_remove()
+            self.log.debug("No devices detected")
         else:
             self.list_device_button.configure(text="Refresh Device List")
             self.no_device_label.grid_remove()
@@ -112,8 +114,11 @@ class SelectDevice(WindowLayout):
         Use the Arduino CLI to list attached devices
         """
         if event == "list_devices":
-            self.acli.detected_devices = []
+            self.log.debug("List devices button clicked")
+            self.acli.detected_devices.clear()
             self.acli.selected_device = None
+            for widget in self.device_list_frame.winfo_children():
+                widget.destroy()
             self.disable_input_states(self)
             self.process_start("refresh_list", "Scanning for attached devices", "List_Devices")
             self.acli.list_boards(self.acli.cli_file_path(), self.queue)
@@ -127,36 +132,46 @@ class SelectDevice(WindowLayout):
                     for board in self.process_data:
                         matching_board_list = []
                         port = board["port"]["address"]
+                        self.log.debug("Device on %s found: %s", port, board)
                         if "matching_boards" in board:
                             for match in board["matching_boards"]:
                                 name = match["name"]
                                 fqbn = match["fqbn"]
                                 matching_board_list.append({"name": name, "fqbn": fqbn})
+                            self.log.debug("Matches: %s", matching_board_list)
                         else:
                             matching_board_list.append({"name": "Unknown", "fqbn": "unknown"})
+                            self.log.debug("Device unknown")
                         self.acli.detected_devices.append({"port": port, "matching_boards": matching_board_list})
+                        self.log.debug("Found device list")
+                        self.log.debug(self.acli.detected_devices)
                     for index, item in enumerate(self.acli.detected_devices):
                         text = None
                         self.device_list_frame.grid_rowconfigure(index+1, weight=1)
+                        self.log.debug("Process %s at index %s", item, index)
                         if len(self.acli.detected_devices[index]["matching_boards"]) > 1:
                             matched_boards = ["Select the correct device"]
                             for matched_board in self.acli.detected_devices[index]["matching_boards"]:
                                 matched_boards.append(matched_board["name"])
-                            multi_combo = ctk.CTkComboBox(self.device_list_frame, values=matched_boards, width=300,
-                                                          command=lambda x: self.update_board(index, multi_combo.get()))
+                            multi_combo = ctk.CTkComboBox(self.device_list_frame, values=matched_boards, width=300)
+                            multi_combo.configure(command=lambda x: self.update_board(index, multi_combo))
                             multi_combo.grid(column=1, row=index+1, sticky="e", **grid_options)
                             text = "Multiple matches detected"
                             text += " on " + self.acli.detected_devices[index]["port"]
+                            self.log.debug("Multiple matched devices on %s", self.acli.detected_devices[index]["port"])
+                            self.log.debug(self.acli.detected_devices[index]["matching_boards"])
                         elif self.acli.detected_devices[index]["matching_boards"][0]["name"] == "Unknown":
-                            unknown_combo = ctk.CTkComboBox(self.device_list_frame, values=supported_boards, width=300,
-                                                            command=lambda x: self.update_board(index,
-                                                                                                unknown_combo.get()))
+                            unknown_combo = ctk.CTkComboBox(self.device_list_frame, values=supported_boards, width=300)
+                            unknown_combo.configure(command=lambda x: self.update_board(index, unknown_combo))
                             unknown_combo.grid(column=1, row=index+1, sticky="e", **grid_options)
                             text = "Unknown or clone detected"
                             text += " on " + self.acli.detected_devices[index]["port"]
+                            self.log.debug("Unknown or clone device on %s", self.acli.detected_devices[index]["port"])
                         else:
                             text = self.acli.detected_devices[index]["matching_boards"][0]["name"]
                             text += " on " + self.acli.detected_devices[index]["port"]
+                            self.log.debug("%s on %s", self.acli.detected_devices[index]["matching_boards"][0]["name"],
+                                           self.acli.detected_devices[index]["port"])
                         radio_button = ctk.CTkRadioButton(self.device_list_frame, text=text,
                                                           variable=self.selected_device, value=index,
                                                           command=self.select_device)
@@ -168,7 +183,8 @@ class SelectDevice(WindowLayout):
                 self.process_error("Error scanning for devices")
                 self.restore_input_states()
 
-    def update_board(self, index, name):
+    def update_board(self, index, widget):
+        name = widget.get()
         if name != "Select the correct device":
             self.acli.detected_devices[index]["matching_boards"][0]["name"] = name
             self.acli.detected_devices[index]["matching_boards"][0]["fqbn"] = self.acli.supported_devices[name]

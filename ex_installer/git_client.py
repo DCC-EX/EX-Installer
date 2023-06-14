@@ -10,6 +10,7 @@ from threading import Thread, Lock
 from collections import namedtuple, OrderedDict
 import os
 import re
+import logging
 
 QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
 
@@ -38,27 +39,37 @@ class ThreadedGitClient(Thread):
         self.queue = queue
         self.args = args
 
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+        self.log.debug("Create instance")
+
     def run(self, *args, **kwargs):
         self.queue.put(
             QueueMessage("info", self.task_name, f"Run pygit2 task {str(self.task)} with params {self.args}")
         )
+        self.log.debug("Queue info run %s with params %s", str(self.task), self.args)
         with self.api_lock:
             try:
                 output = self.task(*self.args)
                 self.queue.put(
                     QueueMessage("success", self.task_name, output)
                 )
+                self.log.debug("Success: %s", output)
             except Exception as error:
                 message = get_exception(error)
                 self.queue.put(
                     QueueMessage("error", self.task_name, message)
                 )
+                self.log.error(message)
 
 
 class GitClient:
     """
     Class for cloning code and selecting specific versions from DCC-EX repositories
     """
+
+    # Set up logger
+    log = logging.getLogger(__name__)
 
     @staticmethod
     def get_repo(repo_dir):
@@ -71,11 +82,14 @@ class GitClient:
         try:
             repo = pygit2.Repository(git_file)
         except Exception:
+            GitClient.log.error("%s not a repository", git_file)
             return False
         else:
             if isinstance(repo, pygit2.Repository):
+                GitClient.log.debug(repo)
                 return repo
             else:
+                GitClient.log.error("%s not a repository", git_file)
                 return False
 
     @staticmethod
@@ -99,8 +113,13 @@ class GitClient:
                     elif flag == pygit2.GIT_STATUS_WT_MODIFIED:
                         change = "Modified"
                     file_list.append(file + " (" + change + ")")
+                GitClient.log.error("Local file changes in %s", repo)
+                GitClient.log.error(file_list)
+            else:
+                GitClient.log.debug("No local file changes in %s", repo)
         else:
             file_list = [f"{repo} is not a valid repository"]
+            GitClient.log.error("%s not a valid repository", repo)
         return file_list
 
     @staticmethod

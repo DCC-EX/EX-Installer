@@ -92,8 +92,6 @@ class EXCommandStation(WindowLayout):
         self.setup_version_frame()
         self.setup_config_frame()
 
-        # print(self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"])
-
         self.start()
 
     def setup_version_frame(self):
@@ -529,7 +527,6 @@ class EXCommandStation(WindowLayout):
         Function to either create config files or copy from specified directory
         """
         if self.config_option.get() == 0:
-            print("Create config files here")
             self.master.compile_upload(self.product)
         elif self.config_option.get() == 1:
             copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])

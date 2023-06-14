@@ -143,9 +143,11 @@ class ManageArduinoCLI(WindowLayout):
         if switch.cget("variable").get() == "on":
             if not switch.cget("text") in self.package_dict:
                 self.package_dict[switch.cget("text")] = self.acli.extra_platforms[switch.cget("text")]["platform_id"]
+                self.log.debug("Enable package %s", self.acli.extra_platforms[switch.cget("text")]["platform_id"])
         elif switch.cget("variable").get() == "off":
             if switch.cget("text") in self.package_dict:
                 del self.package_dict[switch.cget("text")]
+                self.log.debug("Disable package %s", switch.cget("text"))
 
     def check_arduino_cli(self, event):
         """

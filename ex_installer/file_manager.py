@@ -15,6 +15,7 @@ from threading import Thread, Lock
 from collections import namedtuple
 import re
 import shutil
+import logging
 
 
 QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
@@ -30,10 +31,15 @@ class ThreadedDownloader(Thread):
         self.target = target
         self.queue = queue
 
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+        self.log.debug("Start view")
+
     def run(self, *args, **kwargs):
         self.queue.put(
             QueueMessage("info", f"Downloading {self.url}", f"Downloading {self.url}")
         )
+        self.log.debug(self.url)
         with self.download_lock:
             _response = requests.get(self.url, stream=True)
             if _response.status_code == 200:
@@ -43,16 +49,18 @@ class ThreadedDownloader(Thread):
                     self.queue.put(
                         QueueMessage("success", "Downloaded successfully", self.target)
                     )
-                    print("Success")
+                    self.log.debug(self.target)
                 except Exception as error:
                     self.queue.put(
                         QueueMessage("error", "Download error", str(error))
                     )
+                    self.log.error(str(error))
             else:
                 self.queue.put(
                     QueueMessage("error", "Download error",
                                  f"Downloading failed with status code {_response.status_code}: {_response.text}")
                 )
+                self.log.error("Error %s: %s", _response.status_code, _response.text)
 
 
 class ThreadedExtractor(Thread):
@@ -65,10 +73,15 @@ class ThreadedExtractor(Thread):
         self.target_dir = target_dir
         self.queue = queue
 
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+        self.log.debug("Start view")
+
     def run(self, *args, **kwargs):
         self.queue.put(
             QueueMessage("info", f"Extracting {self.archive_file}", f"Extracting {self.archive_file}")
         )
+        self.log.debug(self.archive_file)
         with self.extractor_lock:
             if platform.system() == "Windows":
                 relpath = None
@@ -85,10 +98,12 @@ class ThreadedExtractor(Thread):
                     self.queue.put(
                         QueueMessage("success", "Extraction successful", dir_name)
                     )
+                    self.log.debug(dir_name)
                 except Exception as error:
                     self.queue.put(
                         QueueMessage("error", "Extraction error", str(error))
                     )
+                    self.log.error(str(error))
             else:
                 try:
                     archive = tarfile.open(self.archive_file)
@@ -102,16 +117,21 @@ class ThreadedExtractor(Thread):
                     self.queue.put(
                         QueueMessage("success", "Extraction successful", dir_name)
                     )
+                    self.log.debug(dir_name)
                 except Exception as error:
                     self.queue.put(
                         QueueMessage("error", "Extraction error", str(error))
                     )
+                    self.log.error(str(error))
 
 
 class FileManager:
     """
     Class for managing files and directories
     """
+    # Set up logger
+    log = logging.getLogger(__name__)
+
     def __init__(self):
         super().__init__()
 
@@ -122,6 +142,7 @@ class FileManager:
         """
         if not platform.system():
             raise ValueError("Unsupported operating system")
+            FileManager.log.error("Unsupported operating system")
             return False
         else:
             if os.path.expanduser("~"):
@@ -130,11 +151,12 @@ class FileManager:
                     "ex-installer",
                 )
                 if sys.platform.startswith("win"):
-                    return _cli_path.replace("\\", "\\\\")
-                else:
-                    return _cli_path
+                    _cli_path = _cli_path.replace("\\", "\\\\")
+                FileManager.log.debug(_cli_path)
+                return _cli_path
             else:
                 raise ValueError("Could not obtain user home directory")
+                FileManager.log.error("Could not obtain user home directory")
                 return False
 
     @staticmethod
@@ -145,10 +167,11 @@ class FileManager:
         if FileManager.get_base_dir():
             dir = os.path.join(FileManager.get_base_dir().replace("\\\\", "\\"), product_name)
             if sys.platform.startswith("win"):
-                return dir.replace("\\", "\\\\")
-            else:
-                return dir
+                dir = dir.replace("\\", "\\\\")
+            FileManager.log.debug(dir)
+            return dir
         else:
+            FileManager.log.error("Could not obtain installation directory")
             return False
 
     @staticmethod
@@ -158,20 +181,28 @@ class FileManager:
         """
         if not platform.system():
             raise ValueError("Unsupported operating system")
+            FileManager.log.error("Unsupported operating system")
             return False
         else:
             if tempfile.gettempdir():
+                FileManager.log.debug(tempfile.gettempdir())
                 return tempfile.gettempdir()
             else:
                 raise ValueError("Unable to determine temp directory")
+                FileManager.log.error("Unable to determine temp directory")
                 return False
 
     @staticmethod
     def rename_dir(source_dir, target_dir):
         if os.path.exists(source_dir):
             if not os.path.exists(target_dir):
-                os.rename(source_dir, target_dir)
-                return True
+                try:
+                    os.rename(source_dir, target_dir)
+                except Exception as error:
+                    FileManager.log.error(str(error))
+                    return False
+                else:
+                    return True
             else:
                 return False
         else:
@@ -179,6 +210,12 @@ class FileManager:
 
     @staticmethod
     def read_version(version_file):
+        """
+        Function to read a version string from a file
+
+        Not recommended over obtaining versions from GitHub tags, however can be used if those are not defined
+        Returns False if no version defined, or a string containing the version
+        """
         if os.path.exists(version_file):
             fo = open(version_file, "r", encoding="utf-8")
             for line in fo:

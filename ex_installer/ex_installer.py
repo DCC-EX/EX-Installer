@@ -5,6 +5,7 @@ This is the root window of the EX-Installer application.
 # Import Python modules
 import customtkinter as ctk
 import sys
+import logging
 
 # Import local modules
 from . import images
@@ -34,6 +35,10 @@ class EXInstaller(ctk.CTk):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+        self.log.debug("Start view")
 
         # Hide window while GUI is built initially, show after 250ms
         self.withdraw()
@@ -68,9 +73,11 @@ class EXInstaller(ctk.CTk):
         """
         if view_class:
             if self.view:
+                self.log.debug("Destroy view %s", self.view)
                 self.view.destroy()
             self.view = self.views[view_class](self)
             self.view.grid(column=0, row=0, sticky="nsew")
+            self.log.debug("Launching %s", view_class)
 
     def compile_upload(self, product):
         """
@@ -78,7 +85,9 @@ class EXInstaller(ctk.CTk):
         """
         if product:
             if self.view:
+                self.log.debug("Destroy view %s", self.view)
                 self.view.destroy()
             self.view = CompileUpload(self)
             self.view.set_product(product)
             self.view.grid(column=0, row=0, sticky="nsew")
+            self.log.debug("Launched Compile and upload")

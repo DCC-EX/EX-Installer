@@ -54,7 +54,7 @@ class SelectProduct(WindowLayout):
 
         # Create product images
         image_size = [200, 40]
-        self.ex_commandstation_image = ctk.CTkImage(light_image=self.ex_commandstation_logo, size=(400, 80))
+        self.ex_commandstation_image = ctk.CTkImage(light_image=self.ex_commandstation_logo, size=(300, 60))
         self.ex_ioexpander_image = ctk.CTkImage(light_image=self.ex_ioexpander_logo, size=image_size)
         self.ex_turntable_image = ctk.CTkImage(light_image=self.ex_turntable_logo, size=image_size)
         self.ex_dccinspector_image = ctk.CTkImage(light_image=self.ex_dccinspector_logo, size=image_size)
@@ -104,5 +104,7 @@ class SelectProduct(WindowLayout):
         if device_fqbn not in pd[product]["supported_devices"]:
             self.process_error(f"Device type {device_name} is not supported for use with {product_name}\n" +
                                "Return to the Select Device screen and select a supported device")
+            self.log.error("Device type %s is not supported for %s", device_name, product_name)
         else:
             self.master.switch_view(product)
+            self.log.debug("Selected %s", product_name)

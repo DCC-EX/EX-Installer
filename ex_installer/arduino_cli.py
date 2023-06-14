@@ -14,11 +14,22 @@ import subprocess
 import json
 from threading import Thread, Lock
 from collections import namedtuple
+import logging
 
 from .file_manager import ThreadedDownloader, ThreadedExtractor
 
 
 QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
+
+
+@staticmethod
+def get_exception(error):
+    """
+    Get an exception into text to add to the queue
+    """
+    template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+    message = template.format(type(error).__name__, error.args)
+    return message
 
 
 class ThreadedArduinoCLI(Thread):
@@ -38,6 +49,11 @@ class ThreadedArduinoCLI(Thread):
         - the queue instance to update
         """
         super().__init__()
+
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+        self.log.debug("Start thread")
+
         self.params = params
         self.process_params = [acli_path]
         self.process_params += self.params
@@ -54,6 +70,7 @@ class ThreadedArduinoCLI(Thread):
         self.queue.put(
             QueueMessage("info", "Run Arduino CLI", f"Arduino CLI parameters: {self.params}")
         )
+        self.log.debug("Queue info %s", self.params)
         with self.arduino_cli_lock:
             try:
                 startupinfo = None
@@ -63,14 +80,18 @@ class ThreadedArduinoCLI(Thread):
                 self.process = subprocess.Popen(self.process_params, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
                                                 startupinfo=startupinfo)
                 self.output, self.error = self.process.communicate()
+                self.log.debug(self.process_params)
             except Exception as error:
                 self.queue.put(
                     QueueMessage("error", str(error), str(error))
                 )
+                self.log.error(str(error))
             if self.error:
+                error = json.loads(self.error.decode())
                 self.queue.put(
-                    QueueMessage("error", json.loads(self.error.decode()), json.loads(self.error.decode()))
+                    QueueMessage("error", error, error)
                 )
+                self.log.error(error)
             else:
                 if self.output:
                     details = json.loads(self.output.decode())
@@ -79,18 +100,22 @@ class ThreadedArduinoCLI(Thread):
                             status = "success"
                             topic = "Success"
                             data = details["compiler_out"]
+                            self.log.debug("Success %s", data)
                         else:
                             status = "error"
                             topic = details["error"]
                             data = details["compiler_err"]
+                            self.log.error(data)
                     else:
                         status = "success"
                         topic = "Success"
                         data = details
+                        self.log.debug("Success %s", data)
                 else:
                     status = "success"
-                    topic = "Error"
+                    topic = "No output"
                     data = "No output"
+                    self.log.debug(data)
                 self.queue.put(
                     QueueMessage(status, topic, data)
                 )
@@ -158,6 +183,9 @@ class ArduinoCLI:
         self.selected_device = selected_device
         self.detected_devices = []
 
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+
     def cli_file_path(self):
         """
         Function to get the full path and filename of the Arduino CLI.
@@ -171,6 +199,7 @@ class ArduinoCLI:
         if not platform.system():
             raise ValueError("Unsupported operating system")
             _result = False
+            self.log.debug("Unsupported operating system")
         else:
             if platform.system() == "Windows":
                 _cli = "arduino-cli.exe"
@@ -184,9 +213,11 @@ class ArduinoCLI:
                     _cli
                 )
                 _result = _cli_path.replace("\\", "\\\\")   # Need to do this for Windows
+                self.log.debug(_result)
             else:
                 raise ValueError("Could not obtain user home directory")
                 _result = False
+                self.log.error("Could not obtain user home directory")
         return _result
 
     def is_installed(self, file_path):
@@ -201,6 +232,7 @@ class ArduinoCLI:
             _result = True
         else:
             _result = False
+        self.log.debug(_result)
         return _result
 
     def get_version(self, file_path, queue):
@@ -217,6 +249,7 @@ class ArduinoCLI:
             queue.put(
                 QueueMessage("error", "Arduino CLI is not installed", "Arduino CLI is not installed")
             )
+            self.log.debug("Arduino CLI not installed")
 
     def get_platforms(self, file_path, queue):
         """
@@ -232,6 +265,7 @@ class ArduinoCLI:
             queue.put(
                 QueueMessage("error", "Arduino CLI is not installed", "Arduino CLI is not installed")
             )
+            self.log.debug("Arduino CLI not installed")
 
     def download_cli(self, queue):
         """
@@ -243,12 +277,14 @@ class ArduinoCLI:
         """
         if not platform.system():
             raise ValueError("Unsupported operating system")
+            self.log.error("Unsupported operating system")
             _result = False
         else:
             if sys.maxsize > 2**32:
                 _installer = platform.system() + "64"
             else:
                 _installer = platform.system() + "32"
+            self.log.debug(_installer)
             if _installer in ArduinoCLI.arduino_downloads:
                 _target_file = os.path.join(
                     tempfile.gettempdir(),
@@ -259,6 +295,7 @@ class ArduinoCLI:
                 _result = True
             else:
                 raise ValueError("Sorry but there is no Arduino CLI available for this operating system")
+                self.log.error("No Arduino CLI available for operating system")
                 _result = False
         return _result
 
@@ -268,7 +305,15 @@ class ArduinoCLI:
         """
         cli_directory = os.path.dirname(file_path)
         if not os.path.exists(cli_directory):
-            os.makedirs(cli_directory)
+            try:
+                os.makedirs(cli_directory)
+            except Exception as error:
+                message = get_exception(error)
+                self.log.error(message)
+                queue.put(
+                    QueueMessage("error", "Could not create Arduino CLI directory", message)
+                )
+                return
         extract = ThreadedExtractor(download_file, cli_directory, queue)
         extract.start()
 
