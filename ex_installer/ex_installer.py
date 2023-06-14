@@ -6,6 +6,7 @@ This is the root window of the EX-Installer application.
 import customtkinter as ctk
 import sys
 import logging
+from pprint import pprint
 
 # Import local modules
 from . import images
@@ -44,6 +45,9 @@ class EXInstaller(ctk.CTk):
         self.withdraw()
         self.after(250, self.deiconify)
 
+        # Dictionary to retain views once created for switching between them while retaining options
+        self.frames = {}
+
         # Set window geometry, title, and icon
         self.title("EX-Installer")
 
@@ -62,22 +66,29 @@ class EXInstaller(ctk.CTk):
             "select_device": SelectDevice,
             "select_product": SelectProduct,
             "ex_commandstation": EXCommandStation,
+            "compile_upload": CompileUpload
         }
         self.view = None
 
         self.switch_view("welcome")
 
-    def switch_view(self, view_class):
+    def switch_view(self, view_class, product=None):
         """
         Function to switch views
         """
         if view_class:
             if self.view:
-                self.log.debug("Destroy view %s", self.view)
-                self.view.destroy()
-            self.view = self.views[view_class](self)
-            self.view.grid(column=0, row=0, sticky="nsew")
-            self.log.debug("Launching %s", view_class)
+                self.log.debug("Switch from existing view %s", self.view._name)
+                # self.view.destroy()
+            if view_class in self.frames:
+                self.view = self.frames[view_class]
+                self.view.tkraise()
+                self.log.debug("Raising view %s", view_class)
+            else:
+                self.view = self.views[view_class](self)
+                self.frames[view_class] = self.view
+                self.view.grid(column=0, row=0, sticky="nsew")
+                self.log.debug("Launching new instance of %s", view_class)
 
     def compile_upload(self, product):
         """
@@ -85,7 +96,7 @@ class EXInstaller(ctk.CTk):
         """
         if product:
             if self.view:
-                self.log.debug("Destroy view %s", self.view)
+                self.log.debug("Destroy view %s", self.view_name)
                 self.view.destroy()
             self.view = CompileUpload(self)
             self.view.set_product(product)
