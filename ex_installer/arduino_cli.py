@@ -85,13 +85,26 @@ class ThreadedArduinoCLI(Thread):
                 self.queue.put(
                     QueueMessage("error", str(error), str(error))
                 )
-                self.log.error(str(error))
+                self.log.error("Caught exception error: %s", str(error))
             if self.error:
                 error = json.loads(self.error.decode())
+                topic = "Error in compile or upload"
+                data = ""
+                if "error" in error:
+                    topic = str(error["error"])
+                if "output" in error:
+                    if "stdout" in error["output"]:
+                        if error["output"]["stdout"] != "":
+                            data = str(error["output"]["stdout"] + "\n")
+                    if "stderr" in error["output"]:
+                        if error["output"]["stderr"] != "":
+                            data += str(error["output"]["stderr"])
+                if data == "":
+                    data = error
                 self.queue.put(
-                    QueueMessage("error", error, error)
+                    QueueMessage("error", topic, data)
                 )
-                self.log.error(error)
+                self.log.error("%s: %s", topic, data)
             else:
                 if self.output:
                     details = json.loads(self.output.decode())

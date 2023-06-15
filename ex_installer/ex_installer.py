@@ -114,16 +114,18 @@ class EXInstaller(ctk.CTk):
             if self.view:
                 if hasattr(self.view, "product"):
                     calling_product = self.view.product
+                    self.log.debug("Calling product %s", calling_product)
                 self.log.debug("Switch from existing view %s", self.view._name)
             if view_class in self.frames:
                 self.view = self.frames[view_class]
                 if view_class == "compile_upload":
-                    if calling_product != product:
-                        self.view.destroy()
-                        self.view = self.views[view_class](self)
-                        self.frames[view_class] = self.view
-                        self.log.debug("Changing product for %s", view_class)
-                        return
+                    self.view.destroy()
+                    self.view = self.views[view_class](self)
+                    self.frames[view_class] = self.view
+                    self.view.set_product(product)
+                    self.view.grid(column=0, row=0, sticky="nsew")
+                    self.log.debug("Changing product for %s", view_class)
+                    return
                 self.view.tkraise()
                 self.log.debug("Raising view %s", view_class)
             else:

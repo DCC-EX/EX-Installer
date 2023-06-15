@@ -126,7 +126,7 @@ class CompileUpload(WindowLayout):
                 self.set_details(self.process_data)
                 self.upload_success()
             elif self.process_status == "error":
-                self.process_error("Error uploading software")
+                self.process_error(self.process_topic)
                 self.restore_input_states()
                 self.set_details(self.process_data)
                 self.upload_error()

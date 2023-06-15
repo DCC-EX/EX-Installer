@@ -5,7 +5,6 @@ Module for the Select Device page view
 # Import Python modules
 import customtkinter as ctk
 import logging
-from pprint import pprint
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -126,7 +125,7 @@ class SelectDevice(WindowLayout):
         elif self.process_phase == "refresh_list":
             if self.process_status == "success":
                 if isinstance(self.process_data, list) and len(self.process_data) > 0:
-                    supported_boards = ["Select the correct device"]
+                    supported_boards = []
                     for board in self.acli.supported_devices:
                         supported_boards.append(board)
                     grid_options = {"padx": 5, "pady": 5}
@@ -152,20 +151,24 @@ class SelectDevice(WindowLayout):
                         self.device_list_frame.grid_rowconfigure(row, weight=1)
                         self.log.debug("Process %s at index %s", item, index)
                         if len(self.acli.detected_devices[index]["matching_boards"]) > 1:
-                            matched_boards = ["Select the correct device"]
+                            matched_boards = []
                             for matched_board in self.acli.detected_devices[index]["matching_boards"]:
                                 matched_boards.append(matched_board["name"])
-                            multi_combo = ctk.CTkComboBox(self.device_list_frame, values=matched_boards, width=300,
+                            multi_combo = ctk.CTkComboBox(self.device_list_frame,
+                                                          values="Select the correct device", width=300,
                                                           command=lambda name, i=index: self.update_board(name, i))
                             multi_combo.grid(column=1, row=row, sticky="e", **grid_options)
+                            multi_combo.configure(values=matched_boards)
                             text = "Multiple matches detected"
                             text += " on " + self.acli.detected_devices[index]["port"]
                             self.log.debug("Multiple matched devices on %s", self.acli.detected_devices[index]["port"])
                             self.log.debug(self.acli.detected_devices[index]["matching_boards"])
                         elif self.acli.detected_devices[index]["matching_boards"][0]["name"] == "Unknown":
-                            unknown_combo = ctk.CTkComboBox(self.device_list_frame, values=supported_boards, width=300,
+                            unknown_combo = ctk.CTkComboBox(self.device_list_frame,
+                                                            values=["Select the correct device"], width=300,
                                                             command=lambda name, i=index: self.update_board(name, i))
                             unknown_combo.grid(column=1, row=row, sticky="e", **grid_options)
+                            unknown_combo.configure(values=supported_boards)
                             text = "Unknown or clone detected"
                             text += " on " + self.acli.detected_devices[index]["port"]
                             self.log.debug("Unknown or clone device on %s", self.acli.detected_devices[index]["port"])
@@ -195,7 +198,10 @@ class SelectDevice(WindowLayout):
     def select_device(self):
         self.acli.selected_device = None
         device = self.selected_device.get()
-        if not self.acli.detected_devices[device]["matching_boards"][0]["name"] == "Unknown":
+        if (
+            self.acli.detected_devices[device]["matching_boards"][0]["name"] != "Unknown" and
+            self.acli.detected_devices[device]["matching_boards"][0]["name"] != "Select the correct device"
+        ):
             self.acli.selected_device = device
             self.next_back.enable_next()
             self.log.debug("Selected %s on port %s",
