@@ -95,6 +95,7 @@ class SelectDevice(WindowLayout):
         self.set_state()
 
     def set_state(self):
+        self.next_back.hide_log_button()
         if len(self.acli.detected_devices) == 0:
             self.list_device_button.configure(text="Scan for Devices")
             self.no_device_label.grid()

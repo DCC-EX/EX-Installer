@@ -67,7 +67,7 @@ class SelectProduct(WindowLayout):
                           "compound": "top",
                           "text_color": "#00353D"}
         self.ex_commandstation_button = ctk.CTkButton(self.select_product_frame,
-                                                      text=None,
+                                                      text=None, width=500,
                                                       image=self.ex_commandstation_image, **button_options,
                                                       command=lambda product="ex_commandstation":
                                                       self.check_product_device(product))
@@ -91,11 +91,14 @@ class SelectProduct(WindowLayout):
         # Layout product buttons
         grid_options = {"sticky": "ew", "padx": 10, "pady": 10}
         self.instruction_label.grid(column=0, row=0, columnspan=2, padx=5, pady=5)
-        self.ex_commandstation_button.grid(column=0, row=1, columnspan=2, **grid_options)
+        self.ex_commandstation_button.grid(column=0, row=1, columnspan=2, padx=10, pady=10)
         self.ex_ioexpander_button.grid(column=0, row=2, **grid_options)
         self.ex_turntable_button.grid(column=1, row=2, **grid_options)
         self.ex_dccinspector_button.grid(column=0, row=3, **grid_options)
         self.ex_fastclock_button.grid(column=1, row=3, **grid_options)
+
+        # Hide log button to start
+        self.next_back.hide_log_button()
 
     def check_product_device(self, product):
         device_fqbn = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"]

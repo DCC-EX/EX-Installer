@@ -41,9 +41,6 @@ class CompileUpload(WindowLayout):
         self.product = None
         self.install_dir = None
 
-        # Hide next button as there is no next
-        self.next_back.hide_next()
-
         # Set up container frame
         self.compile_upload_frame = ctk.CTkFrame(self.main_frame, height=360)
         self.compile_upload_frame.grid(column=0, row=0, sticky="nsew")
@@ -81,6 +78,13 @@ class CompileUpload(WindowLayout):
         self.upload_button.grid(column=0, row=2, **grid_options)
         self.details_label.grid(column=0, row=3, **grid_options)
         self.details_textbox.grid(column=0, row=4, **grid_options)
+
+        # Hide next and log buttons to start
+        self.next_back.hide_log_button()
+        self.next_back.hide_next()
+
+        if self.product:
+            self.set_product(self.product)
 
     def set_product(self, product):
         """

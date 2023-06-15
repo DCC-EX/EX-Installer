@@ -156,6 +156,7 @@ class GitClient:
 
         Expects a pygit2 repo object and a branch name
         """
+        GitClient.log.debug("Pull latest updates from %s, branch %s", remote_name, branch)
         for remote in repo.remotes:
             if remote.name == remote_name:
                 remote.fetch()
@@ -163,6 +164,7 @@ class GitClient:
                 merge_result, _ = repo.merge_analysis(remote_master_id)
                 # Up to date, do nothing
                 if merge_result & pygit2.GIT_MERGE_ANALYSIS_UP_TO_DATE:
+                    GitClient.log.debug("Local repo current")
                     return True
                 # We can just fastforward
                 elif merge_result & pygit2.GIT_MERGE_ANALYSIS_FASTFORWARD:
@@ -172,10 +174,13 @@ class GitClient:
                         master_ref.set_target(remote_master_id)
                     except KeyError:
                         repo.create_branch(branch, repo.get(remote_master_id))
+                        GitClient.log.debug("Created local copy of %s", branch)
+                    GitClient.log.debug("Pulled latest updates")
                     repo.head.set_target(remote_master_id)
                     return True
                 else:
                     # raise AssertionError('Unknown merge analysis result')
+                    GitClient.log.error("Unknown result from pull")
                     return False
 
     @staticmethod
@@ -198,6 +203,7 @@ class GitClient:
         """
         branch = repo.lookup_branch(name)
         refname = repo.lookup_reference(branch.name)
+        GitClient.log.debug("Branch %s ref is %s", name, refname)
         return refname
 
     @staticmethod
@@ -225,6 +231,10 @@ class GitClient:
                                                           t[1]["minor"],
                                                           t[1]["patch"]),
                                            reverse=True))
+        if len(version_list.keys()) > 0:
+            GitClient.log.debug("Tag list: %s", version_list)
+        else:
+            GitClient.log.error("No tags available for repository")
         return version_list
 
     @staticmethod
@@ -240,6 +250,7 @@ class GitClient:
             if version_list[version]["type"] == "Prod":
                 prod_version = (version, version_list[version]["ref"])
                 break
+        GitClient.log.debug("Latest production is %s", prod_version)
         return prod_version
 
     @staticmethod
@@ -255,4 +266,5 @@ class GitClient:
             if version_list[version]["type"] == "Devel":
                 devel_version = (version, version_list[version]["ref"])
                 break
+        GitClient.log.debug("Lastest development is %s", devel_version)
         return devel_version

@@ -258,6 +258,7 @@ class EXCommandStation(WindowLayout):
         """
         self.display_version_screen()
         self.setup_local_repo("setup_local_repo")
+        self.next_back.hide_log_button()
 
     def set_display(self):
         """
@@ -265,8 +266,10 @@ class EXCommandStation(WindowLayout):
         """
         if self.display_switch.get() == "on":
             self.display_combo.grid()
+            self.log.debug("Display enabled")
         else:
             self.display_combo.grid_remove()
+            self.log.debug("Display disabled")
 
     def set_wifi(self):
         """
@@ -277,8 +280,10 @@ class EXCommandStation(WindowLayout):
                 self.ethernet_switch.deselect()
             self.wifi_frame.grid()
             self.set_wifi_widgets()
+            self.log.debug("WiFi enabled")
         else:
             self.wifi_frame.grid_remove()
+            self.log.debug("WiFi disabled")
 
     def set_wifi_widgets(self):
         """
@@ -289,11 +294,13 @@ class EXCommandStation(WindowLayout):
             self.wifi_ssid_entry.grid_remove()
             self.wifi_pwd_label.grid_remove()
             self.wifi_pwd_entry.grid_remove()
+            self.log.debug("WiFi AP mode selected")
         elif self.wifi_type.get() == 1:
             self.wifi_ssid_label.grid()
             self.wifi_ssid_entry.grid()
             self.wifi_pwd_label.grid()
             self.wifi_pwd_entry.grid()
+            self.log.debug("WiFi ST mode selected")
 
     def set_ethernet(self):
         """
@@ -303,6 +310,9 @@ class EXCommandStation(WindowLayout):
             if self.wifi_switch.get() == "on":
                 self.wifi_switch.deselect()
                 self.set_wifi()
+            self.log.debug("Ethernet enabled")
+        else:
+            self.log.debug("Ethernet disabled")
 
     def decrement_channel(self):
         """
@@ -331,6 +341,7 @@ class EXCommandStation(WindowLayout):
             self.config_path.set(directory)
             self.config_option.set(1)
             self.set_next_config()
+            self.log.debug("Get config from %s", directory)
 
     def display_version_screen(self):
         """
@@ -371,6 +382,7 @@ class EXCommandStation(WindowLayout):
         - get list of versions, latest prod, and latest devel versions
         """
         if event == "setup_local_repo":
+            self.log.debug("Setting up local repository")
             self.disable_input_states(self)
             if os.path.exists(self.ex_commandstation_dir) and os.path.isdir(self.ex_commandstation_dir):
                 if self.git.dir_is_git_repo(self.ex_commandstation_dir):
@@ -380,6 +392,7 @@ class EXCommandStation(WindowLayout):
                         if changes:
                             self.process_error(f"Local changes detected: f{changes}")
                             self.restore_input_states()
+                            self.log.error("Local repository file changes: %s", changes)
                         else:
                             self.setup_local_repo("get_latest")
                     else:
@@ -392,6 +405,7 @@ class EXCommandStation(WindowLayout):
                         self.process_error(f"{self.ex_commandstation_dir} contains files but is not a repo")
                         self.restore_input_states()
             else:
+                self.log.debug("Cloning repository")
                 self.setup_local_repo("clone_repo")
         elif event == "clone_repo":
             self.process_start("clone_repo", "Clone repository", "Setup_Local_Repo")
@@ -400,18 +414,21 @@ class EXCommandStation(WindowLayout):
             if self.process_status == "success" or event == "get_latest":
                 self.repo = self.git.get_repo(self.ex_commandstation_dir)
                 branch_ref = self.git.get_branch_ref(self.repo, self.branch_name)
+                self.log.debug("Checkout %s", self.branch_name)
                 try:
                     self.repo.checkout(refname=branch_ref)
                 except Exception as error:
                     message = self.get_exception(error)
                     self.process_error(message)
                     self.restore_input_states()
+                    self.log.error(message)
                 else:
                     self.process_start("pull_latest", "Get latest software updates", "Setup_Local_Repo")
                     self.git.pull_latest(self.repo, self.branch_name, self.queue)
             elif self.process_status == "error":
                 self.process_error(self.process_data)
                 self.restore_input_states()
+                self.log.error(self.process_data)
         elif self.process_phase == "pull_latest":
             if self.process_status == "success":
                 self.set_versions(self.repo)
@@ -420,6 +437,7 @@ class EXCommandStation(WindowLayout):
             elif self.process_status == "error":
                 self.process_error("Could not pull latest updates from GitHub")
                 self.restore_input_states()
+                self.log.error("Could not pull updates from GitHub")
 
     def set_versions(self, repo):
         """
@@ -451,13 +469,16 @@ class EXCommandStation(WindowLayout):
         if self.select_version.get() == 0:
             self.repo.checkout(refname=self.latest_prod[1])
             self.next_back.enable_next()
+            self.log.debug("Latest prod selected: %s", self.latest_prod[1])
         elif self.select_version.get() == 1:
             self.repo.checkout(refname=self.latest_devel[1])
             self.next_back.enable_next()
+            self.log.debug("Latest devel selected: %s", self.latest_devel[1])
         elif self.select_version.get() == 2:
             if self.select_version_combo.get() != "Select a version":
                 self.repo.checkout(refname=self.version_list[self.select_version_combo.get()]["ref"])
                 self.next_back.enable_next()
+                self.log.debug("Version selected: %s", self.version_list[self.select_version_combo.get()]["ref"])
             else:
                 self.next_back.disable_next()
 
@@ -498,6 +519,8 @@ class EXCommandStation(WindowLayout):
                 self.process_error(("Selected configuration directory is missing the required files: " +
                                    f"{file_names}"))
                 self.next_back.disable_next()
+                self.log.error("Config dir %s missing minimum config files %s", self.config_path.get(),
+                               config_files)
         else:
             self.next_back.disable_next()
 
@@ -511,6 +534,9 @@ class EXCommandStation(WindowLayout):
         def_list = fm.get_list_from_file(definition_file, match)
         if def_list:
             self.motordriver_list += def_list
+            self.log.debug("Found motor driver list %s", def_list)
+        else:
+            self.log.error("Could not get list of motor drivers")
         self.motor_driver_combo.configure(values=self.motordriver_list)
 
     def check_motor_driver(self, value):
@@ -527,7 +553,8 @@ class EXCommandStation(WindowLayout):
         Function to either create config files or copy from specified directory
         """
         if self.config_option.get() == 0:
-            self.master.compile_upload(self.product)
+            # self.master.compile_upload(self.product)
+            self.master.switch_view("compile_upload", self.product)
         elif self.config_option.get() == 1:
             copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
             if copy_list:
@@ -538,10 +565,12 @@ class EXCommandStation(WindowLayout):
                 if file_copy:
                     file_list = ", ".join(file_copy)
                     self.process_error(f"Failed to copy one or more files: {file_list}")
+                    self.log.error("Failed to copy: %s", file_list)
                 else:
                     self.master.compile_upload(self.product)
             else:
                 self.process_error("Selected configuration directory is missing the required files")
+                self.log.error("Directory %s is missing required files", self.config_path.get())
 
     def generate_config(self):
         """
@@ -594,8 +623,10 @@ class EXCommandStation(WindowLayout):
             else:
                 config_list.append("#define ENABLE_ETHERNET true\n")
         if len(param_errors) > 0:
+            self.log.error("Missing parameters: %s", param_errors)
             return (False, param_errors)
         else:
+            self.log.debug("Configuration options: %s", config_list)
             return (True, config_list)
 
     def create_config_file(self):
@@ -615,9 +646,12 @@ class EXCommandStation(WindowLayout):
             config_file_path = fm.get_filepath(self.ex_commandstation_dir, "config.h")
             write_config = fm.write_config_file(config_file_path, file_contents)
             if write_config == config_file_path:
-                self.master.compile_upload(self.product)
+                # self.master.compile_upload(self.product)
+                self.master.switch_view("compile_upload", self.product)
             else:
                 self.process_error(f"Could not write config.h: {write_config}")
+                self.log.error("Could not write config file: %s", write_config)
         else:
             message = ", ".join(list)
             self.process_error(message)
+            self.log.error(message)

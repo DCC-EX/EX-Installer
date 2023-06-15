@@ -6,6 +6,11 @@ This is the root window of the EX-Installer application.
 import customtkinter as ctk
 import sys
 import logging
+import traceback
+from CTkMessagebox import CTkMessagebox
+import subprocess
+import os
+import platform
 from pprint import pprint
 
 # Import local modules
@@ -40,6 +45,7 @@ class EXInstaller(ctk.CTk):
         # Set up logger
         self.log = logging.getLogger(__name__)
         self.log.debug("Start view")
+        self.report_callback_exception = self.exception_handler
 
         # Hide window while GUI is built initially, show after 250ms
         self.withdraw()
@@ -72,33 +78,58 @@ class EXInstaller(ctk.CTk):
 
         self.switch_view("welcome")
 
+    def exception_handler(self, exc_type, exc_value, exc_traceback):
+        """
+        Handler for uncaught exceptions
+        """
+        message = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        log_file = None
+        for handler in self.log.parent.handlers:
+            if handler.__class__.__name__ == "FileHandler":
+                log_file = handler.baseFilename
+        self.log.critical("Uncaught exception: %s", message)
+        critical = CTkMessagebox(master=self, title="Error",
+                                 message="EX-Installer experienced an unknown error, " +
+                                 "please send the log file to the DCC-EX team for further analysis",
+                                 icon="cancel", option_1="Show log", option_2="Exit",
+                                 border_width=3, cancel_button=None)
+        if critical.get() == "Show log":
+            if platform.system() == "Darwin":
+                subprocess.call(("open", log_file))
+            elif platform.system() == "Windows":
+                os.startfile(log_file)
+            else:
+                subprocess.call(("xdg-open", log_file))
+        elif critical.get() == "Exit":
+            sys.exit()
+
     def switch_view(self, view_class, product=None):
         """
         Function to switch views
+
+        compile_upload view needs a product parameter, others don't
         """
+        calling_product = None
         if view_class:
             if self.view:
+                if hasattr(self.view, "product"):
+                    calling_product = self.view.product
                 self.log.debug("Switch from existing view %s", self.view._name)
-                # self.view.destroy()
             if view_class in self.frames:
                 self.view = self.frames[view_class]
+                if view_class == "compile_upload":
+                    if calling_product != product:
+                        self.view.destroy()
+                        self.view = self.views[view_class](self)
+                        self.frames[view_class] = self.view
+                        self.log.debug("Changing product for %s", view_class)
+                        return
                 self.view.tkraise()
                 self.log.debug("Raising view %s", view_class)
             else:
                 self.view = self.views[view_class](self)
                 self.frames[view_class] = self.view
+                if view_class == "compile_upload":
+                    self.view.set_product(product)
                 self.view.grid(column=0, row=0, sticky="nsew")
                 self.log.debug("Launching new instance of %s", view_class)
-
-    def compile_upload(self, product):
-        """
-        Function to switch to the compile and upload view
-        """
-        if product:
-            if self.view:
-                self.log.debug("Destroy view %s", self.view_name)
-                self.view.destroy()
-            self.view = CompileUpload(self)
-            self.view.set_product(product)
-            self.view.grid(column=0, row=0, sticky="nsew")
-            self.log.debug("Launched Compile and upload")

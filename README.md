@@ -27,12 +27,13 @@ The general operating process of the installer is:
 - Download/extract the Arduino CLI
 - Detect attached Arduino devices
 - Clone the product's GitHub repository
-- Prompt for version select and configuration options
+- Prompt for version selection and configuration options
 - Compile and upload the configured software to the selected device
 
 The main Python modules in use are:
 
 - [CustomTkinter](https://customtkinter.tomschimansky.com/) to create a reasonably modern look and feel
+- [CTkMessagebox](https://github.com/Akascape/CTkMessagebox) for nicer dialogues and popups
 - [pygit2](https://www.pygit2.org/index.html) to perform GitHub repository activities
 - [PyInstaller](https://pyinstaller.org/en/stable/index.html) to create binaries
 
@@ -61,6 +62,9 @@ In this instance, it is recommended to run in a virtual environment. Assuming Py
 - Clone the repository with `git clone https://github.com/DCC-EX/EX-Installer.git`
 - Change into the newly created directory
 - Create a virtual environment with `virtualenv venv`
+- Activate the virtual environment:
+  - Windows: `venv\scripts\activate`
+  - Linux/macOS: `source venv/bin/activate`
 - Install required modules with `pip install -r requirements.txt`
 - Run as a module with `python -m ex_installer`
 

@@ -118,6 +118,7 @@ class ManageArduinoCLI(WindowLayout):
         self.set_state()
 
     def set_state(self):
+        self.next_back.hide_log_button()
         if self.acli.is_installed(self.acli.cli_file_path()):
             self.cli_state_label.configure(text=self.installed_text,
                                            text_color="#00353D",

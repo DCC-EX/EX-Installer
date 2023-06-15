@@ -9,6 +9,9 @@ import customtkinter as ctk
 from PIL import Image
 from queue import Queue
 import logging
+import platform
+import os
+import subprocess
 
 # Import local modules
 from . import images
@@ -164,6 +167,7 @@ class WindowLayout(ctk.CTkFrame):
         self.progress_bar.stop()
         self.status_label.configure(text=message, text_color="red")
         self.process_phase = None
+        self.next_back.show_log_button()
 
     def disable_input_states(self, widget):
         """
@@ -208,7 +212,10 @@ class NextBack(ctk.CTkFrame):
         """
         super().__init__(parent, *args, **kwargs)
 
-        self.grid_columnconfigure(0, weight=1)
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+
+        self.grid_columnconfigure((0, 1, 2), weight=1)
 
         button_font = ctk.CTkFont(family="Helvetica", size=14, weight="bold")
         button_options = {"width": 220, "height": 30, "font": button_font}
@@ -227,8 +234,12 @@ class NextBack(ctk.CTkFrame):
                                          anchor="e",
                                          **button_options)
 
+        self.log_button = ctk.CTkButton(self, text="Show Log", width=100, height=30, font=button_font,
+                                        command=self.show_log)
+
         self.back_button.grid(column=0, row=0, padx=3, pady=3, sticky="w")
-        self.next_button.grid(column=1, row=0, padx=3, pady=3, sticky="e")
+        self.log_button.grid(column=1, row=0)
+        self.next_button.grid(column=2, row=0, padx=3, pady=3, sticky="e")
 
     def set_back_text(self, text):
         """Update back button text"""
@@ -275,3 +286,21 @@ class NextBack(ctk.CTkFrame):
 
     def set_next_command(self, command):
         self.next_button.configure(command=command)
+
+    def hide_log_button(self):
+        self.log_button.grid_remove()
+
+    def show_log_button(self):
+        self.log_button.grid()
+
+    def show_log(self):
+        log_file = None
+        for handler in self.log.parent.handlers:
+            if handler.__class__.__name__ == "FileHandler":
+                log_file = handler.baseFilename
+        if platform.system() == "Darwin":
+            subprocess.call(("open", log_file))
+        elif platform.system() == "Windows":
+            os.startfile(log_file)
+        else:
+            subprocess.call(("xdg-open", log_file))
