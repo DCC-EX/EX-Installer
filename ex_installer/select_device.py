@@ -148,23 +148,24 @@ class SelectDevice(WindowLayout):
                         self.log.debug(self.acli.detected_devices)
                     for index, item in enumerate(self.acli.detected_devices):
                         text = None
-                        self.device_list_frame.grid_rowconfigure(index+1, weight=1)
+                        row = index + 1
+                        self.device_list_frame.grid_rowconfigure(row, weight=1)
                         self.log.debug("Process %s at index %s", item, index)
                         if len(self.acli.detected_devices[index]["matching_boards"]) > 1:
                             matched_boards = ["Select the correct device"]
                             for matched_board in self.acli.detected_devices[index]["matching_boards"]:
                                 matched_boards.append(matched_board["name"])
-                            multi_combo = ctk.CTkComboBox(self.device_list_frame, values=matched_boards, width=300)
-                            multi_combo.configure(command=lambda x: self.update_board(index, multi_combo))
-                            multi_combo.grid(column=1, row=index+1, sticky="e", **grid_options)
+                            multi_combo = ctk.CTkComboBox(self.device_list_frame, values=matched_boards, width=300,
+                                                          command=lambda name, i=index: self.update_board(name, i))
+                            multi_combo.grid(column=1, row=row, sticky="e", **grid_options)
                             text = "Multiple matches detected"
                             text += " on " + self.acli.detected_devices[index]["port"]
                             self.log.debug("Multiple matched devices on %s", self.acli.detected_devices[index]["port"])
                             self.log.debug(self.acli.detected_devices[index]["matching_boards"])
                         elif self.acli.detected_devices[index]["matching_boards"][0]["name"] == "Unknown":
-                            unknown_combo = ctk.CTkComboBox(self.device_list_frame, values=supported_boards, width=300)
-                            unknown_combo.configure(command=lambda x: self.update_board(index, unknown_combo))
-                            unknown_combo.grid(column=1, row=index+1, sticky="e", **grid_options)
+                            unknown_combo = ctk.CTkComboBox(self.device_list_frame, values=supported_boards, width=300,
+                                                            command=lambda name, i=index: self.update_board(name, i))
+                            unknown_combo.grid(column=1, row=row, sticky="e", **grid_options)
                             text = "Unknown or clone detected"
                             text += " on " + self.acli.detected_devices[index]["port"]
                             self.log.debug("Unknown or clone device on %s", self.acli.detected_devices[index]["port"])
@@ -176,7 +177,7 @@ class SelectDevice(WindowLayout):
                         radio_button = ctk.CTkRadioButton(self.device_list_frame, text=text,
                                                           variable=self.selected_device, value=index,
                                                           command=self.select_device)
-                        radio_button.grid(column=0, row=index+1, sticky="w", **grid_options)
+                        radio_button.grid(column=0, row=row, sticky="w", **grid_options)
                 self.set_state()
                 self.process_stop()
                 self.restore_input_states()
@@ -184,8 +185,7 @@ class SelectDevice(WindowLayout):
                 self.process_error("Error scanning for devices")
                 self.restore_input_states()
 
-    def update_board(self, index, widget):
-        name = widget.get()
+    def update_board(self, name, index):
         if name != "Select the correct device":
             self.acli.detected_devices[index]["matching_boards"][0]["name"] = name
             self.acli.detected_devices[index]["matching_boards"][0]["fqbn"] = self.acli.supported_devices[name]
