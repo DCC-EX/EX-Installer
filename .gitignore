@@ -161,3 +161,6 @@ cython_debug/
 
 # VSCode
 .vscode
+
+# PyInstaller version file (dynamically built)
+file_version.txt

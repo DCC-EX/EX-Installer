@@ -156,7 +156,7 @@ class EXCommandStation(WindowLayout):
         self.version_frame.grid_rowconfigure((0, 1, 2), weight=1)
         self.version_label.grid(column=0, row=0, **grid_options)
         self.version_radio_frame.grid(column=0, row=1, **grid_options)
-        self.config_radio_frame.grid(column=0, row=2, **grid_options)
+        # self.config_radio_frame.grid(column=0, row=2, **grid_options)
 
     def setup_config_frame(self):
         grid_options = {"padx": 5, "pady": 5}
