@@ -68,11 +68,35 @@ In this instance, it is recommended to run in a virtual environment. Assuming Py
 - Install required modules with `pip install -r requirements.txt`
 - Run as a module with `python -m ex_installer`
 
+## Versioning
+
+Initially, the application is versioned by updating the file "version.py" located within the "ex_installer" module directory.
+
+Semantic versioning is in use, with the standard `<Major>.<Minor>.<Patch>` version scheme.
+
+The version file is reference by both the application itself as well as the binary build script outlined below.
+
+Once all binaries for a specific version have been built and published, a GitHub tag must be created against that commit also.
+
 ## How to build binaries
 
 PyInstaller is used to build Windows executables and binaries for Linux/macOS.
 
 The use of CustomTkinter dictates that some extra options need to be defined to ensure non-Python files are included in the binary, otherwise they will not execute correctly.
+
+### Build script
+
+A build script "build_app.py" has been written to make the build process simpler, and relies on a virtual environment being setup in a directory called "venv" within the EX-Installer repository directory.
+
+The script will refer to the "version.py" file mentioned above, so this needs to be updated prior to building the final version of the binaries to be published.
+
+To run the script, you need to pass the EX-Installer repository directory and the platform being built for:
+
+```shell
+python build_app.py -D <Directory path> -P <Win32|Win64|Linux32|Linux64|macOS>
+```
+
+### Building manually
 
 It is recommended to use a Python virtual environment to build the binaries to ensure only the relevant Python modules are included.
 

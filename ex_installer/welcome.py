@@ -43,6 +43,8 @@ class Welcome(WindowLayout):
                                           text=("The DCC-EX team have provided EX-Installer to make it as easy as " +
                                                 "possible to get up and running with our various products.\n\n"),
                                           font=self.instruction_font)
+        self.version_label = ctk.CTkLabel(self.welcome_frame, text=(f"Version {self.app_version}"),
+                                          font=self.instruction_font)
 
         # Debug switch
         self.debug_switch = ctk.CTkSwitch(self.welcome_frame, text="Enable debug logging",
@@ -50,6 +52,7 @@ class Welcome(WindowLayout):
 
         # Layout frame
         self.welcome_label.grid(column=0, row=0, padx=5, pady=5, sticky="nsew")
+        self.version_label.grid(column=0, row=20, padx=5, pady=5, sticky="s")
         self.debug_switch.grid(column=0, row=20, padx=5, pady=5, sticky="se")
 
     def set_debug(self):

@@ -11,7 +11,6 @@ from CTkMessagebox import CTkMessagebox
 import subprocess
 import os
 import platform
-from pprint import pprint
 
 # Import local modules
 from . import images
@@ -24,6 +23,7 @@ from .select_device import SelectDevice
 from .select_product import SelectProduct
 from .ex_commandstation import EXCommandStation
 from .compile_upload import CompileUpload
+from ex_installer.version import ex_installer_version
 
 # Set theme and appearance, and deactive screen scaling
 ctk.set_default_color_theme(theme.DCC_EX_THEME)
@@ -38,6 +38,9 @@ class EXInstaller(ctk.CTk):
     # Create Arduino CLI and GitHub instances for the entire application
     acli = ArduinoCLI()
     git = GitClient()
+
+    # Set application version
+    app_version = ex_installer_version
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
