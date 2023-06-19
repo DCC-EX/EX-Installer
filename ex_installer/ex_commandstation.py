@@ -92,8 +92,6 @@ class EXCommandStation(WindowLayout):
 
         # Set up WiFi widgets
         self.wifi_type = ctk.IntVar(self, value=0)
-        self.wifi_ssid = ctk.StringVar(self, value="Enter your WiFi SSID/name")
-        self.wifi_pwd = ctk.StringVar(self, value="Enter your WiFi password")
         self.wifi_channel = ctk.StringVar(self, value=1)
         self.wifi_enabled = ctk.StringVar(self, value="off")
         self.wifi_frame = ctk.CTkFrame(self.config_frame, border_width=0)
@@ -114,10 +112,12 @@ class EXCommandStation(WindowLayout):
                                                 command=self.set_wifi_widgets,
                                                 value=1)
         self.wifi_ssid_label = ctk.CTkLabel(self.wifi_options_frame, text="WiFi SSID:")
-        self.wifi_ssid_entry = ctk.CTkEntry(self.wifi_options_frame, textvariable=self.wifi_ssid,
+        self.wifi_ssid_entry = ctk.CTkEntry(self.wifi_options_frame,  # textvariable=self.wifi_ssid,
+                                            placeholder_text="Enter your WiFi SSID/name",
                                             width=200, fg_color="white")
         self.wifi_pwd_label = ctk.CTkLabel(self.wifi_options_frame, text="WiFi Password:")
-        self.wifi_pwd_entry = ctk.CTkEntry(self.wifi_options_frame, textvariable=self.wifi_pwd,
+        self.wifi_pwd_entry = ctk.CTkEntry(self.wifi_options_frame,  # textvariable=self.wifi_pwd,
+                                           placeholder_text="Enter your WiFi password",
                                            width=200, fg_color="white")
         self.wifi_channel_frame = ctk.CTkFrame(self.wifi_options_frame, border_width=2)
         self.wifi_channel_label = ctk.CTkLabel(self.wifi_channel_frame, text="Select WiFi channel:")
@@ -196,14 +196,14 @@ class EXCommandStation(WindowLayout):
         if self.wifi_type.get() == 0:
             self.wifi_ssid_label.grid_remove()
             self.wifi_ssid_entry.grid_remove()
-            self.wifi_pwd_label.grid_remove()
-            self.wifi_pwd_entry.grid_remove()
+            if self.wifi_pwd_entry.get() == "":
+                self.wifi_pwd_entry.configure(placeholder_text="Custom WiFi password")
             self.log.debug("WiFi AP mode selected")
         elif self.wifi_type.get() == 1:
             self.wifi_ssid_label.grid()
             self.wifi_ssid_entry.grid()
-            self.wifi_pwd_label.grid()
-            self.wifi_pwd_entry.grid()
+            if self.wifi_pwd_entry.get() == "":
+                self.wifi_pwd_entry.configure(placeholder_text="Enter your WiFi password")
             self.log.debug("WiFi ST mode selected")
 
     def set_ethernet(self):
@@ -299,17 +299,21 @@ class EXCommandStation(WindowLayout):
         if self.wifi_switch.get() == "on":
             if self.wifi_type.get() == 0:
                 config_list.append('#define WIFI_SSID "Your network name"\n')
-                config_list.append('#define WIFI_PASSWORD "Your network passwd"\n')
+                if self.wifi_pwd_entry.get() == "":
+                    config_list.append('#define WIFI_PASSWORD "Your network passwd"\n')
+                else:
+                    line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
+                    config_list.append(line)
             elif self.wifi_type.get() == 1:
-                if self.wifi_ssid.get() == "Enter your WiFi SSID/name":
+                if self.wifi_ssid_entry.get() == "":
                     param_errors.append("WiFi SSID/name not set")
                 else:
-                    line = '#define WIFI_SSID "' + self.wifi_ssid.get() + '"\n'
+                    line = '#define WIFI_SSID "' + self.wifi_ssid_entry.get() + '"\n'
                     config_list.append(line)
-                if self.wifi_pwd.get() == "Enter your WiFi password":
+                if self.wifi_pwd_entry.get() == "":
                     param_errors.append("WiFi password not set")
                 else:
-                    line = '#define WIFI_PASSWORD "' + self.wifi_pwd.get() + '"\n'
+                    line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
                     config_list.append(line)
             if self.ethernet_switch.get() == "on":
                 param_errors.append("Can not have both Ethernet and WiFi enabled")
