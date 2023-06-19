@@ -21,6 +21,7 @@ from .welcome import Welcome
 from .manage_arduino_cli import ManageArduinoCLI
 from .select_device import SelectDevice
 from .select_product import SelectProduct
+from .select_version_config import SelectVersionConfig
 from .ex_commandstation import EXCommandStation
 from .compile_upload import CompileUpload
 from ex_installer.version import ex_installer_version
@@ -74,6 +75,7 @@ class EXInstaller(ctk.CTk):
             "manage_arduino_cli": ManageArduinoCLI,
             "select_device": SelectDevice,
             "select_product": SelectProduct,
+            "select_version_config": SelectVersionConfig,
             "ex_commandstation": EXCommandStation,
             "compile_upload": CompileUpload
         }
@@ -121,7 +123,10 @@ class EXInstaller(ctk.CTk):
                 self.log.debug("Switch from existing view %s", self.view._name)
             if view_class in self.frames:
                 self.view = self.frames[view_class]
-                if view_class == "compile_upload":
+                if (
+                    view_class == "compile_upload" or
+                    (view_class == "select_version_config" and product != calling_product)
+                ):
                     self.view.destroy()
                     self.view = self.views[view_class](self)
                     self.frames[view_class] = self.view
@@ -129,12 +134,14 @@ class EXInstaller(ctk.CTk):
                     self.view.grid(column=0, row=0, sticky="nsew")
                     self.log.debug("Changing product for %s", view_class)
                     return
+                elif view_class == "select_version_config":
+                    self.view.set_product(product)
                 self.view.tkraise()
                 self.log.debug("Raising view %s", view_class)
             else:
                 self.view = self.views[view_class](self)
                 self.frames[view_class] = self.view
-                if view_class == "compile_upload":
+                if view_class == "compile_upload" or view_class == "select_version_config":
                     self.view.set_product(product)
                 self.view.grid(column=0, row=0, sticky="nsew")
                 self.log.debug("Launching new instance of %s", view_class)
