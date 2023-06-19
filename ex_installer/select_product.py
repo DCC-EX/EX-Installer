@@ -24,6 +24,9 @@ class SelectProduct(WindowLayout):
         self.log = logging.getLogger(__name__)
         self.log.debug("Start view")
 
+        # Define product variable
+        self.product = None
+
         # Set up title
         self.set_title_logo(images.EX_INSTALLER_LOGO)
         self.set_title_text("Select the Product to install")
@@ -109,5 +112,5 @@ class SelectProduct(WindowLayout):
                                "Return to the Select Device screen and select a supported device")
             self.log.error("Device type %s is not supported for %s", device_name, product_name)
         else:
-            self.master.switch_view(product)
+            self.master.switch_view("select_version_config", product)
             self.log.debug("Selected %s", product_name)

@@ -20,6 +20,11 @@ class SelectVersionConfig(WindowLayout):
     Class for selecting the version and config directory
     """
 
+    # Instruction text
+    version_text = ("For most users we recommend staying with the latest Production release, however you can " +
+                    "install other versions if you know what you're doing, or if a version has been suggested by " +
+                    "the DCC-EX team.")
+
     def __init__(self, parent, *args, **kwargs):
         """
         Initialise view
@@ -47,16 +52,14 @@ class SelectVersionConfig(WindowLayout):
         self.version_list = None
         self.latest_prod = None
         self.latest_devel = None
-
-        # Set up title
-        self.set_title_logo(pd[self.product]["product_logo"])
-        self.set_title_text("Install EX-CommandStation")
+        self.product_dir = None
 
         # Set up next/back buttons
         self.next_back.set_back_text("Select Product")
         self.next_back.set_back_command(lambda view="select_product": parent.switch_view(view))
         self.next_back.set_next_text("Configuration")
         self.next_back.set_next_command(None)
+        self.next_back.hide_log_button()
 
         # Set up and grid container frame
         self.version_frame = ctk.CTkFrame(self.main_frame, height=360)
@@ -64,6 +67,19 @@ class SelectVersionConfig(WindowLayout):
 
         # Set up frame contents
         self.setup_version_frame()
+
+    def set_product(self, product):
+        """
+        Function to set the product details to manage the repository
+        """
+        self.product = product
+        self.set_title_text(f"Upload {pd[self.product]['product_name']}")
+        self.set_title_logo(pd[product]["product_logo"])
+        local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
+        self.product_dir = fm.get_install_dir(local_repo_dir)
+        self.branch_name = pd[self.product]["default_branch"]
+        self.set_next_config()
+        self.setup_local_repo("setup_local_repo")
 
     def setup_version_frame(self):
         grid_options = {"padx": 5, "pady": 5}
@@ -127,13 +143,7 @@ class SelectVersionConfig(WindowLayout):
         self.version_frame.grid_rowconfigure((0, 1, 2), weight=1)
         self.version_label.grid(column=0, row=0, **grid_options)
         self.version_radio_frame.grid(column=0, row=1, **grid_options)
-        # self.config_radio_frame.grid(column=0, row=2, **grid_options)
-
-    def set_product(self, product):
-        """
-        Function to set the product details to manage the repository
-        """
-        self.product = product
+        self.config_radio_frame.grid(column=0, row=2, **grid_options)
 
     def setup_local_repo(self, event):
         """
@@ -151,9 +161,9 @@ class SelectVersionConfig(WindowLayout):
         if event == "setup_local_repo":
             self.log.debug("Setting up local repository")
             self.disable_input_states(self)
-            if os.path.exists(self.ex_commandstation_dir) and os.path.isdir(self.ex_commandstation_dir):
-                if self.git.dir_is_git_repo(self.ex_commandstation_dir):
-                    self.repo = self.git.get_repo(self.ex_commandstation_dir)
+            if os.path.exists(self.product_dir) and os.path.isdir(self.product_dir):
+                if self.git.dir_is_git_repo(self.product_dir):
+                    self.repo = self.git.get_repo(self.product_dir)
                     if self.repo:
                         changes = self.git.check_local_changes(self.repo)
                         if changes:
@@ -163,23 +173,23 @@ class SelectVersionConfig(WindowLayout):
                         else:
                             self.setup_local_repo("get_latest")
                     else:
-                        self.process_error(f"{self.ex_commandstation_dir} appears to be a Git repository but is not")
+                        self.process_error(f"{self.product_dir} appears to be a Git repository but is not")
                         self.restore_input_states()
                 else:
-                    if fm.dir_is_empty(self.ex_commandstation_dir):
+                    if fm.dir_is_empty(self.product_dir):
                         self.setup_local_repo("clone_repo")
                     else:
-                        self.process_error(f"{self.ex_commandstation_dir} contains files but is not a repo")
+                        self.process_error(f"{self.product_dir} contains files but is not a repo")
                         self.restore_input_states()
             else:
                 self.log.debug("Cloning repository")
                 self.setup_local_repo("clone_repo")
         elif event == "clone_repo":
             self.process_start("clone_repo", "Clone repository", "Setup_Local_Repo")
-            self.git.clone_repo(pd[self.product]["repo_url"], self.ex_commandstation_dir, self.queue)
+            self.git.clone_repo(pd[self.product]["repo_url"], self.product_dir, self.queue)
         elif self.process_phase == "clone_repo" or event == "get_latest":
             if self.process_status == "success" or event == "get_latest":
-                self.repo = self.git.get_repo(self.ex_commandstation_dir)
+                self.repo = self.git.get_repo(self.product_dir)
                 branch_ref = self.git.get_branch_ref(self.repo, self.branch_name)
                 self.log.debug("Checkout %s", self.branch_name)
                 try:
@@ -205,7 +215,7 @@ class SelectVersionConfig(WindowLayout):
                 self.process_error("Could not pull latest updates from GitHub")
                 self.restore_input_states()
                 self.log.error("Could not pull updates from GitHub")
-    
+
     def set_versions(self, repo):
         """
         Function to obtain versions available in the repo
@@ -262,13 +272,24 @@ class SelectVersionConfig(WindowLayout):
         Function to select what configuration to do next
         """
         if self.config_option.get() == 0:
-            self.next_back.set_next_command(self.display_config_screen)
-            self.next_back.set_next_text("Configuration")
+            self.next_back.set_next_command(lambda product=self.product: self.master.switch_view(product))
+            self.next_back.set_next_text(f"Configure {pd[self.product]['product_name']}")
             self.next_back.enable_next()
         elif self.config_option.get() == 1:
             self.next_back.set_next_command(self.copy_config_files)
             self.next_back.set_next_text("Compile and upload")
             self.validate_config_dir()
+
+    def browse_configdir(self):
+        """
+        Opens a directory browser dialogue to select the folder containing config files
+        """
+        directory = ctk.filedialog.askdirectory()
+        if directory:
+            self.config_path.set(directory)
+            self.config_option.set(1)
+            self.set_next_config()
+            self.log.debug("Get config from %s", directory)
 
     def validate_config_dir(self):
         """
@@ -290,3 +311,26 @@ class SelectVersionConfig(WindowLayout):
                                config_files)
         else:
             self.next_back.disable_next()
+
+    def copy_config_files(self):
+        """
+        Function to either create config files or copy from specified directory
+        """
+        if self.config_option.get() == 0:
+            self.master.switch_view("compile_upload", self.product)
+        elif self.config_option.get() == 1:
+            copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
+            if copy_list:
+                extra_list = fm.get_config_files(self.config_path.get(), pd[self.product]["other_config_files"])
+                if extra_list:
+                    copy_list += extra_list
+                file_copy = fm.copy_config_files(self.config_path.get(), self.product_dir, copy_list)
+                if file_copy:
+                    file_list = ", ".join(file_copy)
+                    self.process_error(f"Failed to copy one or more files: {file_list}")
+                    self.log.error("Failed to copy: %s", file_list)
+                else:
+                    self.master.switch_view("compile_upload", self.product)
+            else:
+                self.process_error("Selected configuration directory is missing the required files")
+                self.log.error("Directory %s is missing required files", self.config_path.get())
