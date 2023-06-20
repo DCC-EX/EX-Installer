@@ -101,6 +101,19 @@ class EXCommandStation(WindowLayout):
         self.display_combo = ctk.CTkComboBox(self.config_frame, values=list(self.supported_displays),
                                              width=300)
 
+        # Track Manager Options
+        self.track_enabled = ctk.StringVar(self, value="off")
+        self.track_switch = ctk.CTkSwitch(self.config_frame, text="Set Track Modes", width=150,
+                                            onvalue="on", offvalue="off", variable=self.track_enabled,
+                                            command=self.set_track)
+        self.track_frame = ctk.CTkFrame(self.config_frame, border_width=2, fg_color="#E5E5E5")
+        self.track_a_label = ctk.CTkLabel(self.track_frame, text="Track A:")
+        self.track_a_combo = ctk.CTkComboBox(self.track_frame, values=list(self.trackmanager_modes),
+                                                  width=100)
+        self.track_b_label = ctk.CTkLabel(self.track_frame, text="Track B:")
+        self.track_b_combo = ctk.CTkComboBox(self.track_frame, values=list(self.trackmanager_modes),
+                                                  width=100)
+
         # Set up WiFi widgets
         self.wifi_type = ctk.IntVar(self, value=0)
         self.wifi_channel = ctk.StringVar(self, value=1)
@@ -145,17 +158,9 @@ class EXCommandStation(WindowLayout):
                                              onvalue="on", offvalue="off", variable=self.ethernet_enabled,
                                              command=self.set_ethernet)
 
-        # Track A 
-        self.track_a_label = ctk.CTkLabel(self.config_frame, text="Select Track A mode")
-        self.track_a_combo = ctk.CTkComboBox(self.config_frame, values=list(self.trackmanager_modes),
-                                                  width=100)
-        # Track B 
-        self.track_b_label = ctk.CTkLabel(self.config_frame, text="Select Track B mode")
-        self.track_b_combo = ctk.CTkComboBox(self.config_frame, values=list(self.trackmanager_modes),
-                                                  width=100)
-        self.track_b_combo.set("PROG") #default to MAIN and PROG
+       
 
-        # Layout WiFi frame
+        # Layout wifi_frame
         self.wifi_frame.grid_columnconfigure((0, 1), weight=1)
         self.wifi_frame.grid_rowconfigure(0, weight=1)
         self.wifi_options_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
@@ -175,7 +180,13 @@ class EXCommandStation(WindowLayout):
         self.wifi_channel_entry.grid(column=2, row=0)
         self.wifi_channel_plus.grid(column=3, row=0, sticky="w", padx=(0, 5))
 
-        # Layout frame
+        # layout track_frame
+        self.track_a_label.grid(column=0, row=0, stick="e", **grid_options)
+        self.track_a_combo.grid(column=1, row=0, sticky="w", **grid_options)
+        self.track_b_label.grid(column=0, row=1, stick="e", **grid_options)
+        self.track_b_combo.grid(column=1, row=1, sticky="w", **grid_options)
+
+        # Layout config_frame
         self.hardware_label.grid(column=0, row=2, columnspan=2, **grid_options)
         self.motor_driver_label.grid(column=0, row=3, stick="e", **grid_options)
         self.motor_driver_combo.grid(column=1, row=3, sticky="w", **grid_options)
@@ -184,10 +195,8 @@ class EXCommandStation(WindowLayout):
         self.wifi_switch.grid(column=0, row=5, sticky="e", **grid_options)
         self.wifi_frame.grid(column=1, row=5, sticky="w", **grid_options)
         self.ethernet_switch.grid(column=0, row=6, sticky="e", **grid_options)
-        self.track_a_label.grid(column=0, row=7, stick="e", **grid_options)
-        self.track_a_combo.grid(column=1, row=7, sticky="w", **grid_options)
-        self.track_b_label.grid(column=0, row=8, stick="e", **grid_options)
-        self.track_b_combo.grid(column=1, row=8, sticky="w", **grid_options)
+        self.track_switch.grid(column=0, row=7, sticky="e", **grid_options)
+        self.track_frame.grid(column=1, row=7, sticky="w", **grid_options)
 
     def set_display(self):
         """
@@ -199,6 +208,19 @@ class EXCommandStation(WindowLayout):
         else:
             self.display_combo.grid_remove()
             self.log.debug("Display disabled")
+
+    def set_track(self):
+        """
+        Sets track mode options on or off
+        """
+        if self.track_switch.get() == "on":
+            self.track_frame.grid()
+            self.log.debug("Track frame enabled")
+        else:
+            self.track_frame.grid_remove()
+            self.track_a_combo.set("MAIN") #default to MAIN and PROG
+            self.track_b_combo.set("PROG")
+            self.log.debug("Track frame disabled")
 
     def set_wifi(self):
         """
@@ -268,6 +290,7 @@ class EXCommandStation(WindowLayout):
         self.config_frame.grid()
         self.set_display()
         self.set_wifi()
+        self.set_track()
         self.get_motor_drivers()
         self.check_motor_driver(self.motor_driver_combo.get())
         self.next_back.set_next_text("Compile and upload")
