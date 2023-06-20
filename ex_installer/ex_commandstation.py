@@ -434,9 +434,6 @@ class EXCommandStation(WindowLayout):
             config_file_path = fm.get_filepath(self.ex_commandstation_dir, "config.h")
             write_config = fm.write_config_file(config_file_path, file_contents)
             if write_config != config_file_path:
-                # self.master.compile_upload(self.product)
-                #     self.master.switch_view("compile_upload", self.product)
-                # else:
                 self.process_error(f"Could not write config.h: {write_config}")
                 self.log.error("Could not write config file: %s", write_config)
         else:
