@@ -101,19 +101,6 @@ class EXCommandStation(WindowLayout):
         self.display_combo = ctk.CTkComboBox(self.config_frame, values=list(self.supported_displays),
                                              width=300)
 
-        # Track Manager Options
-        self.track_enabled = ctk.StringVar(self, value="off")
-        self.track_switch = ctk.CTkSwitch(self.config_frame, text="Set Track Modes", width=150,
-                                            onvalue="on", offvalue="off", variable=self.track_enabled,
-                                            command=self.set_track)
-        self.track_frame = ctk.CTkFrame(self.config_frame, border_width=2, fg_color="#E5E5E5")
-        self.track_a_label = ctk.CTkLabel(self.track_frame, text="Track A:")
-        self.track_a_combo = ctk.CTkComboBox(self.track_frame, values=list(self.trackmanager_modes),
-                                                  width=100)
-        self.track_b_label = ctk.CTkLabel(self.track_frame, text="Track B:")
-        self.track_b_combo = ctk.CTkComboBox(self.track_frame, values=list(self.trackmanager_modes),
-                                                  width=100)
-
         # Set up WiFi widgets
         self.wifi_type = ctk.IntVar(self, value=0)
         self.wifi_channel = ctk.StringVar(self, value=1)
@@ -158,7 +145,25 @@ class EXCommandStation(WindowLayout):
                                              onvalue="on", offvalue="off", variable=self.ethernet_enabled,
                                              command=self.set_ethernet)
 
-       
+        # Track Manager Options
+        self.track_enabled = ctk.StringVar(self, value="off")
+        self.track_switch = ctk.CTkSwitch(self.config_frame, text="Set Track Modes", width=150,
+                                            onvalue="on", offvalue="off", variable=self.track_enabled,
+                                            command=self.set_track)
+        self.track_frame = ctk.CTkFrame(self.config_frame, border_width=2, fg_color="#E5E5E5")
+        self.track_a_label = ctk.CTkLabel(self.track_frame, text="Track A:")
+        self.track_a_combo = ctk.CTkComboBox(self.track_frame, values=list(self.trackmanager_modes),
+                                                  width=100)
+        self.track_b_label = ctk.CTkLabel(self.track_frame, text="Track B:")
+        self.track_b_combo = ctk.CTkComboBox(self.track_frame, values=list(self.trackmanager_modes),
+                                                  width=100)      
+
+        # manual configuration edits
+        self.manual_enabled = ctk.StringVar(self, value="off")
+        self.manual_switch = ctk.CTkSwitch(self.config_frame, text="Config Files", width=150,
+                                            onvalue="on", offvalue="off", variable=self.track_enabled,
+                                            command=self.set_manual)
+        self.manual_frame = ctk.CTkFrame(self.config_frame, border_width=2, fg_color="#E5E5E5")
 
         # Layout wifi_frame
         self.wifi_frame.grid_columnconfigure((0, 1), weight=1)
@@ -294,7 +299,7 @@ class EXCommandStation(WindowLayout):
         self.get_motor_drivers()
         self.check_motor_driver(self.motor_driver_combo.get())
         self.next_back.set_next_text("Compile and upload")
-        self.next_back.set_next_command(self.create_config_file)
+        self.next_back.set_next_command(self.create_config_files)
         self.next_back.set_back_text("Select version")
         self.next_back.set_back_command(lambda view="select_version_config",
                                         product=self.product: self.master.switch_view(view, product))
@@ -398,13 +403,13 @@ class EXCommandStation(WindowLayout):
         # write out trackmanager config, including roster entries if DCx
         if (self.track_a_combo.get().startswith("DC")): 
             line = "AUTOSTART SETLOCO(1) SET_TRACK(A,"+ self.track_a_combo.get() + ") DONE\n"
-            line += "ROSTER(1,\"DC BLOCK A\",\"/\")\n"
+            line += "ROSTER(1,\"DC TRACK A\",\"/* /\")\n"
         else:
             line = "AUTOSTART SET_TRACK(A,"+ self.track_a_combo.get() + ") DONE\n"
         config_list.append(line)
         if (self.track_b_combo.get().startswith("DC")): 
             line = "AUTOSTART SETLOCO(2) SET_TRACK(B,"+ self.track_b_combo.get() + ") DONE\n"
-            line += "ROSTER(2,\"DC BLOCK B\",\"/\")\n"
+            line += "ROSTER(2,\"DC TRACK B\",\"/* /\")\n"
         else:
             line = "AUTOSTART SET_TRACK(B,"+ self.track_a_combo.get() + ") DONE\n"
         config_list.append(line)
@@ -417,9 +422,9 @@ class EXCommandStation(WindowLayout):
             return (True, config_list)
 
 
-    def create_config_file(self):
+    def create_config_files(self):
         """
-        Function to create config.h file and progress to upload
+        Function to create config.h and myAutomation.h files and progress to upload
 
         - Check for config errors
         - Checks for the existence of user config files
