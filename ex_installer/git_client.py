@@ -252,7 +252,7 @@ class GitClient:
         if version:
             return (int(version[1]), int(version[2]), int(version[3]))
         else:
-            return None
+            return (None, None, None)
 
     @staticmethod
     def get_latest_prod(repo, tag_name="Prod"):

@@ -59,6 +59,7 @@ class SelectVersionConfig(WindowLayout):
         self.next_back.set_back_command(lambda view="select_product": parent.switch_view(view))
         self.next_back.set_next_text("Configuration")
         self.next_back.set_next_command(None)
+        self.next_back.disable_next()
         self.next_back.hide_log_button()
 
         # Set up and grid container frame
@@ -78,7 +79,6 @@ class SelectVersionConfig(WindowLayout):
         local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
         self.product_dir = fm.get_install_dir(local_repo_dir)
         self.branch_name = pd[self.product]["default_branch"]
-        self.set_next_config()
         self.setup_local_repo("setup_local_repo")
 
     def setup_version_frame(self):
@@ -211,6 +211,7 @@ class SelectVersionConfig(WindowLayout):
                 self.set_versions(self.repo)
                 self.process_stop()
                 self.restore_input_states()
+                self.set_next_config()
             elif self.process_status == "error":
                 self.process_error("Could not pull latest updates from GitHub")
                 self.restore_input_states()
@@ -247,15 +248,18 @@ class SelectVersionConfig(WindowLayout):
             self.repo.checkout(refname=self.latest_prod[1])
             self.next_back.enable_next()
             self.log.debug("Latest prod selected: %s", self.latest_prod[1])
+            self.set_next_config()
         elif self.select_version.get() == 1:
             self.repo.checkout(refname=self.latest_devel[1])
             self.next_back.enable_next()
             self.log.debug("Latest devel selected: %s", self.latest_devel[1])
+            self.set_next_config()
         elif self.select_version.get() == 2:
             if self.select_version_combo.get() != "Select a version":
                 self.repo.checkout(refname=self.version_list[self.select_version_combo.get()]["ref"])
                 self.next_back.enable_next()
                 self.log.debug("Version selected: %s", self.version_list[self.select_version_combo.get()]["ref"])
+                self.set_next_config()
             else:
                 self.next_back.disable_next()
 
@@ -272,18 +276,23 @@ class SelectVersionConfig(WindowLayout):
         Function to select what configuration to do next
         """
         if self.config_option.get() == 0:
+            set_version = None
             if self.select_version.get() == 0:
-                set_version = "v4.1.6-Prod"
+                set_version = self.latest_prod[0]
             elif self.select_version.get() == 1:
-                set_version = "v4.2.56-Devel"
-            elif self.select_version.get() == 1:
-                set_version = self.select_version_combo.get()
-            self.next_back.set_next_command(lambda next_product=self.product,
-                                            set_version=set_version: self.master.switch_view(next_product,
-                                                                                             None,
-                                                                                             set_version))
+                set_version = self.latest_devel[0]
+            elif self.select_version.get() == 2:
+                if self.select_version_combo.get() != "Select a version":
+                    set_version = self.select_version_combo.get()
+            if self.set_version:
+                self.next_back.set_next_command(lambda next_product=self.product,
+                                                set_version=set_version: self.master.switch_view(next_product,
+                                                                                                 None,
+                                                                                                 set_version))
+                self.next_back.enable_next()
+            else:
+                self.next_back.disable_next()
             self.next_back.set_next_text(f"Configure {pd[self.product]['product_name']}")
-            self.next_back.enable_next()
         elif self.config_option.get() == 1:
             self.next_back.set_next_command(self.copy_config_files)
             self.next_back.set_next_text("Compile and upload")

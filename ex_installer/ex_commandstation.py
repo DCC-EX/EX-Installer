@@ -70,13 +70,13 @@ class EXCommandStation(WindowLayout):
         self.display_config_screen()
         self.next_back.hide_log_button()
 
-    def set_product_version(self):
+    def set_product_version(self, version, major=None, minor=None, patch=None):
         """
         Function to be called by the switch_frame function to set the chosen version
 
         This allows configuration options to be set based on the chosen version
         """
-        pass
+        print(f"{version} {major} {minor} {patch}")
 
     def setup_config_frame(self):
         """

@@ -11,7 +11,6 @@ from CTkMessagebox import CTkMessagebox
 import subprocess
 import os
 import platform
-from pprint import pprint
 
 # Import local modules
 from . import images
@@ -136,12 +135,9 @@ class EXInstaller(ctk.CTk):
         All default to None if not defined
         """
         calling_product = None
-        pprint(locals())
         if view_class:
             if version:
                 version_details = GitClient.extract_version_details(version)
-                print(f"Got version {version}")
-                print(version_details)
             if self.view:
                 if hasattr(self.view, "product"):
                     calling_product = self.view.product
@@ -158,14 +154,14 @@ class EXInstaller(ctk.CTk):
                     self.frames[view_class] = self.view
                     self.view.set_product(product)
                     if hasattr(self.view, "set_product_version"):
-                        print("Set version")
+                        self.view.set_product_version(version, *version_details)
                     self.view.grid(column=0, row=0, sticky="nsew")
                     self.log.debug("Changing product for %s", view_class)
                     return
                 elif view_class == "select_version_config":
                     self.view.set_product(product)
                 if hasattr(self.view, "set_product_version"):
-                    print("Set version")
+                    self.view.set_product_version(version, *version_details)
                 self.view.tkraise()
                 self.log.debug("Raising view %s", view_class)
             else:
@@ -174,6 +170,6 @@ class EXInstaller(ctk.CTk):
                 if view_class == "compile_upload" or view_class == "select_version_config":
                     self.view.set_product(product)
                 if hasattr(self.view, "set_product_version"):
-                    print("Set version")
+                    self.view.set_product_version(version, *version_details)
                 self.view.grid(column=0, row=0, sticky="nsew")
                 self.log.debug("Launching new instance of %s", view_class)
