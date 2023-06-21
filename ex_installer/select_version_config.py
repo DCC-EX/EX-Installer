@@ -73,7 +73,7 @@ class SelectVersionConfig(WindowLayout):
         Function to set the product details to manage the repository
         """
         self.product = product
-        self.set_title_text(f"Upload {pd[self.product]['product_name']}")
+        self.set_title_text(f"Select {pd[self.product]['product_name']} version")
         self.set_title_logo(pd[product]["product_logo"])
         local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
         self.product_dir = fm.get_install_dir(local_repo_dir)
@@ -272,7 +272,16 @@ class SelectVersionConfig(WindowLayout):
         Function to select what configuration to do next
         """
         if self.config_option.get() == 0:
-            self.next_back.set_next_command(lambda product=self.product: self.master.switch_view(product))
+            if self.select_version.get() == 0:
+                set_version = "v4.1.6-Prod"
+            elif self.select_version.get() == 1:
+                set_version = "v4.2.56-Devel"
+            elif self.select_version.get() == 1:
+                set_version = self.select_version_combo.get()
+            self.next_back.set_next_command(lambda next_product=self.product,
+                                            set_version=set_version: self.master.switch_view(next_product,
+                                                                                             None,
+                                                                                             set_version))
             self.next_back.set_next_text(f"Configure {pd[self.product]['product_name']}")
             self.next_back.enable_next()
         elif self.config_option.get() == 1:

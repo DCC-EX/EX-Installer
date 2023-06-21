@@ -11,6 +11,7 @@ from CTkMessagebox import CTkMessagebox
 import subprocess
 import os
 import platform
+from pprint import pprint
 
 # Import local modules
 from . import images
@@ -108,14 +109,39 @@ class EXInstaller(ctk.CTk):
         elif critical.get() == "Exit":
             sys.exit()
 
-    def switch_view(self, view_class, product=None):
+    def switch_view(self, view_class, product=None, version=None):
         """
         Function to switch views
 
-        compile_upload view needs a product parameter, others don't
+        These views require a product parameter to be supplied:
+        - compile_upload
+        - select_version_config
+
+        These views should get version info if available:
+        - ex_commandstation
+
+        Version should ideally contain semantic numbering, but any name will work
+        If semantic numbering is used, the product configuration screens can determine
+        options based on those numbers
+
+        For semantic numbering to work, it must match GitHub tag format:
+        vX.Y.Z-Prod|Devel
+
+        Version info will be available in:
+        self.product_version_name
+        self.product_major_version
+        self.product_minor_version
+        self.product_patch_version
+
+        All default to None if not defined
         """
         calling_product = None
+        pprint(locals())
         if view_class:
+            if version:
+                version_details = GitClient.extract_version_details(version)
+                print(f"Got version {version}")
+                print(version_details)
             if self.view:
                 if hasattr(self.view, "product"):
                     calling_product = self.view.product
@@ -131,11 +157,15 @@ class EXInstaller(ctk.CTk):
                     self.view = self.views[view_class](self)
                     self.frames[view_class] = self.view
                     self.view.set_product(product)
+                    if hasattr(self.view, "set_product_version"):
+                        print("Set version")
                     self.view.grid(column=0, row=0, sticky="nsew")
                     self.log.debug("Changing product for %s", view_class)
                     return
                 elif view_class == "select_version_config":
                     self.view.set_product(product)
+                if hasattr(self.view, "set_product_version"):
+                    print("Set version")
                 self.view.tkraise()
                 self.log.debug("Raising view %s", view_class)
             else:
@@ -143,5 +173,7 @@ class EXInstaller(ctk.CTk):
                 self.frames[view_class] = self.view
                 if view_class == "compile_upload" or view_class == "select_version_config":
                     self.view.set_product(product)
+                if hasattr(self.view, "set_product_version"):
+                    print("Set version")
                 self.view.grid(column=0, row=0, sticky="nsew")
                 self.log.debug("Launching new instance of %s", view_class)

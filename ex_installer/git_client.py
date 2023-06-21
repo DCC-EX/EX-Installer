@@ -238,6 +238,23 @@ class GitClient:
         return version_list
 
     @staticmethod
+    def extract_version_details(version_string):
+        """
+        Extracts major, minor, and patch versions from a GitHub tag style version string
+
+        Returns a tuple (major, minor, patch) or None
+
+        version_string must match a GitHub version style tag to work
+        vX.Y.Z-Prod|Devel
+        """
+        version_match = r"v(\d+)\.(\d+)\.(\d+)-(Prod|Devel)"
+        version = re.search(version_match, version_string)
+        if version:
+            return (int(version[1]), int(version[2]), int(version[3]))
+        else:
+            return None
+
+    @staticmethod
     def get_latest_prod(repo, tag_name="Prod"):
         """
         Retrieves the latest Production tagged version from the repo
