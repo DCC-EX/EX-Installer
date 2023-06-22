@@ -313,3 +313,42 @@ class NextBack(ctk.CTkFrame):
             os.startfile(log_file)
         else:
             subprocess.call(("xdg-open", log_file))
+
+
+class FormattedTextbox(ctk.CTkTextbox):
+    """
+    Class for formatting a CustomTkinter textbox
+
+    Allows for bullet points only to start
+
+    Usage example:
+    textbox = FormattedTextbox(master, arguments)
+    textbox.insert_bullet("insert", "Bullet list item")
+
+    For a number of bullet list items:
+    bullet_list = [
+        "Item 1",
+        "Item 2",
+        "Item 3
+    ]
+    for item in bullet_list:
+        textbox.insert_bullet("insert", item)
+    """
+    def __init__(self, *args, **kwargs):
+        """
+        Initialise the object
+
+        Pass standard Textbox() arguments
+        """
+        super().__init__(*args, **kwargs)
+
+        default_font = ctk.CTkFont(family="Helvetica", size=14, weight="normal")
+        em = default_font.measure("m")
+        lmargin2 = em + default_font.measure("\u2022")
+        self.tag_config("bullet", lmargin1=em, lmargin2=lmargin2, spacing1=1, spacing2=1, spacing3=1)
+
+    def insert_bullet(self, index, text):
+        """
+        Function to insert a bullet point
+        """
+        self.insert(index, f"\u2022 {text}", "bullet")
