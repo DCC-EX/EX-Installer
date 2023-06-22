@@ -48,7 +48,7 @@ class CompileUpload(WindowLayout):
         # Set up text variables
         self.intro_text = None
         self.instruction_text = ("Please ensure your device is connected to your USB port and then " +
-                                 "click the Upload button to commence installing the software.")
+                                 "click the Load button to commence loading the software on to your device.")
 
         # Create widgets
         self.intro_label = ctk.CTkLabel(self.compile_upload_frame, text=self.intro_text,
@@ -60,7 +60,7 @@ class CompileUpload(WindowLayout):
         self.success_label = ctk.CTkLabel(self.compile_upload_frame, text=None,
                                           font=self.instruction_font)
         self.upload_button = ctk.CTkButton(self.compile_upload_frame, width=200, height=50,
-                                           text="Upload", font=self.action_button_font,
+                                           text="Load", font=self.action_button_font,
                                            command=lambda event="upload_software": self.upload_software(event))
         self.details_label = ctk.CTkLabel(self.compile_upload_frame, text="Results will be shown below:",
                                           font=self.instruction_font)
@@ -91,13 +91,13 @@ class CompileUpload(WindowLayout):
         Function to set the product details of what's being uploaded
         """
         self.product = product
-        self.set_title_text(f"Upload {pd[self.product]['product_name']}")
+        self.set_title_text(f"Load {pd[self.product]['product_name']}")
         self.set_title_logo(pd[product]["product_logo"])
         self.congrats_label.grid_remove()
         self.success_label.grid_remove()
         self.next_back.set_back_text(f"Configure {pd[self.product]['product_name']}")
         self.next_back.set_back_command(lambda view=product: self.master.switch_view(view))
-        text = (f"{pd[self.product]['product_name']} is now ready to be uploaded to your " +
+        text = (f"{pd[self.product]['product_name']} is now ready to be loaded on to your " +
                 f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']} " +
                 f"attached to {self.acli.detected_devices[self.acli.selected_device]['port']}")
         self.intro_label.configure(text=text)
@@ -112,7 +112,7 @@ class CompileUpload(WindowLayout):
             self.disable_input_states(self)
             self.set_details("")
             self.process_start("uploading",
-                               f"Compiling and uploading {pd[self.product]['product_name']} to your device",
+                               f"Compiling and loading {pd[self.product]['product_name']} on to your device",
                                "Upload_Software")
             self.acli.upload_sketch(self.acli.cli_file_path(),
                                     self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"],
@@ -143,7 +143,7 @@ class CompileUpload(WindowLayout):
         self.instruction_label.grid_remove()
         self.congrats_label.configure(text="Congratulations!")
         self.congrats_label.grid()
-        text = (f"{pd[self.product]['product_name']} has successfully been uploaded to your " +
+        text = (f"{pd[self.product]['product_name']} has successfully been loaded on to your " +
                 f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']}")
         self.success_label.configure(text=text)
         self.success_label.grid()
@@ -156,7 +156,7 @@ class CompileUpload(WindowLayout):
         self.instruction_label.grid_remove()
         self.congrats_label.configure(text="Error!")
         self.congrats_label.grid()
-        text = (f"{pd[self.product]['product_name']} was not successfully uploaded to your " +
+        text = (f"{pd[self.product]['product_name']} was not successfully loaded on to your " +
                 f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']}")
         self.success_label.configure(text=text)
         self.success_label.grid()
