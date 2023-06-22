@@ -35,8 +35,14 @@ class WindowLayout(ctk.CTkFrame):
         self.acli = parent.acli
         self.git = parent.git
 
-        # Get version
+        # Get application version
         self.app_version = parent.app_version
+
+        # Product version variables
+        self.product_version_name = None
+        self.product_major_version = None
+        self.product_minor_version = None
+        self.product_patch_version = None
 
         # Variables for process and queue monitoring
         self.process_phase = None
