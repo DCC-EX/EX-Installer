@@ -15,6 +15,7 @@ import subprocess
 
 # Import local modules
 from . import images
+from .serial_monitor import SerialMonitor
 
 
 class WindowLayout(ctk.CTkFrame):
@@ -224,7 +225,7 @@ class NextBack(ctk.CTkFrame):
         # Set up logger
         self.log = logging.getLogger(__name__)
 
-        self.grid_columnconfigure((0, 1, 2), weight=1)
+        self.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 
         button_font = ctk.CTkFont(family="Helvetica", size=14, weight="bold")
         button_options = {"width": 220, "height": 30, "font": button_font}
@@ -247,8 +248,13 @@ class NextBack(ctk.CTkFrame):
                                         command=self.show_log)
 
         self.back_button.grid(column=0, row=0, padx=3, pady=3, sticky="w")
-        self.log_button.grid(column=1, row=0)
-        self.next_button.grid(column=2, row=0, padx=3, pady=3, sticky="e")
+        self.log_button.grid(column=2, row=0)
+        self.next_button.grid(column=4, row=0, padx=3, pady=3, sticky="e")
+
+        self.monitor_window = None
+        self.monitor_button = ctk.CTkButton(self, text="Monitor", width=100, height=30, font=button_font,
+                                            command=self.monitor)
+        self.monitor_button.grid(column=1, row=0)
 
     def set_back_text(self, text):
         """Update back button text"""
@@ -313,6 +319,16 @@ class NextBack(ctk.CTkFrame):
             os.startfile(log_file)
         else:
             subprocess.call(("xdg-open", log_file))
+
+    def monitor(self):
+        """
+        Function to open the serial monitor window
+        """
+        if self.monitor_window is None or not self.monitor_window.winfo_exists():
+            self.monitor_window = SerialMonitor(self)
+            self.monitor_window.attributes("-topmost", "true")
+        else:
+            self.monitor_window.focus()
 
 
 class FormattedTextbox(ctk.CTkTextbox):
