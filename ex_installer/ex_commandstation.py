@@ -268,7 +268,7 @@ class EXCommandStation(WindowLayout):
         self.set_wifi()
         self.get_motor_drivers()
         self.check_motor_driver(self.motor_driver_combo.get())
-        self.next_back.set_next_text("Compile and upload")
+        self.next_back.set_next_text("Compile and load")
         self.next_back.set_next_command(self.create_config_file)
         self.next_back.set_back_text("Select version")
         self.next_back.set_back_command(lambda view="select_version_config",

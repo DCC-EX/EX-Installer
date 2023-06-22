@@ -160,7 +160,7 @@ class EXInstaller(ctk.CTk):
                     return
                 elif view_class == "select_version_config":
                     self.view.set_product(product)
-                if hasattr(self.view, "set_product_version"):
+                if version and hasattr(self.view, "set_product_version"):
                     self.view.set_product_version(version, *version_details)
                 self.view.tkraise()
                 self.log.debug("Raising view %s", view_class)
