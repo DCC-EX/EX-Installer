@@ -332,23 +332,23 @@ class SelectVersionConfig(WindowLayout):
 
     def copy_config_files(self):
         """
-        Function to either create config files or copy from specified directory
+        Function to copy config files from selected directory to product directory
         """
-        if self.config_option.get() == 0:
-            self.master.switch_view("advanced_config", self.product)
-        elif self.config_option.get() == 1:
-            copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
-            if copy_list:
-                extra_list = fm.get_config_files(self.config_path.get(), pd[self.product]["other_config_files"])
-                if extra_list:
-                    copy_list += extra_list
-                file_copy = fm.copy_config_files(self.config_path.get(), self.product_dir, copy_list)
-                if file_copy:
-                    file_list = ", ".join(file_copy)
-                    self.process_error(f"Failed to copy one or more files: {file_list}")
-                    self.log.error("Failed to copy: %s", file_list)
-                else:
-                    self.master.switch_view("advanced_config", self.product)
+        copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
+        if copy_list:
+            extra_list = fm.get_config_files(self.config_path.get(), pd[self.product]["other_config_files"])
+            if extra_list:
+                copy_list += extra_list
+            file_copy = fm.copy_config_files(self.config_path.get(), self.product_dir, copy_list)
+            if file_copy:
+                file_list = ", ".join(file_copy)
+                self.process_error(f"Failed to copy one or more files: {file_list}")
+                self.log.error("Failed to copy: %s", file_list)
             else:
-                self.process_error("Selected configuration directory is missing the required files")
-                self.log.error("Directory %s is missing required files", self.config_path.get())
+                if "advanced_config" in self.master.frames :
+                    # refresh the text boxes before REvisiting
+                    self.master.frames["advanced_config"].read_config_files()
+                self.master.switch_view("advanced_config", self.product)
+        else:
+            self.process_error("Selected configuration directory is missing the required files")
+            self.log.error("Directory %s is missing required files", self.config_path.get())

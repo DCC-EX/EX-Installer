@@ -90,7 +90,9 @@ class AdvancedConfig(WindowLayout):
     def read_config_files(self) :
         # copy the file contents into the edit boxes
         text = fm.read_config_file(self.config_file_path)
+        self.config_textbox.delete("0.0", "end")
         self.config_textbox.insert("0.0", text)
         text = fm.read_config_file(self.myAutomation_file_path)
+        self.myAutomation_textbox.delete("0.0", "end")
         self.myAutomation_textbox.insert("0.0", text)
 

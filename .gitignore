@@ -164,3 +164,4 @@ cython_debug/
 
 # PyInstaller version file (dynamically built)
 file_version.txt
+dist/EX-Installer-Win64.exe

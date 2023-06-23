@@ -507,6 +507,9 @@ class EXCommandStation(WindowLayout):
             write_config = fm.write_config_file(config_file_path, file_contents)
             if write_config == config_file_path:
                 if self.advanced_config_enabled.get() == "on" :
+                    if "advanced_config" in self.master.frames :
+                        # refresh the text boxes before REvisiting
+                        self.master.frames["advanced_config"].read_config_files()
                     self.master.switch_view("advanced_config", self.product)
                 else :
                     self.master.switch_view("compile_upload", self.product)
