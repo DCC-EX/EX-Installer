@@ -23,6 +23,7 @@ from .select_device import SelectDevice
 from .select_product import SelectProduct
 from .select_version_config import SelectVersionConfig
 from .ex_commandstation import EXCommandStation
+from .advanced_config import AdvancedConfig
 from .compile_upload import CompileUpload
 from ex_installer.version import ex_installer_version
 
@@ -77,6 +78,7 @@ class EXInstaller(ctk.CTk):
             "select_product": SelectProduct,
             "select_version_config": SelectVersionConfig,
             "ex_commandstation": EXCommandStation,
+            "advanced_config": AdvancedConfig,
             "compile_upload": CompileUpload
         }
         self.view = None

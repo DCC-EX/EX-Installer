@@ -292,6 +292,20 @@ class FileManager:
             return str(error)
 
     @staticmethod
+    def read_config_file(file_path):
+        """Function to read and return file contents
+        Pass the full path to the file
+        Returns the text from the file path if successful, otherwise the exception error message
+        """
+        try:
+            file = open(file_path, "r", encoding="utf-8")
+            lines = file.read()
+            file.close()
+            return lines
+        except Exception as error:
+            return str(error)
+
+    @staticmethod
     def dir_is_empty(dir):
         """
         Check if directory is empty

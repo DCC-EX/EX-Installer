@@ -31,12 +31,12 @@ def main(debug):
     if debug:
         logging.basicConfig(filename=log_file,
                             datefmt="%Y-%m-%d %H:%M:%S",
-                            format="%(asctime)s - %(name)s - %(levelname)s - %(funcName)s: - %(message)s",
+                            format="%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(funcName)s: - %(message)s",
                             level=logging.DEBUG)
     else:
         logging.basicConfig(filename=log_file,
                             datefmt="%Y-%m-%d %H:%M:%S",
-                            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+                            format="%(asctime)s.%(msecs)03d - %(name)s - %(levelname)s - %(message)s",
                             level=logging.WARNING)
 
     # Start the app

@@ -295,7 +295,7 @@ class SelectVersionConfig(WindowLayout):
             self.next_back.set_next_text(f"Configure {pd[self.product]['product_name']}")
         elif self.config_option.get() == 1:
             self.next_back.set_next_command(self.copy_config_files)
-            self.next_back.set_next_text("Compile and upload")
+            self.next_back.set_next_text("Advanced Config")
             self.validate_config_dir()
 
     def browse_configdir(self):
@@ -335,7 +335,7 @@ class SelectVersionConfig(WindowLayout):
         Function to either create config files or copy from specified directory
         """
         if self.config_option.get() == 0:
-            self.master.switch_view("compile_upload", self.product)
+            self.master.switch_view("advanced_config", self.product)
         elif self.config_option.get() == 1:
             copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
             if copy_list:
@@ -348,7 +348,7 @@ class SelectVersionConfig(WindowLayout):
                     self.process_error(f"Failed to copy one or more files: {file_list}")
                     self.log.error("Failed to copy: %s", file_list)
                 else:
-                    self.master.switch_view("compile_upload", self.product)
+                    self.master.switch_view("advanced_config", self.product)
             else:
                 self.process_error("Selected configuration directory is missing the required files")
                 self.log.error("Directory %s is missing required files", self.config_path.get())
