@@ -134,6 +134,74 @@ class ThreadedArduinoCLI(Thread):
                 )
 
 
+class ThreadedArduinoMonitor(Thread):
+    """
+    Class to run Arduino CLI monitor in a separate thread, returning output to the provided queue
+    """
+
+    arduino_cli_lock = Lock()
+
+    def __init__(self, acli_path, params, queue):
+        """
+        Initialise the object
+
+        Need to provide:
+        - full path the Arduino CLI executable/binary
+        - a list of valid parameters
+        - the queue instance to update
+        """
+        super().__init__()
+
+        # Set up logger
+        self.log = logging.getLogger(__name__)
+        self.log.debug("Start threaded monitor")
+
+        self.params = params
+        self.process_params = [acli_path]
+        self.process_params += self.params
+        self.queue = queue
+
+    def run(self, *args, **kwargs):
+        """
+        Override for Thread.run()
+
+        Creates a thread and executes with the provided parameters
+
+        Results are placed in the provided queue object
+        """
+        with self.arduino_cli_lock:
+            try:
+                startupinfo = None
+                if platform.system() == "Windows":
+                    startupinfo = subprocess.STARTUPINFO()
+                    startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+                self.process = subprocess.Popen(self.process_params, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                                startupinfo=startupinfo)
+                self.output = self.process.stdout.readline().decode()
+                self.error = self.process.stderr.readline().decode()
+                self.log.debug(self.process_params)
+            except Exception as error:
+                self.queue.put(
+                    QueueMessage("error", str(error), str(error))
+                )
+                self.log.error("Caught exception error: %s", str(error))
+            else:
+                if self.output == "" and self.process.poll() is not None:
+                    return
+                if self.output:
+                    data = self.output.strip()
+                    if data:
+                        self.queue.put(
+                            "update", "update", data
+                        )
+                if self.error:
+                    data = self.error.strip()
+                    if data:
+                        self.queue.put(
+                            "error", "error", data
+                        )
+
+
 class ArduinoCLI:
     """
     Class for the Arduino CLI model
@@ -392,4 +460,12 @@ class ArduinoCLI:
         """
         params = ["compile", "-b", fqbn, "-u", "-t", "-p", port, sketch_dir, "--format", "jsonmini"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
+        acli.start()
+
+    def monitor(self, file_path, port, baudrate, queue):
+        """
+        Function to monitor the specified port at the specified baudrate
+        """
+        params = ["monitor", "-p", port, "-c",  f"baudrate={baudrate}"]
+        acli = ThreadedArduinoMonitor(file_path, params, queue)
         acli.start()

@@ -7,11 +7,12 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.5"
+ex_installer_version = "0.0.6"
 
 """
 Version history:
 
+0.0.6 - Add a serial monitor for viewing serial output and sending commands
 0.0.5 - Provide extra welcome information and instructions
       - Rephrase from "upload" to "load" which is potentially less confusing and more appropriate language
       - Refine Manage Arduino CLI text
