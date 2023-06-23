@@ -9,9 +9,14 @@ import customtkinter as ctk
 import logging
 from queue import Queue
 import sys
+from threading import Thread, Lock
+from subprocess import Popen, PIPE, STDOUT
+from collections import namedtuple
 
 # Import local modules
 from . import images
+
+QueueMessage = namedtuple("QueueMessage", ["status", "data"])
 
 
 class SerialMonitor(ctk.CTkToplevel):
@@ -32,7 +37,7 @@ class SerialMonitor(ctk.CTkToplevel):
 
         # Set up event handlers
         event_callbacks = {
-            "<<Monitor>>": self.serial_monitor
+            "<<Monitor>>": self.monitor
         }
         for sequence, callback in event_callbacks.items():
             self.bind_class("bind_events", sequence, callback)
@@ -101,7 +106,7 @@ class SerialMonitor(ctk.CTkToplevel):
         self.device_label.grid(column=0, row=0, sticky="ew", padx=5, pady=5)
 
         # Start serial monitor process
-        self.serial_monitor()
+        self.monitor()
 
     def monitor_queue(self, queue, event):
         """
@@ -111,13 +116,12 @@ class SerialMonitor(ctk.CTkToplevel):
             item = queue.get()
             if item.status == "success" or item.status == "error":
                 self.process_status = item.status
-                self.process_topic = item.topic
                 self.process_data = item.data
                 self.event_generate(f"<<{event}>>")
                 return
         self.after(100, self.monitor_queue, queue, event)
 
-    def serial_monitor(self, event=None):
+    def monitor(self, event=None):
         """
         Function to monitor for serial output
 
@@ -132,11 +136,21 @@ class SerialMonitor(ctk.CTkToplevel):
                     f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']} " +
                     f" on {port}")
             self.device_label.configure(text=text)
-            self.acli.monitor(self.acli.cli_file_path(), port, 115200, self.queue)
-            self.process_phase = "monitor"
-            self.monitor_queue(self.queue, "Monitor")
-        else:
-            pass
-        if self.process_phase == "monitor":
-            print(self.process_data)
+            self.run_monitor(self.acli.cli_file_path(), port, 115200, self.queue)
+        #     self.acli.monitor(self.acli.cli_file_path(), port, 115200, self.queue)
+        #     self.process_phase = "monitor"
+        #     self.monitor_queue(self.queue, "Monitor")
+        # else:
+        #     pass
+        # if self.process_phase == "monitor":
+        #     print(self.process_data)
             # self.output_textbox.insert("insert", self.process_data)
+
+    def run_monitor(self, cli_path, port, baudrate, queue):
+        """
+        Function to start the Arduino CLI in monitor mode in a thread
+        """
+        params = [cli_path, "monitor", "-p", port, "-c", f"baudrate={baudrate}"]
+        acli_monitor = Popen(params, stdin=PIPE, stdout=PIPE, stderr=PIPE)
+        thread = Thread(target=acli_monitor.communicate)
+        thread.start()

@@ -326,7 +326,8 @@ class NextBack(ctk.CTkFrame):
         """
         if self.monitor_window is None or not self.monitor_window.winfo_exists():
             self.monitor_window = SerialMonitor(self)
-            self.monitor_window.attributes("-topmost", "true")
+            self.monitor_window.focus()
+            self.monitor_window.lift(self)
         else:
             self.monitor_window.focus()
 
