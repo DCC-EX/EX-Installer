@@ -254,13 +254,15 @@ class EXCommandStation(WindowLayout):
 
     def set_advanced_config(self):
         """
-        Sets edit manual config on or off
+        Sets advanced config on or off, locally and globally
         """
         if self.advanced_config_switch.get() == "on":
+            self.master.advanced_config = True
             self.advanced_config_label.grid()
             self.next_back.set_next_text("Advanced Config")
             self.log.debug("Manual Edit enabled")
         else:
+            self.master.advanced_config = False
             self.advanced_config_label.grid_remove()
             self.next_back.set_next_text("Compile and Upload")
             self.log.debug("Manual Edit disabled")
@@ -509,7 +511,7 @@ class EXCommandStation(WindowLayout):
                 if self.advanced_config_enabled.get() == "on" :
                     if "advanced_config" in self.master.frames :
                         # refresh the text boxes before REvisiting
-                        self.master.frames["advanced_config"].read_config_files()
+                        self.master.frames["advanced_config"].reload_view()
                     self.master.switch_view("advanced_config", self.product)
                 else :
                     self.master.switch_view("compile_upload", self.product)

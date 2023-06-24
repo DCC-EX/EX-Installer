@@ -82,6 +82,8 @@ class EXInstaller(ctk.CTk):
             "compile_upload": CompileUpload
         }
         self.view = None
+        self.use_files = False #needed for backing up
+        self.advanced_config = False #needed for backing up
 
         self.switch_view("welcome")
 
@@ -144,7 +146,9 @@ class EXInstaller(ctk.CTk):
                 if hasattr(self.view, "product"):
                     calling_product = self.view.product
                     self.log.debug("Calling product %s", calling_product)
+                # self.prev_view = self.view._name # save "from" view for back navigation
                 self.log.debug("Switch from existing view %s", self.view._name)
+                # self.log.debug("Switch from existing view %s", self.prev_view)
             if view_class in self.frames:
                 self.view = self.frames[view_class]
                 if (

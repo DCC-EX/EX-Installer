@@ -276,6 +276,7 @@ class SelectVersionConfig(WindowLayout):
         Function to select what configuration to do next
         """
         if self.config_option.get() == 0:
+            self.master.use_existing = False
             set_version = None
             if self.select_version.get() == 0:
                 set_version = self.latest_prod[0]
@@ -294,6 +295,7 @@ class SelectVersionConfig(WindowLayout):
                 self.next_back.disable_next()
             self.next_back.set_next_text(f"Configure {pd[self.product]['product_name']}")
         elif self.config_option.get() == 1:
+            self.master.use_existing = True
             self.next_back.set_next_command(self.copy_config_files)
             self.next_back.set_next_text("Advanced Config")
             self.validate_config_dir()
@@ -347,7 +349,7 @@ class SelectVersionConfig(WindowLayout):
             else:
                 if "advanced_config" in self.master.frames :
                     # refresh the text boxes before REvisiting
-                    self.master.frames["advanced_config"].read_config_files()
+                    self.master.frames["advanced_config"].reload_view()
                 self.master.switch_view("advanced_config", self.product)
         else:
             self.process_error("Selected configuration directory is missing the required files")

@@ -65,13 +65,7 @@ class AdvancedConfig(WindowLayout):
                                               fg_color="#E5E5E5", width=780, height=180)
         self.myAutomation_textbox.grid(column=0, row=4, sticky="nsew")
 
-        # Set next/back buttons
-        self.next_back.set_back_text(f"Configure {pd[self.product]['product_name']}")
-        self.next_back.set_back_command(lambda view=self.product: self.master.switch_view(view))
-        self.next_back.set_next_text("Compile and Upload")
-        self.next_back.set_next_command(lambda : self.save_config_files()) #TODO: this is a strange "fix" or func runs too early
-
-        self.read_config_files()
+        self.reload_view()
 
     def save_config_files(self) :
         self.log.debug("in save_config_files()")
@@ -87,7 +81,8 @@ class AdvancedConfig(WindowLayout):
             return
         self.master.switch_view("compile_upload", self.product)
 
-    def read_config_files(self) :
+    def reload_view(self) :
+        self.log.debug("in reload_view()")
         # copy the file contents into the edit boxes
         text = fm.read_config_file(self.config_file_path)
         self.config_textbox.delete("0.0", "end")
@@ -96,3 +91,12 @@ class AdvancedConfig(WindowLayout):
         self.myAutomation_textbox.delete("0.0", "end")
         self.myAutomation_textbox.insert("0.0", text)
 
+        # Set next/back buttons
+        if self.master.use_existing : # return from whence you arrived
+            self.next_back.set_back_text(f"Select Version")
+            self.next_back.set_back_command(lambda view="select_version_config", product=self.product : self.master.switch_view(view, product))
+        else :
+            self.next_back.set_back_text(f"Configure {pd[self.product]['product_name']}")
+            self.next_back.set_back_command(lambda view=self.product: self.master.switch_view(view))
+        self.next_back.set_next_text("Compile and Upload")
+        self.next_back.set_next_command(lambda : self.save_config_files()) #TODO: this is a strange "fix" or func runs too early
