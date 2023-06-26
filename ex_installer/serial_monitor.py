@@ -15,6 +15,8 @@ import platform
 from PIL import Image
 import traceback
 from CTkMessagebox import CTkMessagebox
+import os
+import sys
 
 # Import local modules
 from . import images
@@ -149,6 +151,11 @@ class SerialMonitor(ctk.CTkToplevel):
         self.destroy()
 
     def monitor(self, event=None):
+        """
+        Function to start the Arduino CLI in monitor mode
+
+        Starts the process, and then creates a thread to read the output continuously
+        """
         self.command_entry.configure(state="disabled")
         self.command_button.configure(state="disabled")
         if self.acli.selected_device is not None:
@@ -169,6 +176,9 @@ class SerialMonitor(ctk.CTkToplevel):
             self.monitor_thread.start()
 
     def update_textbox(self, process):
+        """
+        Function to update the textbox with output from the Arduino CLI in monitor mode
+        """
         for line in iter(process.stdout.readline, b""):
             insert_line = line.decode("utf-8")
             self.output_textbox.insert("insert", insert_line)
