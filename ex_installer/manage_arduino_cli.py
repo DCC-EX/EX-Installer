@@ -13,19 +13,20 @@ from . import images
 
 class ManageArduinoCLI(WindowLayout):
     # Define text to use in labels
-    intro_text = ("The Arduino CLI is utilised to compile and upload any DCC-EX products " +
-                  "to your Arduino device. EX-Installer is able to manage the installation " +
-                  "and management of the Arduino CLI for you at the click of a button.")
+    intro_text = ("We use the Arduino Command Line Interface (CLI) to upload the DCC-EX products to your Arduino. " +
+                  "The CLI eliminates the need to install the more daunting Arduino IDE. EX-Installer is able to " +
+                  "manage the installation and updating of the Arduino CLI for you at the click of a button.")
     installed_text = "The Arduino CLI is installed"
     not_installed_text = "The Arduino CLI is not installed"
-    install_instruction_text = ("To install the Arduino CLI, simply click the install button to start.\n\n" +
-                                "If you are using an Espressif or STMicroelectronics device, you will need to " +
-                                "enable support for these by selecting the appropriate additional platform option.\n\n"
+    install_instruction_text = ("To install the Arduino CLI, simply click the install button.\n\n" +
+                                "If you are using an Espressif or STMicroelectronics device (as opposed to the more " +
+                                "common Uno or Mega based Arduinos), you will need to enable support for these " +
+                                "by selecting the appropriate additional platform option.\n\n"
                                 "Note that enabling additional platforms is likely to add several minutes to the " +
                                 "installation process. Maybe grab a cup of tea or a coffee!")
-    refresh_instruction_text = ("While the Arduino CLI is installed, it is recommended to refresh it regularly " +
-                                "to ensure support for the various devices is kept up to date. To refresh the CLI, " +
-                                "simply click the refresh button.\n\n"
+    refresh_instruction_text = ("While the Arduino CLI is installed, it is recommended to refresh it periodically " +
+                                "(eg. weekly) to ensure support for the various devices is kept up to date. To refresh " +
+                                "the CLI, simply click the refresh button.\n\n"
                                 "Note that enabling any of the additional platforms is likely to add " +
                                 "several minutes to the refresh process. Maybe grab a cup of tea or a coffee!")
 
@@ -77,7 +78,7 @@ class ManageArduinoCLI(WindowLayout):
         self.manage_cli_frame.grid_rowconfigure(1, weight=1)
 
         # Create state and instruction labels and manage CLI button
-        label_options = {"wraplength": 780}
+        label_options = {"wraplength": 700}
         self.intro_label = ctk.CTkLabel(self.manage_cli_frame,
                                         text=self.intro_text,
                                         font=self.instruction_font,
