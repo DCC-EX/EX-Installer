@@ -8,13 +8,11 @@ This allows for interaction with an Arduino device via the serial interface
 import customtkinter as ctk
 import logging
 from queue import Queue
-import sys
-from threading import Thread, Event
+from threading import Thread
 import subprocess
 from collections import namedtuple
 import platform
 from PIL import Image
-from pprint import pprint
 
 # Import local modules
 from . import images
@@ -143,8 +141,8 @@ class SerialMonitor(ctk.CTkToplevel):
         - If the Arduino CLI process is running, terminate it
         - Destroy this object
         """
-        if self.monitor_thread and self.monitor_thread.is_alive():
-            self.monitor_event.set()
+        if self.monitor_process:
+            self.monitor_process.terminate()
         self.destroy()
 
     def monitor(self, event=None):
@@ -163,127 +161,12 @@ class SerialMonitor(ctk.CTkToplevel):
                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
             self.monitor_process = subprocess.Popen(params, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                                     startupinfo=startupinfo)
-            self.monitor_event = Event()
-            self.monitor_thread = Thread(target=self.update_textbox, args=(self.monitor_process, self.monitor_event,),
+            self.monitor_thread = Thread(target=self.update_textbox, args=(self.monitor_process,),
                                          daemon=True)
             self.monitor_thread.start()
 
-    def update_textbox(self, process, event: Event):
-        if event.is_set():
-            self.monitor_process.terminate()
+    def update_textbox(self, process):
         for line in iter(process.stdout.readline, b""):
             insert_line = line.decode("utf-8")
             self.output_textbox.insert("insert", insert_line)
             self.output_textbox.see("end")
-
-#     def monitor_queue(self, queue, event):
-#         """
-#         Monitor the provided queue for status updates
-#         """
-#         while not queue.empty():
-#             item = queue.get()
-#             if item.status == "output" or item.status == "error":
-#                 self.process_status = item.status
-#                 self.process_data = item.data
-#                 self.event_generate(f"<<{event}>>")
-#                 return
-#         self.after(100, self.monitor_queue, queue, event)
-
-#     def monitor(self, event=None):
-#         """
-#         Function to monitor for serial output
-
-#         Requires a selected device to work:
-#         - Ensure device is selected
-#         - Ensure device is connected
-#         - Use the ArduinoCLI module with thread/queue to read output
-#         """
-#         self.command_button.configure(state="disabled")
-#         if self.acli.selected_device is not None:
-#             port = self.acli.detected_devices[self.acli.selected_device]['port']
-#             text = ("Monitoring " +
-#                     f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']} " +
-#                     f" on {port}")
-#             self.device_label.configure(text=text)
-#             self.process_phase = "monitor"
-#             self.monitor_queue(self.queue, "Monitor")
-#             params = ["monitor", "-p", port, "-c", "baudrate=115200"]
-#             self.monitor_thread = ThreadedSerialMonitor(self.acli.cli_file_path(), params, self.queue)
-#             self.monitor_thread.start()
-#         if self.process_phase == "monitor":
-#             print(type(self.process_data))
-#             pprint(self.process_data)
-#             if self.process_data:
-#                 self.output_textbox.insert("insert", self.process_data)
-
-
-# class ThreadedSerialMonitor(Thread):
-#     """
-#     Class to run the serial monitor process in its own thread
-#     """
-#     monitor_lock = Lock()
-#     monitor_process = None
-
-#     def __init__(self, acli_path, params, queue):
-#         """
-#         Initialise the monitor object
-#         """
-#         super().__init__()
-
-#         # Set up logger
-#         self.log = logging.getLogger(__name__)
-#         self.log.debug("Start thread")
-
-#         # Set variables
-#         self.params = params
-#         self.process_params = [acli_path]
-#         self.process_params += self.params
-#         self.queue = queue
-
-#     def run(self, *args, **kwargs):
-#         """
-#         Override for Thread.run()
-
-#         Creates a thread and executes with the provided parameters
-
-#         Results are placed in the provided queue object
-#         """
-#         self.queue.put(
-#             QueueMessage("info", f"Arduino CLI parameters: {self.params}")
-#         )
-#         self.log.debug("Queue info %s", self.params)
-#         with self.monitor_lock:
-#             startupinfo = None
-#             if platform.system() == "Windows":
-#                 startupinfo = subprocess.STARTUPINFO()
-#                 startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-#             try:
-#                 self.monitor_process = subprocess.Popen(self.process_params, stdout=subprocess.PIPE,
-#                                                         stderr=subprocess.PIPE, startupinfo=startupinfo)
-#             except Exception as error:
-#                 self.queue.put(
-#                     QueueMessage("error", str(error))
-#                 )
-#                 self.log.error("Caught exception: %s", str(error))
-#             else:
-#                 while True:
-#                     output = self.monitor_process.stdout.readline()
-#                     self.queue.put(
-#                         QueueMessage("output", output)
-#                     )
-
-#     def is_running(self):
-#         """
-#         Returns true if process is running, else false
-#         """
-#         if self.monitor_process is not None and self.monitor_process.poll():
-#             return True
-#         else:
-#             return False
-
-#     def close(self):
-#         """
-#         If running, sends terminate
-#         """
-#         if self.monitor_process is not None and self.monitor_process.is_running():
-#             self.monitor_process.terminate()
