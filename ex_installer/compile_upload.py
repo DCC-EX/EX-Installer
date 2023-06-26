@@ -83,12 +83,14 @@ class CompileUpload(WindowLayout):
         self.next_back.hide_log_button()
         self.next_back.hide_next()
 
-        if self.product:
+        if self.product: # i don't see how this would ever be true here
             self.set_product(self.product)
 
     def set_product(self, product):
         """
         Function to set the product details of what's being uploaded
+          called from ex_installer when switching views
+          also refreshes product-dependent screen items
         """
         self.product = product
         self.set_title_text(f"Load {pd[self.product]['product_name']}")
@@ -103,8 +105,8 @@ class CompileUpload(WindowLayout):
         self.install_dir = fm.get_install_dir(local_repo_dir)
         if self.master.advanced_config :
             self.next_back.set_back_text(f"Advanced Config")
-            self.next_back.set_back_command(lambda : self.master.switch_view("advanced_config"))
-        elif self.master.advanced_config :
+            self.next_back.set_back_command(lambda view="advanced_config", product=self.product : self.master.switch_view(view, product))
+        elif self.master.use_existing :
             self.next_back.set_back_text(f"Select Version")
             self.next_back.set_back_command(lambda view="select_version_config", product=self.product : self.master.switch_view(view, product))
         else :

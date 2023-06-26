@@ -82,7 +82,7 @@ class EXInstaller(ctk.CTk):
             "compile_upload": CompileUpload
         }
         self.view = None
-        self.use_files = False #needed for backing up
+        self.use_existing = False #needed for backing up to select_version_config
         self.advanced_config = False #needed for backing up
 
         self.switch_view("welcome")
@@ -119,6 +119,7 @@ class EXInstaller(ctk.CTk):
         These views require a product parameter to be supplied:
         - compile_upload
         - select_version_config
+        - advanced_config
 
         These views should get version info if available:
         - ex_commandstation
@@ -146,13 +147,12 @@ class EXInstaller(ctk.CTk):
                 if hasattr(self.view, "product"):
                     calling_product = self.view.product
                     self.log.debug("Calling product %s", calling_product)
-                # self.prev_view = self.view._name # save "from" view for back navigation
                 self.log.debug("Switch from existing view %s", self.view._name)
-                # self.log.debug("Switch from existing view %s", self.prev_view)
             if view_class in self.frames:
+                self.log.debug("view_class=%s", view_class)
                 self.view = self.frames[view_class]
                 if (
-                    view_class == "compile_upload" or
+                    view_class == "compile_upload" or view_class == "advanced_config" or
                     (view_class == "select_version_config" and product != calling_product)
                 ):
                     self.view.destroy()
@@ -173,7 +173,8 @@ class EXInstaller(ctk.CTk):
             else:
                 self.view = self.views[view_class](self)
                 self.frames[view_class] = self.view
-                if view_class == "compile_upload" or view_class == "select_version_config":
+                if (view_class == "compile_upload" or view_class == "advanced_config" or
+                    view_class == "select_version_config") :
                     self.view.set_product(product)
                 if hasattr(self.view, "set_product_version"):
                     self.view.set_product_version(version, *version_details)

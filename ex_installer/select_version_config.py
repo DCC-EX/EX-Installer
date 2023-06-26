@@ -80,6 +80,7 @@ class SelectVersionConfig(WindowLayout):
         self.product_dir = fm.get_install_dir(local_repo_dir)
         self.branch_name = pd[self.product]["default_branch"]
         self.setup_local_repo("setup_local_repo")
+        self.delete_config_files()
 
     def setup_version_frame(self):
         grid_options = {"padx": 5, "pady": 5}
@@ -332,9 +333,24 @@ class SelectVersionConfig(WindowLayout):
         else:
             self.next_back.disable_next()
 
+    def delete_config_files(self):
+        """
+        Function to delete config files from product directory
+        needed when user has navigated back and changed product or config method
+        """
+        file_list =  fm.get_config_files(self.product_dir, pd[self.product]["minimum_config_files"])
+        file_list += fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
+        self.log.debug("Deleting files: %s", file_list)
+        error_list = fm.delete_config_files(self.product_dir, file_list)
+        if error_list :
+            file_list = ", ".join(error_list)
+            self.process_error(f"Failed to delete one or more files: {file_list}")
+            self.log.error("Failed to delete: %s", file_list)
+
     def copy_config_files(self):
         """
         Function to copy config files from selected directory to product directory
+          also switches view to advanced_config if copy is successful
         """
         copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
         if copy_list:
@@ -347,9 +363,6 @@ class SelectVersionConfig(WindowLayout):
                 self.process_error(f"Failed to copy one or more files: {file_list}")
                 self.log.error("Failed to copy: %s", file_list)
             else:
-                if "advanced_config" in self.master.frames :
-                    # refresh the text boxes before REvisiting
-                    self.master.frames["advanced_config"].reload_view()
                 self.master.switch_view("advanced_config", self.product)
         else:
             self.process_error("Selected configuration directory is missing the required files")

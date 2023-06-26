@@ -336,3 +336,22 @@ class FileManager:
             return failed_files
         else:
             return None
+
+    @staticmethod
+    def delete_config_files(dir, file_list):
+        """
+        Delete the specified list of files from sepcified directory
+
+        Returns None if successful, otherwise a list of files that failed to copy
+        """
+        failed_files = []
+        for file_name in file_list:
+            file = os.path.join(dir, file_name)
+            try:                
+                os.remove(file)
+            except Exception:
+                failed_files.append(file_name)
+        if len(failed_files) > 0:
+            return failed_files
+        else:
+            return None
