@@ -13,6 +13,8 @@ import subprocess
 from collections import namedtuple
 import platform
 from PIL import Image
+import traceback
+from CTkMessagebox import CTkMessagebox
 
 # Import local modules
 from . import images
@@ -33,6 +35,7 @@ class SerialMonitor(ctk.CTkToplevel):
         # Set up logger
         self.log = logging.getLogger(__name__)
         self.log.debug("Open window")
+        self.report_callback_exception = self.exception_handler
 
         # Set up event handlers
         event_callbacks = {
@@ -141,7 +144,7 @@ class SerialMonitor(ctk.CTkToplevel):
         - If the Arduino CLI process is running, terminate it
         - Destroy this object
         """
-        if self.monitor_process:
+        if hasattr(self, "monitor_process") and self.monitor_process:
             self.monitor_process.terminate()
         self.destroy()
 
@@ -170,3 +173,28 @@ class SerialMonitor(ctk.CTkToplevel):
             insert_line = line.decode("utf-8")
             self.output_textbox.insert("insert", insert_line)
             self.output_textbox.see("end")
+
+    def exception_handler(self, exc_type, exc_value, exc_traceback):
+        """
+        Handler for uncaught exceptions
+        """
+        message = "".join(traceback.format_exception(exc_type, exc_value, exc_traceback))
+        log_file = None
+        for handler in self.log.parent.handlers:
+            if handler.__class__.__name__ == "FileHandler":
+                log_file = handler.baseFilename
+        self.log.critical("Uncaught exception: %s", message)
+        critical = CTkMessagebox(master=self, title="Error",
+                                 message="EX-Installer experienced an unknown error, " +
+                                 "please send the log file to the DCC-EX team for further analysis",
+                                 icon="cancel", option_1="Show log", option_2="Exit",
+                                 border_width=3, cancel_button=None)
+        if critical.get() == "Show log":
+            if platform.system() == "Darwin":
+                subprocess.call(("open", log_file))
+            elif platform.system() == "Windows":
+                os.startfile(log_file)
+            else:
+                subprocess.call(("xdg-open", log_file))
+        elif critical.get() == "Exit":
+            sys.exit()
