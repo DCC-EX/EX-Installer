@@ -254,7 +254,7 @@ class NextBack(ctk.CTkFrame):
         self.monitor_window = None
         self.monitor_button = ctk.CTkButton(self, text="Monitor", width=100, height=30, font=button_font,
                                             command=self.monitor)
-        self.monitor_button.grid(column=1, row=0)
+        self.monitor_button.grid(column=2, row=0)
 
     def set_back_text(self, text):
         """Update back button text"""
