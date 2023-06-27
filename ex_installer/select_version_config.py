@@ -336,10 +336,15 @@ class SelectVersionConfig(WindowLayout):
     def delete_config_files(self):
         """
         Function to delete config files from product directory
-        needed when user has navigated back and changed product or config method
+          needed on subsequent passes thru the logic
         """
-        file_list =  fm.get_config_files(self.product_dir, pd[self.product]["minimum_config_files"])
-        file_list += fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
+        file_list = []
+        min_list =  fm.get_config_files(self.product_dir, pd[self.product]["minimum_config_files"])
+        if min_list:
+            file_list += min_list
+        other_list= fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
+        if other_list:
+            file_list += other_list
         self.log.debug("Deleting files: %s", file_list)
         error_list = fm.delete_config_files(self.product_dir, file_list)
         if error_list :
