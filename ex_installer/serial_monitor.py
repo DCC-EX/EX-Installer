@@ -10,18 +10,16 @@ import logging
 from queue import Queue
 from threading import Thread
 import subprocess
-from collections import namedtuple
 import platform
 from PIL import Image
 import traceback
 from CTkMessagebox import CTkMessagebox
 import os
 import sys
+import serial
 
 # Import local modules
 from . import images
-
-QueueMessage = namedtuple("QueueMessage", ["status", "data"])
 
 
 class SerialMonitor(ctk.CTkToplevel):
@@ -110,7 +108,9 @@ class SerialMonitor(ctk.CTkToplevel):
         self.command_label = ctk.CTkLabel(self.command_frame, text="Enter command:", font=instruction_font)
         self.command = ctk.StringVar(self)
         self.command_entry = ctk.CTkEntry(self.command_frame, textvariable=self.command)
-        self.command_button = ctk.CTkButton(self.command_frame, text="Send", font=button_font, width=80)
+        self.command_entry.bind("<Return>", self.send_command)
+        self.command_button = ctk.CTkButton(self.command_frame, text="Send", font=button_font, width=80,
+                                            command=self.send_command)
         self.close_button = ctk.CTkButton(self.command_frame, text="Close", font=button_font, width=80,
                                           command=self.close_monitor)
         self.command_label.grid(column=0, row=0, sticky="w", **grid_options)
@@ -143,11 +143,16 @@ class SerialMonitor(ctk.CTkToplevel):
         """
         Close the monitor window nicely:
 
-        - If the Arduino CLI process is running, terminate it
+        - If serial port open, close it
+        - If thread running, join/end it
         - Destroy this object
         """
-        if hasattr(self, "monitor_process") and self.monitor_process:
-            self.monitor_process.terminate()
+        self.close_clicked = True
+        if hasattr(self, "serial_port") and self.serial_port:
+            if self.serial_port is not None:
+                self.serial_port.close()
+            if self.read_thread is not None:
+                self.read_thread.join()
         self.destroy()
 
     def monitor(self, event=None):
@@ -158,31 +163,55 @@ class SerialMonitor(ctk.CTkToplevel):
         """
         self.command_entry.configure(state="disabled")
         self.command_button.configure(state="disabled")
+        self.close_clicked = False
         if self.acli.selected_device is not None:
             port = self.acli.detected_devices[self.acli.selected_device]['port']
             text = ("Monitoring " +
                     f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']} " +
                     f" on {port}")
             self.device_label.configure(text=text)
-            params = [self.acli.cli_file_path(), "monitor", "-p", port, "-c", "baudrate=115200"]
-            startupinfo = None
-            if platform.system() == "Windows":
-                startupinfo = subprocess.STARTUPINFO()
-                startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-            self.monitor_process = subprocess.Popen(params, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                                    startupinfo=startupinfo)
-            self.monitor_thread = Thread(target=self.update_textbox, args=(self.monitor_process,),
-                                         daemon=True)
-            self.monitor_thread.start()
+            try:
+                self.serial_port = serial.Serial(port, 115200)
+            except serial.SerialException as e:
+                self.log.error(f"Failed to open serial connection: {e}")
+                self.output_textbox.insert("insert", f"Failed to open serial connection: {e}")
+                return
 
-    def update_textbox(self, process):
+            self.command_entry.configure(state="normal")
+            self.command_button.configure(state="normal")
+            self.read_thread = Thread(target=self.read_output)
+            self.read_thread.start()
+
+    def read_output(self):
+        """
+        Function to read serial output
+        """
+        while True:
+            try:
+                if self.serial_port.in_waiting > 0:
+                    output = self.serial_port.readline().decode().strip()
+                    self.update_textbox(output)
+            except OSError as e:
+                if not self.close_clicked:
+                    self.log.error(f"Error accessing serial port: {e}")
+                break
+
+    def update_textbox(self, output):
         """
         Function to update the textbox with output from the Arduino CLI in monitor mode
         """
-        for line in iter(process.stdout.readline, b""):
-            insert_line = line.decode("utf-8")
-            self.output_textbox.insert("insert", insert_line)
-            self.output_textbox.see("end")
+        self.output_textbox.insert("insert", output + "\n")
+        self.output_textbox.see("end")
+
+    def send_command(self, event=None):
+        """
+        Function to send a command to the serial port
+        """
+        command_text = self.command_entry.get()
+        self.serial_port.write((command_text + "\n").encode())
+        self.command_entry.delete(0, "end")
+        self.output_textbox.insert("insert", command_text + "\n")
+        self.output_textbox.see("end")
 
     def exception_handler(self, exc_type, exc_value, exc_traceback):
         """
