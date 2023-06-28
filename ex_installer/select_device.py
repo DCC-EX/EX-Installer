@@ -241,6 +241,19 @@ class SelectDevice(WindowLayout):
                     port_info = {}
             pprint(ports)
         elif sys.platform.startswith("dar"):
-            pass
+            command = 'system_profiler SPSerialATADataType -json'
+            output = subprocess.check_output(command, shell=True).decode('utf-8')
+            serial_ports = []
+            for item in output.split('\n'):
+                if 'sppci' in item:
+                    serial_ports.append(item.split(':')[1].strip())
+            pprint(serial_ports)
         else:
-            pass
+            command = 'ls /dev/ttyS* /dev/ttyUSB* /dev/ttyACM* 2>/dev/null'
+            output = subprocess.check_output(command, shell=True).decode('utf-8')
+            ports = []
+            for line in output.split('\n'):
+                line = line.strip()
+                if line:
+                    ports.append(line)
+            pprint(ports)
