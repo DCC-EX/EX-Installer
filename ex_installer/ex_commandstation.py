@@ -60,6 +60,7 @@ class EXCommandStation(WindowLayout):
                                         product="ex_commandstation": parent.switch_view(view, product))
         self.next_back.set_next_text("Configuration")
         self.next_back.set_next_command(None)
+        self.next_back.hide_monitor_button()
 
         # Set up and grid container frames
         self.config_frame = ctk.CTkFrame(self.main_frame, height=360)
