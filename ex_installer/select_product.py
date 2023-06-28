@@ -35,6 +35,7 @@ class SelectProduct(WindowLayout):
         self.next_back.set_back_text("Select Device")
         self.next_back.set_back_command(lambda view="select_device": parent.switch_view(view))
         self.next_back.hide_next()
+        self.next_back.hide_monitor_button()
 
         # Set up and configure the container frame
         self.select_product_frame = ctk.CTkFrame(self.main_frame, height=360)

@@ -31,6 +31,7 @@ class Welcome(WindowLayout):
         self.next_back.set_next_text("Manage Arduino CLI")
         self.next_back.set_next_command(lambda view="manage_arduino_cli": parent.switch_view(view))
         self.next_back.hide_log_button()
+        self.next_back.hide_monitor_button()
 
         # Create and configure welcome container
         self.welcome_frame = ctk.CTkFrame(self.main_frame, height=360)

@@ -66,9 +66,9 @@ class ManageArduinoCLI(WindowLayout):
         self.next_back.show_back()
         self.next_back.set_back_text("Welcome")
         self.next_back.set_back_command(lambda view="welcome": parent.switch_view(view))
-
         self.next_back.set_next_text("Select your device")
         self.next_back.set_next_command(lambda view="select_device": parent.switch_view(view))
+        self.next_back.hide_monitor_button()
 
         # Create, grid, and configure container frame
         self.manage_cli_frame = ctk.CTkFrame(self.main_frame, height=360)

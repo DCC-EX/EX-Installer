@@ -82,6 +82,7 @@ class CompileUpload(WindowLayout):
         # Hide next and log buttons to start
         self.next_back.hide_log_button()
         self.next_back.hide_next()
+        self.next_back.hide_monitor_button()
 
         if self.product: # i don't see how this would ever be true here
             self.set_product(self.product)
@@ -143,6 +144,7 @@ class CompileUpload(WindowLayout):
             self.next_back.show_next()
             self.next_back.set_next_text("Close EX-Installer")
             self.next_back.set_next_command(sys.exit)
+            self.next_back.show_monitor_button()
 
     def upload_success(self):
         """

@@ -64,6 +64,7 @@ class EXInstaller(ctk.CTk):
 
         if sys.platform.startswith("win"):
             self.iconbitmap(images.DCC_EX_ICON_ICO)
+            self.iconbitmap(default=images.DCC_EX_ICON_ICO)
 
         self.geometry("800x600")
         self.minsize(width=800, height=600)
