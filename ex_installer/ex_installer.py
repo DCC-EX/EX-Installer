@@ -23,6 +23,7 @@ from .select_device import SelectDevice
 from .select_product import SelectProduct
 from .select_version_config import SelectVersionConfig
 from .ex_commandstation import EXCommandStation
+from .advanced_config import AdvancedConfig
 from .compile_upload import CompileUpload
 from ex_installer.version import ex_installer_version
 
@@ -78,9 +79,12 @@ class EXInstaller(ctk.CTk):
             "select_product": SelectProduct,
             "select_version_config": SelectVersionConfig,
             "ex_commandstation": EXCommandStation,
+            "advanced_config": AdvancedConfig,
             "compile_upload": CompileUpload
         }
         self.view = None
+        self.use_existing = False #needed for backing up to select_version_config
+        self.advanced_config = False #needed for backing up
 
         self.switch_view("welcome")
 
@@ -116,6 +120,7 @@ class EXInstaller(ctk.CTk):
         These views require a product parameter to be supplied:
         - compile_upload
         - select_version_config
+        - advanced_config
 
         These views should get version info if available:
         - ex_commandstation
@@ -145,9 +150,10 @@ class EXInstaller(ctk.CTk):
                     self.log.debug("Calling product %s", calling_product)
                 self.log.debug("Switch from existing view %s", self.view._name)
             if view_class in self.frames:
+                self.log.debug("view_class=%s", view_class)
                 self.view = self.frames[view_class]
                 if (
-                    view_class == "compile_upload" or
+                    view_class == "compile_upload" or view_class == "advanced_config" or
                     (view_class == "select_version_config" and product != calling_product)
                 ):
                     self.view.destroy()
@@ -168,7 +174,8 @@ class EXInstaller(ctk.CTk):
             else:
                 self.view = self.views[view_class](self)
                 self.frames[view_class] = self.view
-                if view_class == "compile_upload" or view_class == "select_version_config":
+                if (view_class == "compile_upload" or view_class == "advanced_config" or
+                    view_class == "select_version_config") :
                     self.view.set_product(product)
                 if hasattr(self.view, "set_product_version"):
                     self.view.set_product_version(version, *version_details)

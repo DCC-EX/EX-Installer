@@ -84,26 +84,35 @@ class CompileUpload(WindowLayout):
         self.next_back.hide_next()
         self.next_back.hide_monitor_button()
 
-        if self.product:
+        if self.product: # i don't see how this would ever be true here
             self.set_product(self.product)
 
     def set_product(self, product):
         """
         Function to set the product details of what's being uploaded
+          called from ex_installer when switching views
+          also refreshes product-dependent screen items
         """
         self.product = product
         self.set_title_text(f"Load {pd[self.product]['product_name']}")
         self.set_title_logo(pd[product]["product_logo"])
         self.congrats_label.grid_remove()
         self.success_label.grid_remove()
-        self.next_back.set_back_text(f"Configure {pd[self.product]['product_name']}")
-        self.next_back.set_back_command(lambda view=product: self.master.switch_view(view))
         text = (f"{pd[self.product]['product_name']} is now ready to be loaded on to your " +
                 f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']} " +
                 f"attached to {self.acli.detected_devices[self.acli.selected_device]['port']}")
         self.intro_label.configure(text=text)
         local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
         self.install_dir = fm.get_install_dir(local_repo_dir)
+        if self.master.advanced_config :
+            self.next_back.set_back_text(f"Advanced Config")
+            self.next_back.set_back_command(lambda view="advanced_config", product=self.product : self.master.switch_view(view, product))
+        elif self.master.use_existing :
+            self.next_back.set_back_text(f"Select Version")
+            self.next_back.set_back_command(lambda view="select_version_config", product=self.product : self.master.switch_view(view, product))
+        else :
+            self.next_back.set_back_text(f"Configure {pd[self.product]['product_name']}")
+            self.next_back.set_back_command(lambda view=product: self.master.switch_view(view))
 
     def upload_software(self, event):
         """

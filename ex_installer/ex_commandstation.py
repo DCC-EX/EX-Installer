@@ -10,7 +10,7 @@ import logging
 from .common_widgets import WindowLayout
 from .product_details import product_details as pd
 from .file_manager import FileManager as fm
-
+from .advanced_config import AdvancedConfig
 
 class EXCommandStation(WindowLayout):
     """
@@ -34,6 +34,17 @@ class EXCommandStation(WindowLayout):
         '#define WIFI_HOSTNAME "dccex"\n',
         '#define SCROLLMODE 1\n'
     ]
+    # List of default myAutomation options to include in myAutomation.h (none for now)
+    default_myAutomation_options = []
+
+    # List of TrakManager modes for selection to myAutomation.h
+    trackmanager_modes = {
+        "MAIN": "MAIN",
+        "PROG": "PROG",
+        "DC"  : "DC",
+        "DCX" : "DCX",
+        "OFF" : "OFF",
+    }
 
     def __init__(self, parent, *args, **kwargs):
         """
@@ -47,6 +58,7 @@ class EXCommandStation(WindowLayout):
 
         # Get the local directory to work in
         self.product = "ex_commandstation"
+        self.product_name = pd[self.product]["product_name"]
         local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
         self.ex_commandstation_dir = fm.get_install_dir(local_repo_dir)
 
@@ -143,7 +155,7 @@ class EXCommandStation(WindowLayout):
         self.wifi_pwd_entry = ctk.CTkEntry(self.wifi_options_frame,  # textvariable=self.wifi_pwd,
                                            placeholder_text="Enter your WiFi password",
                                            width=200, fg_color="white")
-        self.wifi_channel_frame = ctk.CTkFrame(self.wifi_options_frame, border_width=2)
+        self.wifi_channel_frame = ctk.CTkFrame(self.wifi_options_frame, border_width=0, fg_color="#E5E5E5")
         self.wifi_channel_label = ctk.CTkLabel(self.wifi_channel_frame, text="Select WiFi channel:")
         self.wifi_channel_minus = ctk.CTkButton(self.wifi_channel_frame, text="-", width=30,
                                                 command=self.decrement_channel)
@@ -158,7 +170,29 @@ class EXCommandStation(WindowLayout):
                                              onvalue="on", offvalue="off", variable=self.ethernet_enabled,
                                              command=self.set_ethernet)
 
-        # Layout WiFi frame
+        # Track Manager Options
+        self.track_modes_enabled = ctk.StringVar(self, value="off")
+        self.track_modes_switch = ctk.CTkSwitch(self.config_frame, text="Set track modes", width=150,
+                                            onvalue="on", offvalue="off", variable=self.track_modes_enabled,
+                                            command=self.set_track_modes)
+        self.track_modes_frame = ctk.CTkFrame(self.config_frame, border_width=2, fg_color="#E5E5E5")
+        self.track_a_label = ctk.CTkLabel(self.track_modes_frame, text="Track A:")
+        self.track_a_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
+                                                  width=100)
+        self.track_b_label = ctk.CTkLabel(self.track_modes_frame, text="Track B:")
+        self.track_b_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
+                                                  width=100)      
+        self.track_b_combo.set("MAIN") # default to MAIN and PROG
+        self.track_b_combo.set("PROG")
+
+        # advanced configuration option
+        self.advanced_config_enabled = ctk.StringVar(self, value="off")
+        self.advanced_config_switch = ctk.CTkSwitch(self.config_frame, text="Advanced Config", width=150,
+                                            onvalue="on", offvalue="off", variable=self.advanced_config_enabled,
+                                            command=self.set_advanced_config)
+        self.advanced_config_label = ctk.CTkLabel(self.config_frame, text="Config files can be directly edited on next screen")
+
+        # Layout wifi_frame
         self.wifi_frame.grid_columnconfigure((0, 1), weight=1)
         self.wifi_frame.grid_rowconfigure(0, weight=1)
         self.wifi_options_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
@@ -172,13 +206,19 @@ class EXCommandStation(WindowLayout):
         self.wifi_ssid_entry.grid(column=1, row=2, **grid_options)
         self.wifi_pwd_label.grid(column=2, row=2, **grid_options)
         self.wifi_pwd_entry.grid(column=3, row=2, **grid_options)
-        self.wifi_channel_frame.grid(column=0, row=3, columnspan=4, **grid_options)
+        self.wifi_channel_frame.grid(column=0, row=2, **grid_options)
         self.wifi_channel_label.grid(column=0, row=0, **grid_options)
         self.wifi_channel_minus.grid(column=1, row=0, sticky="e")
         self.wifi_channel_entry.grid(column=2, row=0)
         self.wifi_channel_plus.grid(column=3, row=0, sticky="w", padx=(0, 5))
 
-        # Layout frame
+        # layout track_frame
+        self.track_a_label.grid(column=0, row=0, stick="e", **grid_options)
+        self.track_a_combo.grid(column=1, row=0, sticky="w", **grid_options)
+        self.track_b_label.grid(column=0, row=1, stick="e", **grid_options)
+        self.track_b_combo.grid(column=1, row=1, sticky="w", **grid_options)
+
+        # Layout config_frame
         self.hardware_label.grid(column=0, row=2, columnspan=2, **grid_options)
         self.motor_driver_label.grid(column=0, row=3, stick="e", **grid_options)
         self.motor_driver_combo.grid(column=1, row=3, sticky="w", **grid_options)
@@ -187,6 +227,10 @@ class EXCommandStation(WindowLayout):
         self.wifi_switch.grid(column=0, row=5, sticky="e", **grid_options)
         self.wifi_frame.grid(column=1, row=5, sticky="w", **grid_options)
         self.ethernet_switch.grid(column=0, row=6, sticky="e", **grid_options)
+        self.track_modes_switch.grid(column=0, row=7, sticky="e", **grid_options)
+        self.track_modes_frame.grid(column=1, row=7, sticky="w", **grid_options)
+        self.advanced_config_switch.grid(column=0, row=8, sticky="e", **grid_options)
+        self.advanced_config_label.grid(column=1, row=8, sticky="w", **grid_options)
 
     def set_display(self):
         """
@@ -199,6 +243,32 @@ class EXCommandStation(WindowLayout):
             self.display_combo.grid_remove()
             self.log.debug("Display disabled")
 
+    def set_track_modes(self):
+        """
+        Sets track mode options on or off
+        """
+        if self.track_modes_switch.get() == "on":
+            self.track_modes_frame.grid()
+            self.log.debug("Track modes frame shown")
+        else:
+            self.track_modes_frame.grid_remove()
+            self.log.debug("Track modes frame hidden")
+
+    def set_advanced_config(self):
+        """
+        Sets advanced config on or off, locally and globally
+        """
+        if self.advanced_config_switch.get() == "on":
+            self.master.advanced_config = True
+            self.advanced_config_label.grid()
+            self.next_back.set_next_text("Advanced Config")
+            self.log.debug("Manual Edit enabled")
+        else:
+            self.master.advanced_config = False
+            self.advanced_config_label.grid_remove()
+            self.next_back.set_next_text("Compile and Upload")
+            self.log.debug("Manual Edit disabled")
+   
     def set_wifi(self):
         """
         Sets WiFi options on or off
@@ -220,12 +290,14 @@ class EXCommandStation(WindowLayout):
         if self.wifi_type.get() == 0:
             self.wifi_ssid_label.grid_remove()
             self.wifi_ssid_entry.grid_remove()
+            self.wifi_channel_frame.grid()
             if self.wifi_pwd_entry.get() == "":
                 self.wifi_pwd_entry.configure(placeholder_text="Custom WiFi password")
             self.log.debug("WiFi AP mode selected")
         elif self.wifi_type.get() == 1:
             self.wifi_ssid_label.grid()
             self.wifi_ssid_entry.grid()
+            self.wifi_channel_frame.grid_remove()
             if self.wifi_pwd_entry.get() == "":
                 self.wifi_pwd_entry.configure(placeholder_text="Enter your WiFi password")
             self.log.debug("WiFi ST mode selected")
@@ -267,10 +339,12 @@ class EXCommandStation(WindowLayout):
         self.config_frame.grid()
         self.set_display()
         self.set_wifi()
+        self.set_track_modes()
+        self.set_advanced_config()
         self.get_motor_drivers()
         self.check_motor_driver(self.motor_driver_combo.get())
         self.next_back.set_next_text("Compile and load")
-        self.next_back.set_next_command(self.create_config_file)
+        self.next_back.set_next_command(self.create_config_files)
         self.next_back.set_back_text("Select version")
         self.next_back.set_back_command(lambda view="select_version_config",
                                         product=self.product: self.master.switch_view(view, product))
@@ -360,31 +434,81 @@ class EXCommandStation(WindowLayout):
             self.log.debug("Configuration options: %s", config_list)
             return (True, config_list)
 
-    def create_config_file(self):
+    def generate_myAutomation(self):
         """
-        Function to create config.h file and progress to upload
+        Function to validate options and return any errors
 
-        - Check for config errors
-        - Checks for the existence of user config files
-        - Prompts to back those up if they exist
-        - If they exist, delete before create to ensure no conflicts
+        Validates all parameters have been set and generates myAutomation.h defines
+
+        Returns a tuple of (True|False, error_list|config_list)
+        """
+        param_errors = []
+        config_list = []
+
+        # if Track Modes not enabled, return empty list
+        if self.track_modes_enabled.get() == "off" :
+            return (True, config_list)
+
+        # write out trackmanager config, including roster entries if DCx
+        if (self.track_a_combo.get().startswith("DC")): 
+            line = "AUTOSTART SETLOCO(1) SET_TRACK(A,"+ self.track_a_combo.get() + ") DONE\n"
+            line += "ROSTER(1,\"DC TRACK A\",\"/* /\")\n"
+        else:
+            line = "AUTOSTART SET_TRACK(A,"+ self.track_a_combo.get() + ") DONE\n"
+        config_list.append(line)
+        if (self.track_b_combo.get().startswith("DC")): 
+            line = "AUTOSTART SETLOCO(2) SET_TRACK(B,"+ self.track_b_combo.get() + ") DONE\n"
+            line += "ROSTER(2,\"DC TRACK B\",\"/* /\")\n"
+        else:
+            line = "AUTOSTART SET_TRACK(B,"+ self.track_b_combo.get() + ") DONE\n"
+        config_list.append(line)
+
+        if len(param_errors) > 0:
+            self.log.error("Missing parameters: %s", param_errors)
+            return (False, param_errors)
+        else:
+            self.log.debug("myAutomation options: %s", config_list)
+            return (True, config_list)
+
+    def create_config_files(self):
+        """
+        Function to create config.h and myAutomation.h files and progress to upload
+        - Checks for file creation failures
         """
         (config, list) = self.generate_config()
         if config:
-            file_contents = [("// EX-CommandStation config.h generated by EX-Installer version " +
-                              f"{self.app_version}\n")]
-            if self.product_version_name:
-                file_contents.append("// Configuration generated for EX-CommandStation version " +
-                                     self.product_version_name + "\n\n")
+            file_contents = [("// config.h - Generated by EX-Installer " +
+                              f"v{self.app_version} for {self.product_name} " +
+                              f"{self.product_version_name}\n\n" )]
             file_contents += self.default_config_options
             file_contents += list
             config_file_path = fm.get_filepath(self.ex_commandstation_dir, "config.h")
             write_config = fm.write_config_file(config_file_path, file_contents)
-            if write_config == config_file_path:
-                self.master.switch_view("compile_upload", self.product)
-            else:
+            if write_config != config_file_path:
                 self.process_error(f"Could not write config.h: {write_config}")
                 self.log.error("Could not write config file: %s", write_config)
+        else:
+            message = ", ".join(list)
+            self.process_error(message)
+            self.log.error(message)
+
+        (config, list) = self.generate_myAutomation()
+        if config:
+            file_contents = [("// myAutomation.h - Generated by EX-Installer " +
+                              f"v{self.app_version} for {self.product_name} " +
+                              f"{self.product_version_name}\n\n" )]
+            file_contents += self.default_myAutomation_options
+            file_contents += list
+            config_file_path = fm.get_filepath(self.ex_commandstation_dir, "myAutomation.h")
+            write_config = fm.write_config_file(config_file_path, file_contents)
+            if write_config == config_file_path:
+                if self.advanced_config_enabled.get() == "on" :
+                    self.master.switch_view("advanced_config", self.product)
+                else :
+                    self.master.switch_view("compile_upload", self.product)
+            else:
+                self.process_error(f"Could not write myAutomation.h: {write_config}")
+                self.log.error("Could not write myAutomation file: %s", write_config)
         else:
             message = ", ".join(list)
             self.process_error(message)
