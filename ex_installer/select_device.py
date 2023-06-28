@@ -51,6 +51,7 @@ class SelectDevice(WindowLayout):
         self.next_back.set_back_command(lambda view="manage_arduino_cli": parent.switch_view(view))
         self.next_back.set_next_text("Select product to install")
         self.next_back.set_next_command(lambda view="select_product": parent.switch_view(view))
+        self.next_back.hide_monitor_button()
 
         # Set up and configure container frame
         self.select_device_frame = ctk.CTkFrame(self.main_frame, height=360)
@@ -207,5 +208,7 @@ class SelectDevice(WindowLayout):
             self.log.debug("Selected %s on port %s",
                            self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["name"],
                            self.acli.detected_devices[self.acli.selected_device]["port"])
+            self.next_back.show_monitor_button()
         else:
             self.next_back.disable_next()
+            self.next_back.hide_monitor_button()

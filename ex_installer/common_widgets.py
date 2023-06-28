@@ -252,8 +252,8 @@ class NextBack(ctk.CTkFrame):
         self.next_button.grid(column=4, row=0, padx=3, pady=3, sticky="e")
 
         self.monitor_window = None
-        self.monitor_button = ctk.CTkButton(self, text="Monitor", width=100, height=30, font=button_font,
-                                            command=self.monitor)
+        self.monitor_button = ctk.CTkButton(self, text="View device monitor", command=self.monitor,
+                                            width=150, height=30, font=button_font)
         self.monitor_button.grid(column=2, row=0)
 
     def set_back_text(self, text):
@@ -319,6 +319,18 @@ class NextBack(ctk.CTkFrame):
             os.startfile(log_file)
         else:
             subprocess.call(("xdg-open", log_file))
+
+    def hide_monitor_button(self):
+        """
+        Function to hide the monitor button
+        """
+        self.monitor_button.grid_remove()
+
+    def show_monitor_button(self):
+        """
+        Function to show the monitor button
+        """
+        self.monitor_button.grid()
 
     def monitor(self):
         """

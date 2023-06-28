@@ -61,6 +61,7 @@ class SelectVersionConfig(WindowLayout):
         self.next_back.set_next_command(None)
         self.next_back.disable_next()
         self.next_back.hide_log_button()
+        self.next_back.hide_monitor_button()
 
         # Set up and grid container frame
         self.version_frame = ctk.CTkFrame(self.main_frame, height=360)
@@ -143,7 +144,8 @@ class SelectVersionConfig(WindowLayout):
         self.version_frame.grid_rowconfigure((0, 1, 2), weight=1)
         self.version_label.grid(column=0, row=0, **grid_options)
         self.version_radio_frame.grid(column=0, row=1, **grid_options)
-        self.config_radio_frame.grid(column=0, row=2, **grid_options)
+        # Hide selecting existing config files for the moment
+        # self.config_radio_frame.grid(column=0, row=2, **grid_options)
 
     def setup_local_repo(self, event):
         """
