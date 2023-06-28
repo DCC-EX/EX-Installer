@@ -145,8 +145,7 @@ class SelectVersionConfig(WindowLayout):
         self.version_frame.grid_rowconfigure((0, 1, 2), weight=1)
         self.version_label.grid(column=0, row=0, **grid_options)
         self.version_radio_frame.grid(column=0, row=1, **grid_options)
-        # Hide selecting existing config files for the moment
-        # self.config_radio_frame.grid(column=0, row=2, **grid_options)
+        self.config_radio_frame.grid(column=0, row=2, **grid_options)
 
     def setup_local_repo(self, event):
         """
