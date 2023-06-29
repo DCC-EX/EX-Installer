@@ -81,7 +81,6 @@ class SelectVersionConfig(WindowLayout):
         self.product_dir = fm.get_install_dir(local_repo_dir)
         self.branch_name = pd[self.product]["default_branch"]
         self.setup_local_repo("setup_local_repo")
-        self.delete_config_files()
 
     def setup_version_frame(self):
         grid_options = {"padx": 5, "pady": 5}
@@ -145,7 +144,7 @@ class SelectVersionConfig(WindowLayout):
         self.version_frame.grid_rowconfigure((0, 1, 2), weight=1)
         self.version_label.grid(column=0, row=0, **grid_options)
         self.version_radio_frame.grid(column=0, row=1, **grid_options)
-        # self.config_radio_frame.grid(column=0, row=2, **grid_options)
+        self.config_radio_frame.grid(column=0, row=2, **grid_options)
 
     def setup_local_repo(self, event):
         """
@@ -156,13 +155,14 @@ class SelectVersionConfig(WindowLayout):
         - if so
             - if the product directory is already a cloned repo
             - any locally modified files that would interfere with Git commands
-            - any existing configuration files
+            - delete any existing configuration files
         - if not, clone repo
         - get list of versions, latest prod, and latest devel versions
         """
         if event == "setup_local_repo":
             self.log.debug("Setting up local repository")
             self.disable_input_states(self)
+            self.delete_config_files()
             if os.path.exists(self.product_dir) and os.path.isdir(self.product_dir):
                 if self.git.dir_is_git_repo(self.product_dir):
                     self.repo = self.git.get_repo(self.product_dir)
