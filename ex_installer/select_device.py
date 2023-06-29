@@ -6,6 +6,7 @@ Module for the Select Device page view
 import customtkinter as ctk
 import logging
 import serial.tools.list_ports
+import sys
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -173,7 +174,11 @@ class SelectDevice(WindowLayout):
                             unknown_combo.configure(values=supported_boards)
                             port_description = self.get_port_description(self.acli.detected_devices[index]["port"])
                             if port_description:
-                                text = f"Unknown/clone detected as {port_description}"
+                                if sys.platform.startswith("win"):
+                                    text = f"Unknown/clone detected as {port_description}"
+                                else:
+                                    text = (f"Unknown/clone detected as {port_description} on " +
+                                            self.acli.detected_devices[index]['port'])
                             else:
                                 text = ("Unknown or clone device detected on " +
                                         self.acli.detected_devices[index]['port'])
@@ -222,7 +227,7 @@ class SelectDevice(WindowLayout):
 
     def get_port_description(self, unknown_port):
         """
-        Function to obtain USB/serial port descriptions using pyserial
+        Function to obtain USB/serial port descriptions using pyserial for ports the CLI doesn't identify
         """
         description = False
         port_list = serial.tools.list_ports.comports()
