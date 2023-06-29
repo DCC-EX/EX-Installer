@@ -104,8 +104,10 @@ class EXCommandStation(WindowLayout):
                     self.product_patch_version = patch
         if self.product_major_version >= 4 and self.product_minor_version >= 2:
             self.track_modes_switch.grid()
+            self.track_modes_frame.grid()
         else:
             self.track_modes_switch.grid_remove()
+            self.track_modes_frame.grid_remove()
 
     def setup_config_frame(self):
         """
