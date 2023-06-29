@@ -47,7 +47,7 @@ def main(debug):
         pass  # high DPI scaling works automatically it is said
     elif sys.platform.startswith("win"):
         import ctypes
-        ctypes.windll.shcore.SetProcessDpiAwareness(2) # should turn on DPI scaling on Windows
+        ctypes.windll.shcore.SetProcessDpiAwareness(2)  # should turn on DPI scaling on Windows
     else:
         import customtkinter
         dpi = app.winfo_fpixels('1i')
