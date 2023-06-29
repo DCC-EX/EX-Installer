@@ -174,11 +174,12 @@ class SelectDevice(WindowLayout):
                             unknown_combo.configure(values=supported_boards)
                             port_description = self.get_port_description(self.acli.detected_devices[index]["port"])
                             if port_description:
-                                if sys.platform.startswith("win"):
-                                    text = f"Unknown/clone detected as {port_description}"
-                                else:
-                                    text = (f"Unknown/clone detected as {port_description} on " +
-                                            self.acli.detected_devices[index]['port'])
+                                text = f"Unknown/clone detected as {port_description}"
+                                # if sys.platform.startswith("win"):
+                                #     text = f"Unknown/clone detected as {port_description}"
+                                # else:
+                                #     text = (f"Unknown/clone detected as {port_description} on " +
+                                #             self.acli.detected_devices[index]['port'])
                             else:
                                 text = ("Unknown or clone device detected on " +
                                         self.acli.detected_devices[index]['port'])
@@ -234,6 +235,9 @@ class SelectDevice(WindowLayout):
         if isinstance(port_list, list):
             for port in port_list:
                 if port.device == unknown_port:
-                    description = port.description
+                    if port.product is not None:
+                        description = f" {port.product} ({port.device})"
+                    else:
+                        description = port.description
                     break
         return description
