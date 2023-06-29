@@ -16,6 +16,7 @@ Version history:
       - Add track manager configuration to EX-CommandStation config
       - Disable selecting the WiFi channel in station mode for EX-CommandStation
       - Update no device found message
+      - Enable/disable track manager configuration based on version
 0.0.6 - Add a serial monitor for viewing serial output and sending commands
 0.0.5 - Provide extra welcome information and instructions
       - Rephrase from "upload" to "load" which is potentially less confusing and more appropriate language
