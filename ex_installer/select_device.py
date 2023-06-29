@@ -7,6 +7,7 @@ import customtkinter as ctk
 import logging
 import sys
 import subprocess
+import serial.tools.list_ports
 from pprint import pprint
 
 # Import local modules
@@ -222,38 +223,9 @@ class SelectDevice(WindowLayout):
 
     def get_port_descriptions(self):
         """
-        Function to obtain USB/serial port descriptions
-
-        For Windows this uses WMI, for Linux it uses lsusb, and macOS uses system_profiler
+        Function to obtain USB/serial port descriptions using pyserial
         """
-        if sys.platform.startswith("win"):
-            command = "wmic path Win32_SerialPort get DeviceID, Name /format:list"
-            output = subprocess.check_output(command, shell=True).decode("utf-8")
-            ports = []
-            port_info = {}
-            for line in output.split("\n"):
-                line = line.strip()
-                if line.startswith('DeviceID='):
-                    port_info['device_id'] = line.replace('DeviceID=', '')
-                elif line.startswith('Name='):
-                    port_info['name'] = line.replace('Name=', '')
-                    ports.append(port_info)
-                    port_info = {}
-            pprint(ports)
-        elif sys.platform.startswith("dar"):
-            command = 'system_profiler SPSerialATADataType -json'
-            output = subprocess.check_output(command, shell=True).decode('utf-8')
-            serial_ports = []
-            for item in output.split('\n'):
-                if 'sppci' in item:
-                    serial_ports.append(item.split(':')[1].strip())
-            pprint(serial_ports)
-        else:
-            command = 'ls /dev/ttyS* /dev/ttyUSB* /dev/ttyACM* 2>/dev/null'
-            output = subprocess.check_output(command, shell=True).decode('utf-8')
-            ports = []
-            for line in output.split('\n'):
-                line = line.strip()
-                if line:
-                    ports.append(line)
-            pprint(ports)
+        port_list = serial.tools.list_ports.comports()
+        if isinstance(port_list, list):
+            for port in port_list:
+                pprint(vars(port))
