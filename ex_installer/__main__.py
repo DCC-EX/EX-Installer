@@ -7,6 +7,7 @@ import logging
 from datetime import datetime
 import os
 import argparse
+import sys
 
 # Import local modules
 from ex_installer.ex_installer import EXInstaller
@@ -42,6 +43,16 @@ def main(debug):
     # Start the app
     _log.debug("EX-Installer launched")
     app = EXInstaller()
+    if sys.platform == "darwin":
+        pass  # high DPI scaling works automatically it is said
+    elif sys.platform.startswith("win"):
+        import ctypes
+        ctypes.windll.shcore.SetProcessDpiAwareness(2) # should turn on DPI scaling on Windows
+    else:
+        import customtkinter
+        dpi = app.winfo_fpixels('1i')
+        customtkinter.set_widget_scaling(dpi/72)
+        customtkinter.set_window_scaling(dpi/72)
     app.mainloop()
     _log.debug("EX-Installer closed")
 
