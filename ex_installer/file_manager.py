@@ -292,6 +292,20 @@ class FileManager:
             return str(error)
 
     @staticmethod
+    def read_config_file(file_path):
+        """Function to read and return file contents
+        Pass the full path to the file
+        Returns the text from the file path if successful, otherwise the exception error message
+        """
+        try:
+            file = open(file_path, "r", encoding="utf-8")
+            lines = file.read()
+            file.close()
+            return lines
+        except Exception as error:
+            return str(error)
+
+    @staticmethod
     def dir_is_empty(dir):
         """
         Check if directory is empty
@@ -318,6 +332,25 @@ class FileManager:
                 shutil.copy(source, dest)
             except Exception:
                 failed_files.append(file)
+        if len(failed_files) > 0:
+            return failed_files
+        else:
+            return None
+
+    @staticmethod
+    def delete_config_files(dir, file_list):
+        """
+        Delete the specified list of files from sepcified directory
+
+        Returns None if successful, otherwise a list of files that failed to copy
+        """
+        failed_files = []
+        for file_name in file_list:
+            file = os.path.join(dir, file_name)
+            try:                
+                os.remove(file)
+            except Exception:
+                failed_files.append(file_name)
         if len(failed_files) > 0:
             return failed_files
         else:

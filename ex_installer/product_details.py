@@ -22,11 +22,42 @@ product_details = {
         ],
         "minimum_config_files": [
             "config.h"
-            # r"(^config\.h$)"
         ],
         "other_config_files": [
             r"(^myHal\.cpp$)",
             r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
+        ]
+    },
+    "ex_ioexpander": {
+        "product_name": "EX-IOExpander",
+        "product_logo": images.EX_IOEXPANDER_LOGO,
+        "repo_name": "DCC-EX/EX-IOExpander",
+        "default_branch": "main",
+        "repo_url": "https://github.com/DCC-EX/EX-IOExpander.git",
+        "supported_devices": [
+            "arduino:avr:uno",
+            "arduino:avr:nano",
+            "arduino:avr:nano:cpu=atmega328",
+            "arduino:avr:mega",
+            "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE"
+        ],
+        "minimum_config_files": [
+            "myConfig.h"
+        ]
+    },
+    "ex_turntable": {
+        "product_name": "EX-Turntable",
+        "product_logo": images.EX_TURNTABLE_LOGO,
+        "repo_name": "DCC-EX/EX-IOExpander",
+        "default_branch": "main",
+        "repo_url": "https://github.com/DCC-EX/EX-Turntable.git",
+        "supported_devices": [
+            "arduino:avr:uno",
+            "arduino:avr:nano",
+            "arduino:avr:nano:cpu=atmega328"
+        ],
+        "minimum_config_files": [
+            "config.h"
         ]
     }
 }

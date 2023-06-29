@@ -81,6 +81,7 @@ class SelectVersionConfig(WindowLayout):
         self.product_dir = fm.get_install_dir(local_repo_dir)
         self.branch_name = pd[self.product]["default_branch"]
         self.setup_local_repo("setup_local_repo")
+        self.delete_config_files()
 
     def setup_version_frame(self):
         grid_options = {"padx": 5, "pady": 5}
@@ -144,7 +145,6 @@ class SelectVersionConfig(WindowLayout):
         self.version_frame.grid_rowconfigure((0, 1, 2), weight=1)
         self.version_label.grid(column=0, row=0, **grid_options)
         self.version_radio_frame.grid(column=0, row=1, **grid_options)
-        # Hide selecting existing config files for the moment
         # self.config_radio_frame.grid(column=0, row=2, **grid_options)
 
     def setup_local_repo(self, event):
@@ -278,6 +278,7 @@ class SelectVersionConfig(WindowLayout):
         Function to select what configuration to do next
         """
         if self.config_option.get() == 0:
+            self.master.use_existing = False
             set_version = None
             if self.select_version.get() == 0:
                 set_version = self.latest_prod[0]
@@ -296,8 +297,9 @@ class SelectVersionConfig(WindowLayout):
                 self.next_back.disable_next()
             self.next_back.set_next_text(f"Configure {pd[self.product]['product_name']}")
         elif self.config_option.get() == 1:
+            self.master.use_existing = True
             self.next_back.set_next_command(self.copy_config_files)
-            self.next_back.set_next_text("Compile and upload")
+            self.next_back.set_next_text("Advanced Config")
             self.validate_config_dir()
 
     def browse_configdir(self):
@@ -332,25 +334,42 @@ class SelectVersionConfig(WindowLayout):
         else:
             self.next_back.disable_next()
 
+    def delete_config_files(self):
+        """
+        Function to delete config files from product directory
+          needed on subsequent passes thru the logic
+        """
+        file_list = []
+        min_list = fm.get_config_files(self.product_dir, pd[self.product]["minimum_config_files"])
+        if min_list:
+            file_list += min_list
+        other_list = fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
+        if other_list:
+            file_list += other_list
+        self.log.debug("Deleting files: %s", file_list)
+        error_list = fm.delete_config_files(self.product_dir, file_list)
+        if error_list:
+            file_list = ", ".join(error_list)
+            self.process_error(f"Failed to delete one or more files: {file_list}")
+            self.log.error("Failed to delete: %s", file_list)
+
     def copy_config_files(self):
         """
-        Function to either create config files or copy from specified directory
+        Function to copy config files from selected directory to product directory
+          also switches view to advanced_config if copy is successful
         """
-        if self.config_option.get() == 0:
-            self.master.switch_view("compile_upload", self.product)
-        elif self.config_option.get() == 1:
-            copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
-            if copy_list:
-                extra_list = fm.get_config_files(self.config_path.get(), pd[self.product]["other_config_files"])
-                if extra_list:
-                    copy_list += extra_list
-                file_copy = fm.copy_config_files(self.config_path.get(), self.product_dir, copy_list)
-                if file_copy:
-                    file_list = ", ".join(file_copy)
-                    self.process_error(f"Failed to copy one or more files: {file_list}")
-                    self.log.error("Failed to copy: %s", file_list)
-                else:
-                    self.master.switch_view("compile_upload", self.product)
+        copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
+        if copy_list:
+            extra_list = fm.get_config_files(self.config_path.get(), pd[self.product]["other_config_files"])
+            if extra_list:
+                copy_list += extra_list
+            file_copy = fm.copy_config_files(self.config_path.get(), self.product_dir, copy_list)
+            if file_copy:
+                file_list = ", ".join(file_copy)
+                self.process_error(f"Failed to copy one or more files: {file_list}")
+                self.log.error("Failed to copy: %s", file_list)
             else:
-                self.process_error("Selected configuration directory is missing the required files")
-                self.log.error("Directory %s is missing required files", self.config_path.get())
+                self.master.switch_view("advanced_config", self.product)
+        else:
+            self.process_error("Selected configuration directory is missing the required files")
+            self.log.error("Directory %s is missing required files", self.config_path.get())
