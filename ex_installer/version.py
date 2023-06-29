@@ -7,11 +7,12 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.8"
+ex_installer_version = "0.0.9"
 
 """
 Version history:
 
+0.0.9 - Display serial device details for unknown/clone devices
 0.0.8 - Fix for DPI scaling bug when moving monitors (Harald Barth)
 0.0.7 - Add the ability to direct edit config files
       - Add track manager configuration to EX-CommandStation config
