@@ -145,7 +145,7 @@ class SelectVersionConfig(WindowLayout):
         self.version_frame.grid_rowconfigure((0, 1, 2), weight=1)
         self.version_label.grid(column=0, row=0, **grid_options)
         self.version_radio_frame.grid(column=0, row=1, **grid_options)
-        self.config_radio_frame.grid(column=0, row=2, **grid_options)
+        # self.config_radio_frame.grid(column=0, row=2, **grid_options)
 
     def setup_local_repo(self, event):
         """
@@ -340,15 +340,15 @@ class SelectVersionConfig(WindowLayout):
           needed on subsequent passes thru the logic
         """
         file_list = []
-        min_list =  fm.get_config_files(self.product_dir, pd[self.product]["minimum_config_files"])
+        min_list = fm.get_config_files(self.product_dir, pd[self.product]["minimum_config_files"])
         if min_list:
             file_list += min_list
-        other_list= fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
+        other_list = fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
         if other_list:
             file_list += other_list
         self.log.debug("Deleting files: %s", file_list)
         error_list = fm.delete_config_files(self.product_dir, file_list)
-        if error_list :
+        if error_list:
             file_list = ", ".join(error_list)
             self.process_error(f"Failed to delete one or more files: {file_list}")
             self.log.error("Failed to delete: %s", file_list)

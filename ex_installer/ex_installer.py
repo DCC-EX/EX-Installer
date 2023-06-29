@@ -83,8 +83,8 @@ class EXInstaller(ctk.CTk):
             "compile_upload": CompileUpload
         }
         self.view = None
-        self.use_existing = False #needed for backing up to select_version_config
-        self.advanced_config = False #needed for backing up
+        self.use_existing = False  # needed for backing up to select_version_config
+        self.advanced_config = False  # needed for backing up
 
         self.switch_view("welcome")
 
@@ -174,8 +174,10 @@ class EXInstaller(ctk.CTk):
             else:
                 self.view = self.views[view_class](self)
                 self.frames[view_class] = self.view
-                if (view_class == "compile_upload" or view_class == "advanced_config" or
-                    view_class == "select_version_config") :
+                if (
+                    view_class == "compile_upload" or view_class == "advanced_config" or
+                    view_class == "select_version_config"
+                ):
                     self.view.set_product(product)
                 if hasattr(self.view, "set_product_version"):
                     self.view.set_product_version(version, *version_details)

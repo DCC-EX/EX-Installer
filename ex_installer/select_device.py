@@ -80,7 +80,7 @@ class SelectDevice(WindowLayout):
 
         # Create detected device label and grid
         grid_options = {"padx": 5, "pady": 5}
-        self.no_device_label = ctk.CTkLabel(self.select_device_frame, text="No devices found",
+        self.no_device_label = ctk.CTkLabel(self.select_device_frame, text="Click Scan for Devices to start",
                                             font=self.bold_instruction_font)
         self.device_list_label = ctk.CTkLabel(self.device_list_frame, text="Select your device",
                                               font=self.instruction_font)
@@ -182,6 +182,8 @@ class SelectDevice(WindowLayout):
                                                           variable=self.selected_device, value=index,
                                                           command=self.select_device)
                         radio_button.grid(column=0, row=row, sticky="w", **grid_options)
+                else:
+                    self.no_device_label.configure(text="No devices found")
                 self.set_state()
                 self.process_stop()
                 self.restore_input_states()
