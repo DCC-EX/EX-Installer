@@ -86,8 +86,6 @@ class EXInstaller(ctk.CTk):
         self.use_existing = False  # needed for backing up to select_version_config
         self.advanced_config = False  # needed for backing up
 
-        self.switch_view("welcome")
-
     def exception_handler(self, exc_type, exc_value, exc_traceback):
         """
         Handler for uncaught exceptions

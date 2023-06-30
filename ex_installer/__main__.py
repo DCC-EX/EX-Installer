@@ -53,6 +53,8 @@ def main(debug):
         dpi = app.winfo_fpixels('1i')
         customtkinter.set_widget_scaling(dpi/72)
         customtkinter.set_window_scaling(dpi/72)
+    # switch to first view _after_ the scaling because of a bug in Linux that would unhide all hidden buttons
+    app.switch_view("welcome")
     app.mainloop()
     _log.debug("EX-Installer closed")
 
