@@ -10,6 +10,7 @@ import argparse
 import os
 import re
 import PyInstaller.__main__
+import sysconfig
 
 # Import local modules
 from ex_installer.version import ex_installer_version
@@ -91,6 +92,13 @@ def write_version_file(major, minor, patch, platform):
         return True
 
 
+def get_site_packages_path():
+    """
+    Use sysconfig to obtain the site-packages path
+    """
+    return sysconfig.get_paths()["platlib"]
+
+
 # Validate and assign variables
 platform_name = args.platform
 
@@ -137,10 +145,7 @@ if not write_file:
     exit()
 
 # Get the right directory to include customtkinter
-if platform_name.startswith("Win"):
-    customtkinter_dir = os.path.join(repo_dir, "venv/Lib/site-packages/customtkinter")
-else:
-    customtkinter_dir = os.path.join(repo_dir, "venv/lib/python3.8/site-packages/customtkinter")
+customtkinter_dir = os.path.join(get_site_packages_path(), "customtkinter")
 
 # Display the version info for confirmation in case it hasn't been updated yet
 confirm = input(f"This will build {app_name} version {app_version}. If the version should be updated, " +

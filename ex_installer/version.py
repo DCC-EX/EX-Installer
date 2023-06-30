@@ -7,11 +7,14 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.10"
+ex_installer_version = "0.0.11"
 
 """
 Version history:
 
+0.0.11      - Fix build process for macOS and Linux
+            - Update dealing with unsuppported operating systems in a nicer manner so
+              exceptions aren't raised, but errors are handled normally
 0.0.10      - Automatically scan for devices on the Select Device view when starting
             - Enable browsing for and using existing configuration files
             - Add tabbed view for editing more than two configuration files

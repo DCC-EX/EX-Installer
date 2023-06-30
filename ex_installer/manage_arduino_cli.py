@@ -25,8 +25,8 @@ class ManageArduinoCLI(WindowLayout):
                                 "Note that enabling additional platforms is likely to add several minutes to the " +
                                 "installation process. Maybe grab a cup of tea or a coffee!")
     refresh_instruction_text = ("While the Arduino CLI is installed, it is recommended to refresh it periodically " +
-                                "(eg. weekly) to ensure support for the various devices is kept up to date. To refresh " +
-                                "the CLI, simply click the refresh button.\n\n"
+                                "(eg. weekly) to ensure support for the various devices is kept up to date. To " +
+                                "refresh the CLI, simply click the refresh button.\n\n"
                                 "Note that enabling any of the additional platforms is likely to add " +
                                 "several minutes to the refresh process. Maybe grab a cup of tea or a coffee!")
 
