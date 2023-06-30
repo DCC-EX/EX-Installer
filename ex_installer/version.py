@@ -15,6 +15,7 @@ Version history:
 0.0.11      - Fix build process for macOS and Linux
             - Update dealing with unsuppported operating systems in a nicer manner so
               exceptions aren't raised, but errors are handled normally
+            - Update initial view switch to happen after scaling to fix Linux bug (Harald Barth)
 0.0.10      - Automatically scan for devices on the Select Device view when starting
             - Enable browsing for and using existing configuration files
             - Add tabbed view for editing more than two configuration files
