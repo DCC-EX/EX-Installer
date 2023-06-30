@@ -165,3 +165,6 @@ cython_debug/
 
 # PyInstaller version file (dynamically built)
 file_version.txt
+
+# macOS build app directory (not required)
+dist/EX-Installer-macOS.app/
