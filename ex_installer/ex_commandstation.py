@@ -95,7 +95,6 @@ class EXCommandStation(WindowLayout):
         else:
             function_disables_track_manager()
         """
-        self.log.debug("set_product_version started")
         self.product_version_name = version
         if major is not None:
             self.product_major_version = major
