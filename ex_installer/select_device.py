@@ -81,7 +81,7 @@ class SelectDevice(WindowLayout):
 
         # Create detected device label and grid
         grid_options = {"padx": 5, "pady": 5}
-        self.no_device_label = ctk.CTkLabel(self.select_device_frame, text="Click Scan for Devices to start",
+        self.no_device_label = ctk.CTkLabel(self.select_device_frame, text="Scanning for devices",
                                             font=self.bold_instruction_font)
         self.device_list_label = ctk.CTkLabel(self.device_list_frame, text="Select your device",
                                               font=self.instruction_font)
@@ -94,6 +94,7 @@ class SelectDevice(WindowLayout):
         self.list_device_button.grid(column=0, row=2)
 
         self.set_state()
+        self.list_devices("list_devices")
 
     def set_state(self):
         self.next_back.hide_log_button()
