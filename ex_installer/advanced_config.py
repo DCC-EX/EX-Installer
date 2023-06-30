@@ -96,31 +96,31 @@ class AdvancedConfig(WindowLayout):
 
         self.edit_label = {}
         self.edit_textbox = {}
-        # edit_row = 1
-        # for file_name in self.edit_list:
-        #     self.log.debug("adding edit box for " + file_name)
-        #     self.edit_label[file_name] = ctk.CTkLabel(self.edit_frame, text=file_name)
-        #     self.edit_label[file_name].grid(column=0, row=edit_row, sticky="nsew")
-        #     self.edit_textbox[file_name] = ctk.CTkTextbox(self.edit_frame, border_width=2, border_spacing=5,
-        #                                                   fg_color="#E5E5E5", width=780, height=180)
-        #     self.edit_textbox[file_name].grid(column=1, row=edit_row, sticky="nsew")
-        #     file_path = fm.get_filepath(self.product_dir, file_name)
-        #     text = fm.read_config_file(file_path)
-        #     self.edit_textbox[file_name].insert("0.0", text)
-        #     edit_row += 1
         edit_column = 0
-        for file_name in self.edit_list:
-            self.edit_frame.grid_columnconfigure(edit_column, weight=1)
-            self.log.debug("adding edit box for " + file_name)
-            self.edit_label[file_name] = ctk.CTkLabel(self.edit_frame, text=file_name)
-            self.edit_label[file_name].grid(column=edit_column, row=1, padx=5, pady=5, sticky="nsew")
-            self.edit_textbox[file_name] = ctk.CTkTextbox(self.edit_frame, border_width=2, wrap="none",
-                                                          fg_color="#E5E5E5", activate_scrollbars=True)
-            self.edit_textbox[file_name].grid(column=edit_column, row=2, padx=4, pady=5, sticky="nsew")
-            file_path = fm.get_filepath(self.product_dir, file_name)
-            text = fm.read_config_file(file_path)
-            self.edit_textbox[file_name].insert("0.0", text)
-            edit_column += 1
+        if (len(self.edit_list)) < 3:
+            for file_name in self.edit_list:
+                self.edit_frame.grid_columnconfigure(edit_column, weight=1)
+                self.log.debug("adding edit box for " + file_name)
+                self.edit_label[file_name] = ctk.CTkLabel(self.edit_frame, text=file_name)
+                self.edit_label[file_name].grid(column=edit_column, row=1, padx=5, pady=5, sticky="nsew")
+                self.edit_textbox[file_name] = ctk.CTkTextbox(self.edit_frame, border_width=2, wrap="none",
+                                                              fg_color="#E5E5E5", activate_scrollbars=True)
+                self.edit_textbox[file_name].grid(column=edit_column, row=2, padx=4, pady=5, sticky="nsew")
+                file_path = fm.get_filepath(self.product_dir, file_name)
+                text = fm.read_config_file(file_path)
+                self.edit_textbox[file_name].insert("0.0", text)
+                edit_column += 1
+        else:
+            self.config_tabview = ctk.CTkTabview(self.edit_frame)
+            self.config_tabview.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
+            for file_name in self.edit_list:
+                self.config_tabview.add(file_name)
+                self.edit_textbox[file_name] = ctk.CTkTextbox(self.config_tabview.tab(file_name), border_width=2, wrap="none",
+                                                              fg_color="#E5E5E5", activate_scrollbars=True)
+                self.edit_textbox[file_name].grid(column=0, row=0, padx=4, pady=5, sticky="nsew")
+                file_path = fm.get_filepath(self.product_dir, file_name)
+                text = fm.read_config_file(file_path)
+                self.edit_textbox[file_name].insert("0.0", text)
 
         # Set next/back buttons
         if self.master.use_existing:  # return from whence you arrived
