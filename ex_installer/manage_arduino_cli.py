@@ -202,7 +202,7 @@ class ManageArduinoCLI(WindowLayout):
                 self.process_start("extract_cli", "Installing the Arduino CLI", "Manage_CLI")
                 self.acli.install_cli(download_file, self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error("Error downloading the Arduino CLI")
+                self.process_error(self.process_topic)
         elif event == "refresh_cli" or self.process_phase == "extract_cli":
             if event == "refresh_cli":
                 self.disable_input_states(self)
