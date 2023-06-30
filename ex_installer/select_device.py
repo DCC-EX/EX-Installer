@@ -5,6 +5,7 @@ Module for the Select Device page view
 # Import Python modules
 import customtkinter as ctk
 import logging
+import serial.tools.list_ports
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -156,7 +157,7 @@ class SelectDevice(WindowLayout):
                             for matched_board in self.acli.detected_devices[index]["matching_boards"]:
                                 matched_boards.append(matched_board["name"])
                             multi_combo = ctk.CTkComboBox(self.device_list_frame,
-                                                          values="Select the correct device", width=300,
+                                                          values="Select the correct device", width=250,
                                                           command=lambda name, i=index: self.update_board(name, i))
                             multi_combo.grid(column=1, row=row, sticky="e", **grid_options)
                             multi_combo.configure(values=matched_boards)
@@ -166,12 +167,16 @@ class SelectDevice(WindowLayout):
                             self.log.debug(self.acli.detected_devices[index]["matching_boards"])
                         elif self.acli.detected_devices[index]["matching_boards"][0]["name"] == "Unknown":
                             unknown_combo = ctk.CTkComboBox(self.device_list_frame,
-                                                            values=["Select the correct device"], width=300,
+                                                            values=["Select the correct device"], width=250,
                                                             command=lambda name, i=index: self.update_board(name, i))
                             unknown_combo.grid(column=1, row=row, sticky="e", **grid_options)
                             unknown_combo.configure(values=supported_boards)
-                            text = "Unknown or clone detected"
-                            text += " on " + self.acli.detected_devices[index]["port"]
+                            port_description = self.get_port_description(self.acli.detected_devices[index]["port"])
+                            if port_description:
+                                text = f"Unknown/clone detected as {port_description}"
+                            else:
+                                text = ("Unknown or clone device detected on " +
+                                        self.acli.detected_devices[index]['port'])
                             self.log.debug("Unknown or clone device on %s", self.acli.detected_devices[index]["port"])
                         else:
                             text = self.acli.detected_devices[index]["matching_boards"][0]["name"]
@@ -214,3 +219,19 @@ class SelectDevice(WindowLayout):
         else:
             self.next_back.disable_next()
             self.next_back.hide_monitor_button()
+
+    def get_port_description(self, unknown_port):
+        """
+        Function to obtain USB/serial port descriptions using pyserial for ports the CLI doesn't identify
+        """
+        description = False
+        port_list = serial.tools.list_ports.comports()
+        if isinstance(port_list, list):
+            for port in port_list:
+                if port.device == unknown_port:
+                    if port.product is not None:
+                        description = f" {port.product} ({port.device})"
+                    else:
+                        description = port.description
+                    break
+        return description
