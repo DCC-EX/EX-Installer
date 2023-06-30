@@ -42,8 +42,6 @@ class AdvancedConfig(WindowLayout):
 
         # Set up and configure the edit frame, which will contain the editboxes
         self.edit_frame = ctk.CTkFrame(self.main_frame, height=360)
-        self.edit_frame.grid_columnconfigure(0, weight=1)
-        self.edit_frame.grid_rowconfigure(2, weight=1)
         self.edit_frame.grid(column=0, row=0, sticky="nsew")
 
         self.edit_list = []  # remember list of files to edit
@@ -72,6 +70,10 @@ class AdvancedConfig(WindowLayout):
     def reload_view(self):
         """
         Build/Refresh items for this view, including the dynamic list of edit boxes
+
+        If two config files, display side by side which is quite practical
+
+        If more than two config files, use CTkTabview for a nicer editing experience
         """
         self.log.debug("in reload_view()")
 
@@ -98,10 +100,13 @@ class AdvancedConfig(WindowLayout):
         self.edit_textbox = {}
         edit_column = 0
         if (len(self.edit_list)) < 3:
+            self.edit_frame.grid_rowconfigure((0, 1), weight=0)
+            self.edit_frame.grid_rowconfigure(2, weight=1)
             for file_name in self.edit_list:
                 self.edit_frame.grid_columnconfigure(edit_column, weight=1)
                 self.log.debug("adding edit box for " + file_name)
-                self.edit_label[file_name] = ctk.CTkLabel(self.edit_frame, text=file_name)
+                self.edit_label[file_name] = ctk.CTkLabel(self.edit_frame, text=file_name,
+                                                          font=self.instruction_font)
                 self.edit_label[file_name].grid(column=edit_column, row=1, padx=5, pady=5, sticky="nsew")
                 self.edit_textbox[file_name] = ctk.CTkTextbox(self.edit_frame, border_width=2, wrap="none",
                                                               fg_color="#E5E5E5", activate_scrollbars=True)
@@ -111,13 +116,22 @@ class AdvancedConfig(WindowLayout):
                 self.edit_textbox[file_name].insert("0.0", text)
                 edit_column += 1
         else:
-            self.config_tabview = ctk.CTkTabview(self.edit_frame)
+            self.edit_frame.grid_columnconfigure(0, weight=1)
+            self.edit_frame.grid_rowconfigure(1, weight=1)
+            self.config_tabview = ctk.CTkTabview(self.edit_frame, border_width=2,
+                                                 segmented_button_fg_color="#00A3B9",
+                                                 segmented_button_unselected_color="#00A3B9",
+                                                 segmented_button_selected_color="#00353D",
+                                                 segmented_button_selected_hover_color="#017E8F",
+                                                 text_color="white")
             self.config_tabview.grid(column=0, row=1, padx=5, pady=5, sticky="nsew")
             for file_name in self.edit_list:
                 self.config_tabview.add(file_name)
-                self.edit_textbox[file_name] = ctk.CTkTextbox(self.config_tabview.tab(file_name), border_width=2, wrap="none",
-                                                              fg_color="#E5E5E5", activate_scrollbars=True)
-                self.edit_textbox[file_name].grid(column=0, row=0, padx=4, pady=5, sticky="nsew")
+                self.config_tabview.tab(file_name).grid_columnconfigure(0, weight=1)
+                self.config_tabview.tab(file_name).grid_rowconfigure(0, weight=1)
+                self.edit_textbox[file_name] = ctk.CTkTextbox(self.config_tabview.tab(file_name), border_width=2,
+                                                              wrap="none", fg_color="#E5E5E5", activate_scrollbars=True)
+                self.edit_textbox[file_name].grid(column=0, row=0, padx=5, pady=5, sticky="nsew")
                 file_path = fm.get_filepath(self.product_dir, file_name)
                 text = fm.read_config_file(file_path)
                 self.edit_textbox[file_name].insert("0.0", text)
