@@ -105,8 +105,8 @@ class EXCommandStation(WindowLayout):
         if self.product_major_version >= 4 and self.product_minor_version >= 2:
             self.track_modes_switch.grid()
         else:
-            self.track_modes_switch.deselect() # make sure it's off
-            self.track_modes_switch.grid_remove() 
+            self.track_modes_switch.deselect()  # make sure it's off
+            self.track_modes_switch.grid_remove()
         self.set_track_modes()
 
     def setup_config_frame(self):

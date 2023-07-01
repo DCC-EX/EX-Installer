@@ -14,6 +14,7 @@ Version history:
 
 0.0.12      - Enable device monitor title bar
             - Fix bug in Linux where device monitor is always on top of all windows
+            - Fix bug where track manager options displaying for incorrect versions
 0.0.11      - Fix build process for macOS and Linux
             - Update dealing with unsuppported operating systems in a nicer manner so
               exceptions aren't raised, but errors are handled normally
