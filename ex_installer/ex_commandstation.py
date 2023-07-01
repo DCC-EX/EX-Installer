@@ -10,7 +10,7 @@ import logging
 from .common_widgets import WindowLayout
 from .product_details import product_details as pd
 from .file_manager import FileManager as fm
-from .advanced_config import AdvancedConfig
+
 
 class EXCommandStation(WindowLayout):
     """

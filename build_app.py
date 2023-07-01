@@ -10,6 +10,7 @@ import argparse
 import os
 import re
 import PyInstaller.__main__
+import sysconfig
 
 # Import local modules
 from ex_installer.version import ex_installer_version
@@ -91,6 +92,13 @@ def write_version_file(major, minor, patch, platform):
         return True
 
 
+def get_site_packages_path():
+    """
+    Use sysconfig to obtain the site-packages path
+    """
+    return sysconfig.get_paths()["platlib"]
+
+
 # Validate and assign variables
 platform_name = args.platform
 
@@ -137,10 +145,7 @@ if not write_file:
     exit()
 
 # Get the right directory to include customtkinter
-if platform_name.startswith("Win"):
-    customtkinter_dir = os.path.join(repo_dir, "venv/Lib/site-packages/customtkinter")
-else:
-    customtkinter_dir = os.path.join(repo_dir, "venv/lib/python3.8/site-packages/customtkinter")
+customtkinter_dir = os.path.join(get_site_packages_path(), "customtkinter")
 
 # Display the version info for confirmation in case it hasn't been updated yet
 confirm = input(f"This will build {app_name} version {app_version}. If the version should be updated, " +
@@ -151,13 +156,12 @@ if confirm != "y" and confirm != "Y":
 
 # Define platform agnostic PyInstaller parameters
 param_list = [
-    script_file,
     "--windowed",
     "--clean",
     "--onefile",
     f"--icon={icon_file}",
     "--name",
-    f"{app_name}",
+    f"{app_name}"
 ]
 
 # Append Windows specific parameters
@@ -168,7 +172,9 @@ if platform_name.startswith("Win"):
         "--add-data",
         f"{theme_file};theme/.",
         "--add-data",
-        f"{customtkinter_dir};customtkinter"
+        f"{customtkinter_dir};customtkinter",
+        "--version-file",
+        "file_version.txt"
     ]
 # Append non-Windows parameters
 else:
@@ -179,8 +185,9 @@ else:
         f"{theme_file}:theme/.",
         "--add-data",
         f"{customtkinter_dir}:customtkinter",
-        "--hidden-import='PIL._tkinter_finder'"
+        "--hidden-import=PIL._tkinter_finder"
     ]
+param_list += [script_file]
 print(param_list)
 
 try:

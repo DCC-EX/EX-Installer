@@ -159,7 +159,7 @@ class ArduinoCLI:
     arduino_downloads = {
         "Linux32": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_32bit.tar.gz",
         "Linux64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_64bit.tar.gz",
-        "macOS64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_macOS_64bit.tar.gz",
+        "Darwin64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_macOS_64bit.tar.gz",
         "Windows32": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_32bit.zip",
         "Windows64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip"
     }
@@ -289,9 +289,10 @@ class ArduinoCLI:
         If error, the error will be in the queue's "data" field
         """
         if not platform.system():
-            raise ValueError("Unsupported operating system")
             self.log.error("Unsupported operating system")
-            _result = False
+            queue.put(
+                QueueMessage("error", "Unsupported operating system", "Unsupported operating system")
+            )
         else:
             if sys.maxsize > 2**32:
                 _installer = platform.system() + "64"
@@ -305,12 +306,12 @@ class ArduinoCLI:
                 )
                 download = ThreadedDownloader(ArduinoCLI.arduino_downloads[_installer], _target_file, queue)
                 download.start()
-                _result = True
             else:
-                raise ValueError("Sorry but there is no Arduino CLI available for this operating system")
-                self.log.error("No Arduino CLI available for operating system")
-                _result = False
-        return _result
+                self.log.error("No Arduino CLI available for this operating system")
+                queue.put(
+                    QueueMessage("error", "No Arduino CLI available for this operating system",
+                                 "No Arduino CLI available for this operating system")
+                )
 
     def install_cli(self, download_file, file_path, queue):
         """

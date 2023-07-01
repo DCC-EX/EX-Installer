@@ -25,8 +25,8 @@ class ManageArduinoCLI(WindowLayout):
                                 "Note that enabling additional platforms is likely to add several minutes to the " +
                                 "installation process. Maybe grab a cup of tea or a coffee!")
     refresh_instruction_text = ("While the Arduino CLI is installed, it is recommended to refresh it periodically " +
-                                "(eg. weekly) to ensure support for the various devices is kept up to date. To refresh " +
-                                "the CLI, simply click the refresh button.\n\n"
+                                "(eg. weekly) to ensure support for the various devices is kept up to date. To " +
+                                "refresh the CLI, simply click the refresh button.\n\n"
                                 "Note that enabling any of the additional platforms is likely to add " +
                                 "several minutes to the refresh process. Maybe grab a cup of tea or a coffee!")
 
@@ -202,7 +202,7 @@ class ManageArduinoCLI(WindowLayout):
                 self.process_start("extract_cli", "Installing the Arduino CLI", "Manage_CLI")
                 self.acli.install_cli(download_file, self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error("Error downloading the Arduino CLI")
+                self.process_error(self.process_topic)
         elif event == "refresh_cli" or self.process_phase == "extract_cli":
             if event == "refresh_cli":
                 self.disable_input_states(self)
