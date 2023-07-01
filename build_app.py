@@ -172,7 +172,9 @@ if platform_name.startswith("Win"):
         "--add-data",
         f"{theme_file};theme/.",
         "--add-data",
-        f"{customtkinter_dir};customtkinter"
+        f"{customtkinter_dir};customtkinter",
+        "--version-file",
+        "file_version.txt"
     ]
 # Append non-Windows parameters
 else:
