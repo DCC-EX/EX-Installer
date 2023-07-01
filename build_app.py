@@ -156,12 +156,12 @@ if confirm != "y" and confirm != "Y":
 
 # Define platform agnostic PyInstaller parameters
 param_list = [
-    script_file,
     "--windowed",
     "--clean",
     "--onefile",
     f"--icon={icon_file}",
-    "--name"
+    "--name",
+    f"{app_name}",
 ]
 
 # Append Windows specific parameters
@@ -185,7 +185,7 @@ else:
         f"{customtkinter_dir}:customtkinter",
         "--hidden-import='PIL._tkinter_finder'"
     ]
-param_list += [f"{app_name}"]
+param_list += [script_file]
 print(param_list)
 
 try:
