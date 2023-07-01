@@ -11,7 +11,6 @@ from queue import Queue
 from threading import Thread
 import subprocess
 import platform
-from PIL import Image
 import traceback
 from CTkMessagebox import CTkMessagebox
 import os
@@ -29,9 +28,6 @@ class SerialMonitor(ctk.CTkToplevel):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
 
-        # Disable title and associated buttons
-        self.overrideredirect(True)
-
         # Set up logger
         self.log = logging.getLogger(__name__)
         self.log.debug("Open window")
@@ -45,6 +41,14 @@ class SerialMonitor(ctk.CTkToplevel):
             self.bind_class("bind_events", sequence, callback)
         new_tags = self.bindtags() + ("bind_events",)
         self.bindtags(new_tags)
+
+        # Make sure closing the window closes the serial port nicely
+        self.protocol("WM_DELETE_WINDOW", self.close_monitor)
+
+        # Set icon and title
+        if sys.platform.startswith("win"):
+            self.after(250, lambda icon=images.DCC_EX_ICON_ICO: self.iconbitmap(icon))
+        self.title("Device Monitor")
 
         # Hide window while GUI is built initially, show after 250ms
         self.withdraw()
@@ -73,11 +77,7 @@ class SerialMonitor(ctk.CTkToplevel):
         # Define fonts for use
         button_font = ctk.CTkFont(family="Helvetica", size=13, weight="bold")
         instruction_font = ctk.CTkFont(family="Helvetica", size=14, weight="normal")
-        title_font = ctk.CTkFont(family="Helvetica", size=18, weight="bold")
 
-        # Create and configure command and monitor frames
-        self.title_frame = ctk.CTkFrame(self.window_frame, width=790, height=40,
-                                        border_width=0)
         self.command_frame = ctk.CTkFrame(self.window_frame, width=790, height=40)
         self.monitor_frame = ctk.CTkFrame(self.window_frame, width=790, height=420)
         self.device_frame = ctk.CTkFrame(self.window_frame, width=790, height=40)
@@ -87,21 +87,10 @@ class SerialMonitor(ctk.CTkToplevel):
         self.monitor_frame.grid_rowconfigure(0, weight=1)
         self.device_frame.grid_columnconfigure(0, weight=1)
         self.device_frame.grid_rowconfigure(0, weight=1)
-        self.title_frame.grid(column=0, row=0, sticky="nsew", padx=5, pady=(5, 0))
+        # self.title_frame.grid(column=0, row=0, sticky="nsew", padx=5, pady=(5, 0))
         self.command_frame.grid(column=0, row=1, sticky="nsew", padx=5, pady=2)
         self.monitor_frame.grid(column=0, row=2, sticky="nsew", padx=5, pady=2)
         self.device_frame.grid(column=0, row=3, sticky="nsew", padx=5, pady=(0, 5))
-
-        # Create title frame widgets and layout
-        self.title_logo = Image.open(images.EX_INSTALLER_LOGO)
-        self.title_image = ctk.CTkImage(light_image=self.title_logo, size=(125, 25))
-        self.title_image_label = ctk.CTkLabel(self.title_frame, text="Serial Monitor", image=self.title_image,
-                                              compound="left", font=title_font)
-        self.title_image_label.grid(column=0, row=0, sticky="w", padx=5, pady=5)
-
-        # Bind window move to the title frame and widgets
-        self.title_frame.bind("<B1-Motion>", self.move_window)
-        self.title_image_label.bind("<B1-Motion>", self.move_window)
 
         # Create command frame widgets and layout frame
         grid_options = {"padx": 5, "pady": 5}
@@ -129,15 +118,6 @@ class SerialMonitor(ctk.CTkToplevel):
 
         # Start serial monitor process
         self.monitor()
-
-    def move_window(self, event=None):
-        """
-        Function to allow moving the window without the title bar
-
-        This must be bound to the title frame and widgets
-        """
-        x, y = self.winfo_pointerxy()
-        self.geometry(f"+{x}+{y}")
 
     def close_monitor(self):
         """
