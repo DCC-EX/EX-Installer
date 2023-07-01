@@ -161,9 +161,7 @@ param_list = [
     "--onefile",
     f"--icon={icon_file}",
     "--name",
-    f"{app_name}",
-    "--paths",
-    get_site_packages_path()
+    f"{app_name}"
 ]
 
 # Append Windows specific parameters
@@ -185,7 +183,7 @@ else:
         f"{theme_file}:theme/.",
         "--add-data",
         f"{customtkinter_dir}:customtkinter",
-        "--hidden-import='PIL._tkinter_finder'"
+        "--hidden-import=PIL._tkinter_finder"
     ]
 param_list += [script_file]
 print(param_list)
