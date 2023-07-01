@@ -161,8 +161,7 @@ param_list = [
     "--clean",
     "--onefile",
     f"--icon={icon_file}",
-    "--name",
-    f"{app_name}",
+    "--name"
 ]
 
 # Append Windows specific parameters
@@ -186,6 +185,7 @@ else:
         f"{customtkinter_dir}:customtkinter",
         "--hidden-import='PIL._tkinter_finder'"
     ]
+param_list += [f"{app_name}"]
 print(param_list)
 
 try:
