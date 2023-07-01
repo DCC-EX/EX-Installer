@@ -162,6 +162,8 @@ param_list = [
     f"--icon={icon_file}",
     "--name",
     f"{app_name}",
+    "--paths",
+    get_site_packages_path()
 ]
 
 # Append Windows specific parameters
