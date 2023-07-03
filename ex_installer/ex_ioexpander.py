@@ -17,6 +17,9 @@ class EXIOExpander(WindowLayout):
     Class for the EX-IOExpander view
     """
 
+    instruction_text = ("Select the appropriate options on this page to suit the hardware devices you are using with " +
+                        "your EX-IOExpander device.\n\n")
+
     def __init__(self, parent, *args, **kwargs):
         """
         Initialise view
@@ -48,6 +51,8 @@ class EXIOExpander(WindowLayout):
         # Set up and grid container frames
         self.config_frame = ctk.CTkFrame(self.main_frame, height=360)
         self.config_frame.grid(column=0, row=0, sticky="nsew")
+        self.config_frame.grid_columnconfigure(0, weight=1)
+        self.config_frame.grid_rowconfigure(0, weight=1)
 
         # Setup the screen
         self.setup_config_frame()
@@ -75,19 +80,42 @@ class EXIOExpander(WindowLayout):
     def setup_config_frame(self):
         """
         Setup the container frame for configuration options
+
+        Default config parameters from myConfig.example.h:
+        - #define I2C_ADDRESS 0x65
+        - // #define DIAG
+        - #define DIAG_CONFIG_DELAY 5
+        - // #define TEST_MODE ANALOGUE_TEST
+        - // #define TEST_MODE INPUT_TEST
+        - // #define TEST_MODE OUTPUT_TEST
+        - // #define TEST_MODE PULLUP_TEST
+        - // #define DISABLE_I2C_PULLUPS
         """
         grid_options = {"padx": 5, "pady": 5}
 
         self.i2c_address = ctk.StringVar(self, value=65)
         self.i2c_address_frame = ctk.CTkFrame(self.config_frame, border_width=0, fg_color="#E5E5E5")
-        self.i2c_address_label = ctk.CTkLabel(self.i2c_address_frame, text="Select WiFi channel:")
+        self.i2c_address_label = ctk.CTkLabel(self.i2c_address_frame, text="Set I2C address:")
         self.i2c_address_minus = ctk.CTkButton(self.i2c_address_frame, text="-", width=30,
                                                command=self.decrement_address)
+        self.i2c_0x_label = ctk.CTkLabel(self.i2c_address_frame, text="0x")
         self.i2c_address_plus = ctk.CTkButton(self.i2c_address_frame, text="+", width=30,
                                               command=self.increment_address)
         self.i2c_address_entry = ctk.CTkEntry(self.i2c_address_frame, textvariable=self.i2c_address,
                                               width=30, fg_color="white", justify="center")
+
+        # Layout I2C address frame
+        self.i2c_address_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
+        self.i2c_address_frame.grid_rowconfigure(0, weight=1)
+        self.i2c_address_label.grid(column=0, row=0, **grid_options)
+        self.i2c_address_minus.grid(column=1, row=0, padx=(5, 0))
+        self.i2c_0x_label.grid(column=1, row=0, sticky="e")
+        self.i2c_address_entry.grid(column=3, row=0)
+        self.i2c_address_plus.grid(column=4, row=0, sticky="w", padx=(0, 5))
+
+        # Layout frame
         self.i2c_address_frame.grid(column=0, row=0, **grid_options)
+        self.i2c_address_label.grid(column=0, row=0, **grid_options)
 
     def decrement_address(self):
         """
