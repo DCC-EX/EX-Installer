@@ -51,8 +51,6 @@ class EXIOExpander(WindowLayout):
         # Set up and grid container frames
         self.config_frame = ctk.CTkFrame(self.main_frame, height=360)
         self.config_frame.grid(column=0, row=0, sticky="nsew")
-        self.config_frame.grid_columnconfigure(0, weight=1)
-        self.config_frame.grid_rowconfigure(0, weight=1)
 
         # Setup the screen
         self.setup_config_frame()
@@ -92,30 +90,72 @@ class EXIOExpander(WindowLayout):
         - // #define DISABLE_I2C_PULLUPS
         """
         grid_options = {"padx": 5, "pady": 5}
+        self.config_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.config_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
+        self.instruction_label = ctk.CTkLabel(self.config_frame, text=self.instruction_text,
+                                              wraplength=780)
 
+        # Create I2C widgets
         self.i2c_address = ctk.StringVar(self, value=65)
         self.i2c_address_frame = ctk.CTkFrame(self.config_frame, border_width=0, fg_color="#E5E5E5")
         self.i2c_address_label = ctk.CTkLabel(self.i2c_address_frame, text="Set I2C address:")
         self.i2c_address_minus = ctk.CTkButton(self.i2c_address_frame, text="-", width=30,
                                                command=self.decrement_address)
-        self.i2c_0x_label = ctk.CTkLabel(self.i2c_address_frame, text="0x")
+        self.i2c_entry_frame = ctk.CTkFrame(self.i2c_address_frame, border_width=2, border_color="#00A3B9")
+        self.i2c_0x_label = ctk.CTkLabel(self.i2c_entry_frame, text="0x", font=self.instruction_font,
+                                         anchor="e", width=20, padx=0, pady=0)
+        self.i2c_address_entry = ctk.CTkEntry(self.i2c_entry_frame, textvariable=self.i2c_address,
+                                              width=28, fg_color="white", border_width=0,
+                                              font=self.instruction_font)
         self.i2c_address_plus = ctk.CTkButton(self.i2c_address_frame, text="+", width=30,
                                               command=self.increment_address)
-        self.i2c_address_entry = ctk.CTkEntry(self.i2c_address_frame, textvariable=self.i2c_address,
-                                              width=30, fg_color="white", justify="center")
+        self.disable_pullups_switch = ctk.CTkSwitch(self.config_frame, onvalue="on", offvalue="off")
 
         # Layout I2C address frame
-        self.i2c_address_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
+        self.i2c_address_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.i2c_address_frame.grid_rowconfigure(0, weight=1)
+        self.i2c_entry_frame.grid_columnconfigure((0, 1), weight=1)
+        self.i2c_entry_frame.grid_rowconfigure(0, weight=1)
         self.i2c_address_label.grid(column=0, row=0, **grid_options)
         self.i2c_address_minus.grid(column=1, row=0, padx=(5, 0))
-        self.i2c_0x_label.grid(column=1, row=0, sticky="e")
-        self.i2c_address_entry.grid(column=3, row=0)
-        self.i2c_address_plus.grid(column=4, row=0, sticky="w", padx=(0, 5))
+        self.i2c_0x_label.grid(column=0, row=0, sticky="e")
+        self.i2c_address_entry.grid(column=1, row=0)
+        self.i2c_entry_frame.grid(column=2, row=0)
+        self.i2c_address_plus.grid(column=3, row=0, sticky="w", padx=(0, 5))
 
-        # Layout frame
-        self.i2c_address_frame.grid(column=0, row=0, **grid_options)
-        self.i2c_address_label.grid(column=0, row=0, **grid_options)
+        # Create diagnostic setting widgets
+        self.enable_diag_switch = ctk.CTkSwitch(self.config_frame, text="Enable diagnostic output",
+                                                onvalue="on", offvalue="off")
+        self.diag_delay_label = ctk.CTkLabel(self.config_frame, text="Set diagnostic display frequence in seconds:",
+                                             font=self.instruction_font)
+        self.diag_delay_entry = ctk.CTkEntry(self.config_frame)
+
+        # Create test widgets
+        self.test_frame = ctk.CTkFrame(self.config_frame)
+        self.analogue_switch = ctk.CTkSwitch(self.test_frame, text="Enable analogue input pin testing",
+                                             onvalue="on", offvalue="off")
+        self.input_switch = ctk.CTkSwitch(self.test_frame, text="Enable digital input pin testing (no pullups)",
+                                          onvalue="on", offvalue="off")
+        self.output_switch = ctk.CTkSwitch(self.test_frame, text="Enable digital output pin testing",
+                                           onvalue="on", offvalue="off")
+        self.pullup_switch = ctk.CTkSwitch(self.test_frame, text="Enable digital input pin testing (with pullups)",
+                                           onvalue="on", offvalue="off")
+
+        # Layout test frame widgets
+        self.test_frame.grid_columnconfigure((0, 1), weight=1)
+        self.test_frame.grid_rowconfigure((0, 1), weight=1)
+        self.input_switch.grid(column=0, row=0, **grid_options)
+        self.analogue_switch.grid(column=1, row=0, **grid_options)
+        self.pullup_switch.grid(column=0, row=1, **grid_options)
+        self.output_switch.grid(column=1, row=1, **grid_options)
+
+        # Layout config frame
+        self.instruction_label.grid(column=0, row=0, columnspan=3, **grid_options)
+        self.i2c_address_frame.grid(column=0, row=1, columnspan=3, **grid_options)
+        self.enable_diag_switch.grid(column=0, row=2, **grid_options)
+        self.diag_delay_label.grid(column=1, row=2, **grid_options)
+        self.diag_delay_entry.grid(column=2, row=2, **grid_options)
+        self.test_frame.grid(column=0, row=3, columnspan=3, **grid_options)
 
     def decrement_address(self):
         """

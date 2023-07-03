@@ -39,7 +39,8 @@ product_details = {
             "arduino:avr:nano",
             "arduino:avr:nano:cpu=atmega328",
             "arduino:avr:mega",
-            "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE"
+            "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
+            "STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8:xserial=generic:usb=CDCgen"
         ],
         "minimum_config_files": [
             "myConfig.h"
