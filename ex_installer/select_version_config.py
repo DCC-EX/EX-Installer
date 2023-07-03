@@ -343,7 +343,9 @@ class SelectVersionConfig(WindowLayout):
         min_list = fm.get_config_files(self.product_dir, pd[self.product]["minimum_config_files"])
         if min_list:
             file_list += min_list
-        other_list = fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
+        other_list = None
+        if "other_config_files" in pd[self.product]:
+            other_list = fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
         if other_list:
             file_list += other_list
         self.log.debug("Deleting files: %s", file_list)

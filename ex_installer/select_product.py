@@ -69,16 +69,18 @@ class SelectProduct(WindowLayout):
                           "border_color": "#00A3B9",
                           "border_width": 2,
                           "compound": "top",
-                          "text_color": "#00353D"}
+                          "text_color": "#00353D",
+                          "height": 80}
         self.ex_commandstation_button = ctk.CTkButton(self.select_product_frame,
                                                       text=None, width=500,
                                                       image=self.ex_commandstation_image, **button_options,
                                                       command=lambda product="ex_commandstation":
                                                       self.check_product_device(product))
         self.ex_ioexpander_button = ctk.CTkButton(self.select_product_frame,
-                                                  text="(coming soon)",
+                                                  text=None,
                                                   image=self.ex_ioexpander_image, **button_options,
-                                                  state="disabled")
+                                                  command=lambda product="ex_ioexpander":
+                                                  self.check_product_device(product))
         self.ex_turntable_button = ctk.CTkButton(self.select_product_frame,
                                                  text="(coming soon)",
                                                  image=self.ex_turntable_image, **button_options,
