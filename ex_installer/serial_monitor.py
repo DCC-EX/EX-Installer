@@ -87,16 +87,17 @@ class SerialMonitor(ctk.CTkToplevel):
         self.monitor_frame.grid_rowconfigure(0, weight=1)
         self.device_frame.grid_columnconfigure(0, weight=1)
         self.device_frame.grid_rowconfigure(0, weight=1)
-        # self.title_frame.grid(column=0, row=0, sticky="nsew", padx=5, pady=(5, 0))
         self.command_frame.grid(column=0, row=1, sticky="nsew", padx=5, pady=2)
         self.monitor_frame.grid(column=0, row=2, sticky="nsew", padx=5, pady=2)
         self.device_frame.grid(column=0, row=3, sticky="nsew", padx=5, pady=(0, 5))
 
         # Create command frame widgets and layout frame
+        self.command_history = []
         grid_options = {"padx": 5, "pady": 5}
         self.command_label = ctk.CTkLabel(self.command_frame, text="Enter command:", font=instruction_font)
         self.command = ctk.StringVar(self)
-        self.command_entry = ctk.CTkEntry(self.command_frame, textvariable=self.command)
+        self.command_entry = ctk.CTkComboBox(self.command_frame, variable=self.command, values=self.command_history,
+                                             command=self.send_command)
         self.command_entry.bind("<Return>", self.send_command)
         self.command_button = ctk.CTkButton(self.command_frame, text="Send", font=button_font, width=80,
                                             command=self.send_command)
@@ -188,8 +189,12 @@ class SerialMonitor(ctk.CTkToplevel):
         Function to send a command to the serial port
         """
         command_text = self.command_entry.get()
-        self.serial_port.write((command_text + "\n").encode())
-        self.command_entry.delete(0, "end")
+        if command_text != "":
+            self.serial_port.write((command_text + "\n").encode())
+            if command_text not in self.command_history:
+                self.command_history.append(command_text)
+            self.command_entry.configure(values=self.command_history)
+            self.command_entry.set("")
         self.output_textbox.insert("insert", command_text + "\n")
         self.output_textbox.see("end")
 
