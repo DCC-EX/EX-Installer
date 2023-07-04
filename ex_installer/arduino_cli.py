@@ -184,9 +184,7 @@ class ArduinoCLI:
         "Arduino Nano (Old bootloader)": "arduino:avr:nano:cpu=atmega328",
         "ESP32 Dev Kit": "esp32:esp32:esp32",
         "STMicroelectronics Nucleo F411RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
-        "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE",
-        "STMicroelectronics Bluepill F103C8":
-        "STMicroelectronics:stm32:GenF1:pnum=BLUEPILL_F103C8:xserial=generic:usb=CDCgen"
+        "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
     }
 
     def __init__(self, selected_device=None):

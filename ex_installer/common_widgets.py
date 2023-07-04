@@ -59,10 +59,10 @@ class WindowLayout(ctk.CTkFrame):
 
         # Define fonts
         self.instruction_font = ctk.CTkFont(family="Helvetica",
-                                            size=13,
+                                            size=14,
                                             weight="normal")
         self.bold_instruction_font = ctk.CTkFont(family="Helvetica",
-                                                 size=13,
+                                                 size=14,
                                                  weight="bold")
         self.title_font = ctk.CTkFont(family="Helvetica",
                                       size=30,
@@ -167,7 +167,7 @@ class WindowLayout(ctk.CTkFrame):
         Stops the progress bar and resets status text
         """
         self.progress_bar.stop()
-        self.status_label.configure(text="Idle")
+        self.status_label.configure(text="Idle", text_color="#00353D")
         self.process_phase = None
 
     def process_error(self, message):

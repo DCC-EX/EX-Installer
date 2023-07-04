@@ -17,9 +17,6 @@ class EXIOExpander(WindowLayout):
     Class for the EX-IOExpander view
     """
 
-    instruction_text = ("Select the appropriate options on this page to suit the hardware devices you are using with " +
-                        "your EX-IOExpander device.\n\n")
-
     def __init__(self, parent, *args, **kwargs):
         """
         Initialise view
@@ -34,7 +31,7 @@ class EXIOExpander(WindowLayout):
         self.product = "ex_ioexpander"
         self.product_name = pd[self.product]["product_name"]
         local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
-        self.ex_commandstation_dir = fm.get_install_dir(local_repo_dir)
+        self.ex_ioexpander_dir = fm.get_install_dir(local_repo_dir)
 
         # Set up title
         self.set_title_logo(pd[self.product]["product_logo"])
@@ -44,9 +41,10 @@ class EXIOExpander(WindowLayout):
         self.next_back.set_back_text("Select Version")
         self.next_back.set_back_command(lambda view="select_version_config",
                                         product="ex_ioexpander": parent.switch_view(view, product))
-        self.next_back.set_next_text("Configuration")
-        self.next_back.set_next_command(None)
+        self.next_back.set_next_text("Compile and load")
+        self.next_back.set_next_command(self.generate_config)
         self.next_back.hide_monitor_button()
+        self.next_back.hide_log_button()
 
         # Set up and grid container frames
         self.config_frame = ctk.CTkFrame(self.main_frame, height=360)
@@ -90,26 +88,41 @@ class EXIOExpander(WindowLayout):
         - // #define DISABLE_I2C_PULLUPS
         """
         grid_options = {"padx": 5, "pady": 5}
-        self.config_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        config_label_options = {"width": 500, "wraplength": 480, "font": self.instruction_font}
+        self.config_frame.grid_columnconfigure((0, 1), weight=1)
         self.config_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
-        self.instruction_label = ctk.CTkLabel(self.config_frame, text=self.instruction_text,
-                                              wraplength=780)
+
+        # Instruction widgets
+        instruction_text = ("To load EX-IOExpander, the only setting required is to specify the " +
+                            "I\u00B2C address.")
+        self.instruction_label = ctk.CTkLabel(self.config_frame, text=instruction_text,
+                                              **config_label_options)
 
         # Create I2C widgets
         self.i2c_address = ctk.StringVar(self, value=65)
         self.i2c_address_frame = ctk.CTkFrame(self.config_frame, border_width=0, fg_color="#E5E5E5")
-        self.i2c_address_label = ctk.CTkLabel(self.i2c_address_frame, text="Set I2C address:")
+        self.i2c_address_label = ctk.CTkLabel(self.i2c_address_frame, text="Set I\u00B2C address:")
         self.i2c_address_minus = ctk.CTkButton(self.i2c_address_frame, text="-", width=30,
                                                command=self.decrement_address)
         self.i2c_entry_frame = ctk.CTkFrame(self.i2c_address_frame, border_width=2, border_color="#00A3B9")
         self.i2c_0x_label = ctk.CTkLabel(self.i2c_entry_frame, text="0x", font=self.instruction_font,
-                                         anchor="e", width=20, padx=0, pady=0)
+                                         width=20, padx=0, pady=0, fg_color="#E5E5E5")
         self.i2c_address_entry = ctk.CTkEntry(self.i2c_entry_frame, textvariable=self.i2c_address,
-                                              width=28, fg_color="white", border_width=0,
+                                              width=30, fg_color="white", border_width=0, justify="left",
                                               font=self.instruction_font)
         self.i2c_address_plus = ctk.CTkButton(self.i2c_address_frame, text="+", width=30,
                                               command=self.increment_address)
-        self.disable_pullups_switch = ctk.CTkSwitch(self.config_frame, onvalue="on", offvalue="off")
+
+        # Disable I2C pullup option
+        pullup_text = ("Certain Arduino devices may have issues with I\u00B2C connectivity when utilising " +
+                       "the internal pullup resistors. If required, you can disable these.")
+        self.disable_pullup_label = ctk.CTkLabel(self.config_frame, text=pullup_text, **config_label_options)
+        self.disable_pullups_switch = ctk.CTkSwitch(self.config_frame, onvalue="on", offvalue="off",
+                                                    text="Disable internal I\u00B2C pullups",
+                                                    font=self.instruction_font)
+
+        # Validate I2C address if entered manually
+        self.i2c_address_entry.bind("<FocusOut>", self.validate_i2c_address)
 
         # Layout I2C address frame
         self.i2c_address_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
@@ -119,43 +132,73 @@ class EXIOExpander(WindowLayout):
         self.i2c_address_label.grid(column=0, row=0, **grid_options)
         self.i2c_address_minus.grid(column=1, row=0, padx=(5, 0))
         self.i2c_0x_label.grid(column=0, row=0, sticky="e")
-        self.i2c_address_entry.grid(column=1, row=0)
-        self.i2c_entry_frame.grid(column=2, row=0)
+        self.i2c_address_entry.grid(column=1, row=0, padx=0)
+        self.i2c_entry_frame.grid(column=2, row=0, padx=0)
         self.i2c_address_plus.grid(column=3, row=0, sticky="w", padx=(0, 5))
 
-        # Create diagnostic setting widgets
-        self.enable_diag_switch = ctk.CTkSwitch(self.config_frame, text="Enable diagnostic output",
-                                                onvalue="on", offvalue="off")
-        self.diag_delay_label = ctk.CTkLabel(self.config_frame, text="Set diagnostic display frequence in seconds:",
+        # Create diagnostic and test frame widgets
+        diag_test_text = ("While you can enable diagnostic and testing options using EX-Installer on this page, " +
+                          "it is recommended to use the interactive commands available via the serial console instead.")
+        self.diag_test_label = ctk.CTkLabel(self.config_frame, text=diag_test_text, **config_label_options)
+        self.diag_test_switch = ctk.CTkSwitch(self.config_frame, text="Show diagnostic and test options",
+                                              onvalue="on", offvalue="off", command=self.diag_test_options,
+                                              font=self.instruction_font)
+        self.diag_test_frame = ctk.CTkFrame(self.config_frame)
+        self.enable_diag_switch = ctk.CTkSwitch(self.diag_test_frame, text="Enable diagnostic output",
+                                                onvalue="on", offvalue="off", font=self.instruction_font)
+        self.diag_delay_label = ctk.CTkLabel(self.diag_test_frame, text="Set diagnostic display frequency in seconds:",
                                              font=self.instruction_font)
-        self.diag_delay_entry = ctk.CTkEntry(self.config_frame)
+        self.diag_delay = ctk.StringVar(self, value=5)
+        self.diag_delay_entry = ctk.CTkEntry(self.diag_test_frame, textvariable=self.diag_delay, width=30,
+                                             font=self.instruction_font)
 
         # Create test widgets
-        self.test_frame = ctk.CTkFrame(self.config_frame)
+        self.test_frame = ctk.CTkFrame(self.diag_test_frame, border_width=0)
+        test_options = {"font": self.instruction_font, "width": 170}
         self.analogue_switch = ctk.CTkSwitch(self.test_frame, text="Enable analogue input pin testing",
-                                             onvalue="on", offvalue="off")
+                                             onvalue="on", offvalue="off",
+                                             command=lambda test="analogue": self.set_one_test(test),
+                                             **test_options)
         self.input_switch = ctk.CTkSwitch(self.test_frame, text="Enable digital input pin testing (no pullups)",
-                                          onvalue="on", offvalue="off")
+                                          onvalue="on", offvalue="off",
+                                          command=lambda test="input": self.set_one_test(test),
+                                          **test_options)
         self.output_switch = ctk.CTkSwitch(self.test_frame, text="Enable digital output pin testing",
-                                           onvalue="on", offvalue="off")
+                                           onvalue="on", offvalue="off",
+                                           command=lambda test="output": self.set_one_test(test),
+                                           **test_options)
         self.pullup_switch = ctk.CTkSwitch(self.test_frame, text="Enable digital input pin testing (with pullups)",
-                                           onvalue="on", offvalue="off")
+                                           onvalue="on", offvalue="off",
+                                           command=lambda test="pullup": self.set_one_test(test),
+                                           **test_options)
 
         # Layout test frame widgets
         self.test_frame.grid_columnconfigure((0, 1), weight=1)
         self.test_frame.grid_rowconfigure((0, 1), weight=1)
-        self.input_switch.grid(column=0, row=0, **grid_options)
-        self.analogue_switch.grid(column=1, row=0, **grid_options)
-        self.pullup_switch.grid(column=0, row=1, **grid_options)
-        self.output_switch.grid(column=1, row=1, **grid_options)
+        self.input_switch.grid(column=0, row=0, sticky="w", **grid_options)
+        self.analogue_switch.grid(column=1, row=0, sticky="w", **grid_options)
+        self.pullup_switch.grid(column=0, row=1, sticky="w", **grid_options)
+        self.output_switch.grid(column=1, row=1, sticky="w", **grid_options)
+
+        # Layout diag test frame
+        self.diag_test_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.diag_test_frame.grid_rowconfigure((0, 1), weight=1)
+        self.enable_diag_switch.grid(column=0, row=0, sticky="w", **grid_options)
+        self.diag_delay_label.grid(column=1, row=0, sticky="e", **grid_options)
+        self.diag_delay_entry.grid(column=2, row=0, sticky="w", **grid_options)
+        self.test_frame.grid(column=0, row=1, columnspan=3, sticky="ew", **grid_options)
 
         # Layout config frame
-        self.instruction_label.grid(column=0, row=0, columnspan=3, **grid_options)
-        self.i2c_address_frame.grid(column=0, row=1, columnspan=3, **grid_options)
-        self.enable_diag_switch.grid(column=0, row=2, **grid_options)
-        self.diag_delay_label.grid(column=1, row=2, **grid_options)
-        self.diag_delay_entry.grid(column=2, row=2, **grid_options)
-        self.test_frame.grid(column=0, row=3, columnspan=3, **grid_options)
+        self.instruction_label.grid(column=0, row=0, **grid_options)
+        self.i2c_address_frame.grid(column=1, row=0, sticky="w", **grid_options)
+        self.disable_pullup_label.grid(column=0, row=1, **grid_options)
+        self.disable_pullups_switch.grid(column=1, row=1, sticky="w", **grid_options)
+        self.diag_test_label.grid(column=0, row=2, **grid_options)
+        self.diag_test_switch.grid(column=1, row=2, sticky="w", **grid_options)
+        self.diag_test_frame.grid(column=0, row=3, columnspan=2, **grid_options)
+
+        # Set states
+        self.diag_test_options()
 
     def decrement_address(self):
         """
@@ -165,6 +208,7 @@ class EXIOExpander(WindowLayout):
         if value > 8:
             value -= 1
             self.i2c_address.set(value)
+        self.validate_i2c_address()
 
     def increment_address(self):
         """
@@ -174,3 +218,100 @@ class EXIOExpander(WindowLayout):
         if value < 77:
             value += 1
             self.i2c_address.set(value)
+        self.validate_i2c_address()
+
+    def validate_i2c_address(self, event=None):
+        """
+        Function to validate the I2C address
+        """
+        if int(self.i2c_address.get()) < 8:
+            self.process_error("I\u00B2C address must be between 0x8 and 0x77")
+            self.i2c_address.set(8)
+            self.i2c_address_entry.configure(text_color="red")
+            self.next_back.disable_next()
+        elif int(self.i2c_address.get()) > 77:
+            self.process_error("I\u00B2C address must be between 0x8 and 0x77")
+            self.i2c_address.set(77)
+            self.i2c_address_entry.configure(text_color="red")
+            self.next_back.disable_next()
+        else:
+            self.process_stop()
+            self.i2c_address_entry.configure(text_color="#00353D")
+            self.next_back.enable_next()
+
+    def diag_test_options(self):
+        if self.diag_test_switch.get() == "on":
+            self.diag_test_frame.grid()
+        else:
+            self.diag_test_frame.grid_remove()
+
+    def set_one_test(self, test):
+        if test == "analogue":
+            if self.analogue_switch.get() == "on":
+                self.input_switch.deselect()
+                self.output_switch.deselect()
+                self.pullup_switch.deselect()
+        elif test == "input":
+            if self.input_switch.get() == "on":
+                self.analogue_switch.deselect()
+                self.output_switch.deselect()
+                self.pullup_switch.deselect()
+        elif test == "output":
+            if self.output_switch.get() == "on":
+                self.analogue_switch.deselect()
+                self.input_switch.deselect()
+                self.pullup_switch.deselect()
+        elif test == "pullup":
+            if self.pullup_switch.get() == "on":
+                self.analogue_switch.deselect()
+                self.input_switch.deselect()
+                self.output_switch.deselect()
+
+    def generate_config(self):
+        """
+        Validates all configuration parameters and if valid generates myConfig.h
+
+        Any invalid parameters will prevent continuing and flag as errors
+        """
+        param_errors = []
+        config_list = []
+        if int(self.i2c_address.get()) < 8 or int(self.i2c_address.get()) > 77:
+            param_errors.append("I\u00B2C address must be between 0x8 and 0x77")
+        else:
+            line = f"#define I2C_ADDRESS 0x{self.i2c_address.get()}\n"
+            config_list.append(line)
+        if self.enable_diag_switch.get() == "on":
+            config_list.append("#define DIAG\n")
+        try:
+            int(self.diag_delay.get())
+        except Exception:
+            param_errors.append("Diagnostic display interval must be in whole seconds")
+        else:
+            line = f"#define DIAG_CONFIG_DELAY {self.diag_delay.get()}\n"
+            config_list.append(line)
+        if self.analogue_switch.get() == "on":
+            config_list.append("#define TEST_MODE ANALOGUE_TEST\n")
+        elif self.input_switch.get() == "on":
+            config_list.append("#define TEST_MODE INPUT_TEST\n")
+        elif self.output_switch.get() == "on":
+            config_list.append("#define TEST_MODE OUTPUT_TEST\n")
+        elif self.pullup_switch.get() == "on":
+            config_list.append("#define TEST_MODE PULLUP_TEST\n")
+        if self.disable_pullups_switch.get() == "on":
+            config_list.append("#define DISABLE_I2C_PULLUPS\n")
+        if len(param_errors) > 0:
+            message = ", ".join(param_errors)
+            self.process_error(message)
+        else:
+            self.process_stop()
+            file_contents = [("// myConfig.h - Generated by EX-Installer " +
+                              f"v{self.app_version} for {self.product_name} " +
+                              f"{self.product_version_name}\n\n")]
+            file_contents += config_list
+            config_file_path = fm.get_filepath(self.ex_ioexpander_dir, "myConfig.h")
+            write_config = fm.write_config_file(config_file_path, file_contents)
+            if write_config != config_file_path:
+                self.process_error(f"Could not write config.h: {write_config}")
+                self.log.error("Could not write config file: %s", write_config)
+            else:
+                self.master.switch_view("compile_upload", self.product)

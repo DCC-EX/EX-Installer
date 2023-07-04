@@ -273,7 +273,7 @@ class EXCommandStation(WindowLayout):
         else:
             self.master.advanced_config = False
             self.advanced_config_label.grid_remove()
-            self.next_back.set_next_text("Compile and Upload")
+            self.next_back.set_next_text("Compile and load")
             self.log.debug("Manual Edit disabled")
 
     def set_wifi(self):
