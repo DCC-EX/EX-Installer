@@ -347,7 +347,7 @@ class FileManager:
         failed_files = []
         for file_name in file_list:
             file = os.path.join(dir, file_name)
-            try:                
+            try:
                 os.remove(file)
             except Exception:
                 failed_files.append(file_name)
