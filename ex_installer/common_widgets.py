@@ -381,3 +381,58 @@ class FormattedTextbox(ctk.CTkTextbox):
         Function to insert a bullet point
         """
         self.insert(index, f"\u2022 {text}", "bullet")
+
+
+class CreateToolTip(object):
+    """
+    create a tooltip for a given widget
+    """
+    def __init__(self, widget, text='widget info'):
+        self.wait_time = 400     # milliseconds
+        self.wraplength = 200   # pixels
+        self.widget = widget
+        self.text = text
+        self.widget.bind("<Enter>", self.enter_widget)
+        self.widget.bind("<Leave>", self.leave_widget)
+        self.widget.bind("<ButtonPress>", self.leave_widget)
+        self.id = None
+        self.tw = None
+
+    def enter_widget(self, event=None):
+        self.schedule_tooltip()
+
+    def leave_widget(self, event=None):
+        self.unschedule_tooltip()
+        self.hide_tooltip()
+
+    def schedule_tooltip(self):
+        self.unschedule_tooltip()
+        self.id = self.widget.after(self.wait_time, self.show_tooltip)
+
+    def unschedule_tooltip(self):
+        id = self.id
+        self.id = None
+        if id:
+            self.widget.after_cancel(id)
+
+    def show_tooltip(self, event=None):
+        x = y = 0
+        x, y, cx, cy = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 20
+        # creates a toplevel window
+        self.toplevel = ctk.CTkToplevel(self.widget)
+        # Leaves only the label and removes the app window
+        self.toplevel.wm_overrideredirect(True)
+        self.toplevel.wm_geometry("+%d+%d" % (x, y))
+        self.frame = ctk.CTkFrame(self.toplevel, border_color="#00A3B9", border_width=2, fg_color="white")
+        self.frame.pack()
+        label = ctk.CTkLabel(self.frame, text=self.text, justify='left',
+                             wraplength=self.wraplength)
+        label.pack(ipadx=1)
+
+    def hide_tooltip(self):
+        toplevel = self.toplevel
+        self.toplevel = None
+        if toplevel:
+            toplevel.destroy()
