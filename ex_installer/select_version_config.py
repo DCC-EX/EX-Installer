@@ -246,20 +246,17 @@ class SelectVersionConfig(WindowLayout):
         """
         Function to checkout the selected version according to the radio buttons
         """
-        if self.select_version.get() == 0:
+        if self.select_version.get() == 0 and self.latest_prod:
             self.repo.checkout(refname=self.latest_prod[1])
-            self.next_back.enable_next()
             self.log.debug("Latest prod selected: %s", self.latest_prod[1])
             self.set_next_config()
-        elif self.select_version.get() == 1:
+        elif self.select_version.get() == 1 and self.latest_devel:
             self.repo.checkout(refname=self.latest_devel[1])
-            self.next_back.enable_next()
             self.log.debug("Latest devel selected: %s", self.latest_devel[1])
             self.set_next_config()
         elif self.select_version.get() == 2:
             if self.select_version_combo.get() != "Select a version":
                 self.repo.checkout(refname=self.version_list[self.select_version_combo.get()]["ref"])
-                self.next_back.enable_next()
                 self.log.debug("Version selected: %s", self.version_list[self.select_version_combo.get()]["ref"])
                 self.set_next_config()
             else:
@@ -282,17 +279,19 @@ class SelectVersionConfig(WindowLayout):
             set_version = None
             if self.select_version.get() == 0:
                 set_version = self.latest_prod[0]
+                self.next_back.enable_next()
             elif self.select_version.get() == 1:
                 set_version = self.latest_devel[0]
+                self.next_back.enable_next()
             elif self.select_version.get() == 2:
                 if self.select_version_combo.get() != "Select a version":
                     set_version = self.select_version_combo.get()
+                    self.next_back.enable_next()
             if self.set_version:
                 self.next_back.set_next_command(lambda next_product=self.product,
                                                 set_version=set_version: self.master.switch_view(next_product,
                                                                                                  None,
                                                                                                  set_version))
-                self.next_back.enable_next()
             else:
                 self.next_back.disable_next()
             self.next_back.set_next_text(f"Configure {pd[self.product]['product_name']}")
@@ -343,7 +342,9 @@ class SelectVersionConfig(WindowLayout):
         min_list = fm.get_config_files(self.product_dir, pd[self.product]["minimum_config_files"])
         if min_list:
             file_list += min_list
-        other_list = fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
+        other_list = None
+        if "other_config_files" in pd[self.product]:
+            other_list = fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
         if other_list:
             file_list += other_list
         self.log.debug("Deleting files: %s", file_list)
