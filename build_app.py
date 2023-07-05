@@ -147,6 +147,9 @@ if not write_file:
 # Get the right directory to include customtkinter
 customtkinter_dir = os.path.join(get_site_packages_path(), "customtkinter")
 
+# Get the right directory to include CTkMessagebox icons
+ctkmessagebox_dir = os.path.join(get_site_packages_path(), "CTkMessagebox", "icons")
+
 # Display the version info for confirmation in case it hasn't been updated yet
 confirm = input(f"This will build {app_name} version {app_version}. If the version should be updated, " +
                 "please edit 'ex_installer/version.py'.\n" +
@@ -173,6 +176,8 @@ if platform_name.startswith("Win"):
         f"{theme_file};theme/.",
         "--add-data",
         f"{customtkinter_dir};customtkinter",
+        "--add-data",
+        f"{ctkmessagebox_dir};CTkMessagebox/icons",
         "--version-file",
         "file_version.txt"
     ]
@@ -185,6 +190,8 @@ else:
         f"{theme_file}:theme/.",
         "--add-data",
         f"{customtkinter_dir}:customtkinter",
+        "--add-data",
+        f"{ctkmessagebox_dir}:CTkMessagebox/icons",
         "--hidden-import=PIL._tkinter_finder"
     ]
 param_list += [script_file]
