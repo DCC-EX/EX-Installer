@@ -47,8 +47,8 @@ class Welcome(WindowLayout):
         # Debug switch
         self.debug_switch = ctk.CTkSwitch(self.welcome_frame, text="Enable debug logging",
                                           onvalue="on", offvalue="off", command=self.set_debug)
-        debug_tooltip = CreateToolTip(self.debug_switch,
-                                      "Enabling this option turns on debug logging to the log file")
+        CreateToolTip(self.debug_switch,
+                      "Enabling this option turns on debug logging to the log file")
 
         # Layout frame
         grid_options = {"padx": 5, "pady": 5}

@@ -12,6 +12,8 @@ import logging
 import platform
 import os
 import subprocess
+import webbrowser
+from pprint import pprint
 
 # Import local modules
 from . import images
@@ -385,13 +387,25 @@ class FormattedTextbox(ctk.CTkTextbox):
 
 class CreateToolTip(object):
     """
-    create a tooltip for a given widget
+    Create a tooltip for a given widget with an optional URL
+
+    To use, simply include this class and call it as such:
+
+    from .common_widgets import CreateToolTip
+
+    self.widget = <CustomTkinter widget creation>
+    CreateTooltip(self.widget, "Tool tip contextual help text"[, URL])
     """
-    def __init__(self, widget, text='widget info'):
-        self.wait_time = 400     # milliseconds
-        self.wraplength = 200   # pixels
+    def __init__(self, widget, text='widget info', url=None):
+        """
+        Instantiate object
+        """
+        self.wait_time = 500     # milliseconds
+        self.hide_time = self.wait_time
+        self.wraplength = 300   # pixels
         self.widget = widget
         self.text = text
+        self.url = url
         self.widget.bind("<Enter>", self.enter_widget)
         self.widget.bind("<Leave>", self.leave_widget)
         self.widget.bind("<ButtonPress>", self.leave_widget)
@@ -399,23 +413,43 @@ class CreateToolTip(object):
         self.tw = None
 
     def enter_widget(self, event=None):
+        """
+        When hovered/entered widget, schedule it to start
+        """
         self.schedule_tooltip()
 
     def leave_widget(self, event=None):
+        """
+        When leaving the widget, schedule the hide
+        """
         self.unschedule_tooltip()
-        self.hide_tooltip()
+        if hasattr(self, "toplevel"):
+            if self.toplevel is not None:
+                self.toplevel.after(self.hide_time, self.hide_tooltip)
 
     def schedule_tooltip(self):
+        """
+        Schedule the tip to appear
+        """
         self.unschedule_tooltip()
         self.id = self.widget.after(self.wait_time, self.show_tooltip)
 
     def unschedule_tooltip(self):
+        """
+        Cancel the schedule
+        """
         id = self.id
         self.id = None
         if id:
             self.widget.after_cancel(id)
 
     def show_tooltip(self, event=None):
+        """
+        Show the tooltip
+        """
+        tooltip_font = ctk.CTkFont(family="Helvetica",
+                                   size=16,
+                                   weight="bold")
         x = y = 0
         x, y, cx, cy = self.widget.bbox("insert")
         x += self.widget.winfo_rootx() + 25
@@ -425,14 +459,30 @@ class CreateToolTip(object):
         # Leaves only the label and removes the app window
         self.toplevel.wm_overrideredirect(True)
         self.toplevel.wm_geometry("+%d+%d" % (x, y))
-        self.frame = ctk.CTkFrame(self.toplevel, border_color="#00A3B9", border_width=2, fg_color="white")
-        self.frame.pack()
-        label = ctk.CTkLabel(self.frame, text=self.text, justify='left',
-                             wraplength=self.wraplength)
-        label.pack(ipadx=1)
+        self.frame = ctk.CTkFrame(self.toplevel, border_color="#00A3B9", border_width=5, fg_color="#00353D",
+                                  corner_radius=0)
+        self.toplevel.grid_columnconfigure(0, weight=1)
+        self.toplevel.grid_rowconfigure(0, weight=1)
+        self.frame.grid(column=0, row=0)
+        self.frame.grid_columnconfigure(0, weight=1)
+        self.frame.grid_rowconfigure(0, weight=1)
+        self.label = ctk.CTkLabel(self.frame, text=self.text, justify='left', font=tooltip_font,
+                                  wraplength=self.wraplength, text_color="white")
+        if self.url is not None:
+            self.label.bind("<Button-1>", lambda x: self.open_url(self.url))
+        self.label.grid(column=0, row=0, sticky="nsew", padx=15, pady=15)
 
     def hide_tooltip(self):
+        """
+        Hides the tooltip
+        """
         toplevel = self.toplevel
         self.toplevel = None
         if toplevel:
             toplevel.destroy()
+
+    def open_url(self, url):
+        """
+        Open the provided URL using the webbrowser module
+        """
+        webbrowser.open_new(url)

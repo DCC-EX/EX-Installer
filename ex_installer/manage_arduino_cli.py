@@ -7,7 +7,7 @@ import customtkinter as ctk
 import logging
 
 # Import local modules
-from .common_widgets import WindowLayout
+from .common_widgets import WindowLayout, CreateToolTip
 from . import images
 
 
@@ -102,11 +102,21 @@ class ManageArduinoCLI(WindowLayout):
                                                   text="Enable extra platforms")
         self.extra_platforms_label.grid(column=0, row=0, sticky="ew", **grid_options)
         switch_options = {"onvalue": "on", "offvalue": "off"}
+
+        # Tooltip
+        extra_platforms_tip = ("If you are using common Arduino AVR devices (eg. Mega2560, Uno, or Nano), then you " +
+                               "can disregard these options as support is already included with the Arduino CLI.")
+        CreateToolTip(self.extra_platforms_label, extra_platforms_tip)
+
         for index, platform in enumerate(self.acli.extra_platforms):
+            platform_tip = (f"Support for {platform} devices is not included with the Arduino CLI by default. " +
+                            "In order to be able to load any of our software on to these devices, you must " +
+                            "enable this option.")
             self.extra_platforms_frame.grid_rowconfigure(index+1, weight=1)
             switch_var = ctk.StringVar(value="off")
             switch = ctk.CTkSwitch(self.extra_platforms_frame, variable=switch_var, text=platform, **switch_options)
             switch.configure(command=lambda object=switch: self.update_package_list(object))
+            CreateToolTip(switch, platform_tip)
             switch.grid(column=0, row=index+1, sticky="w", **grid_options)
 
         # Layout frame
