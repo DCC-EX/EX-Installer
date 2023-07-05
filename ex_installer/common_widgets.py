@@ -13,7 +13,6 @@ import platform
 import os
 import subprocess
 import webbrowser
-from pprint import pprint
 
 # Import local modules
 from . import images

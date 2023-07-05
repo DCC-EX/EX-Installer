@@ -11,6 +11,8 @@ from CTkMessagebox import CTkMessagebox
 import subprocess
 import os
 import platform
+from tkinter import Menu
+import webbrowser
 
 # Import local modules
 from . import images
@@ -87,6 +89,15 @@ class EXInstaller(ctk.CTk):
         self.view = None
         self.use_existing = False  # needed for backing up to select_version_config
         self.advanced_config = False  # needed for backing up
+
+        # Create basic menu for Info -> About
+        self.menubar = Menu(self)
+        self.info_menu = Menu(self.menubar, tearoff=0)
+        self.info_menu.add_command(label="About", command=self.about)
+        self.info_menu.add_command(label="DCC-EX Website", command=self.website)
+        self.info_menu.add_command(label="EX-Installer Instructions", command=self.instructions)
+        self.menubar.add_cascade(label="Info", menu=self.info_menu)
+        self.configure(menu=self.menubar)
 
     def exception_handler(self, exc_type, exc_value, exc_traceback):
         """
@@ -183,3 +194,41 @@ class EXInstaller(ctk.CTk):
                     self.view.set_product_version(version, *version_details)
                 self.view.grid(column=0, row=0, sticky="nsew")
                 self.log.debug("Launching new instance of %s", view_class)
+
+    def about(self):
+        """
+        Message box popup for the Info -> About menu item
+        """
+        about_list = [f"EX-Installer version {self.app_version}"]
+        if self.acli.selected_device is not None:
+            index = self.acli.selected_device
+            board = self.acli.detected_devices[index]["matching_boards"][0]["name"]
+            port = self.acli.detected_devices[index]["port"]
+            about_list.append(f"Current selected device: {board} on port {port}")
+        about_message = "\n\n".join(about_list)
+        about_box = CTkMessagebox(master=self, title="About EX-Installer", icon="info",
+                                  message=about_message, border_width=3, cancel_button=None,
+                                  option_2="OK", option_1="Show log")
+        if about_box.get() == "Show log":
+            log_file = None
+            for handler in self.log.parent.handlers:
+                if handler.__class__.__name__ == "FileHandler":
+                    log_file = handler.baseFilename
+            if platform.system() == "Darwin":
+                subprocess.call(("open", log_file))
+            elif platform.system() == "Windows":
+                os.startfile(log_file)
+            else:
+                subprocess.call(("xdg-open", log_file))
+
+    def website(self):
+        """
+        Link to the DCC-EX website from the Info menu
+        """
+        webbrowser.open_new("https://dcc-ex.com")
+
+    def instructions(self):
+        """
+        Link to EX-Installer instructions from the Info menu
+        """
+        webbrowser.open_new("https://dcc-ex.com/ex-installer/index.html")
