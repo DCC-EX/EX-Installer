@@ -8,7 +8,7 @@ import logging
 import re
 
 # Import local modules
-from .common_widgets import WindowLayout
+from .common_widgets import WindowLayout, CreateToolTip
 from .product_details import product_details as pd
 from .file_manager import FileManager as fm
 
@@ -116,6 +116,24 @@ class EXCommandStation(WindowLayout):
         """
         grid_options = {"padx": 5, "pady": 5}
 
+        # Text for tooltips
+        motor_tip = ("You need to select the appropriate motor driver used by your CommandStation. If you are " +
+                     "unsure which to choose, click this tip to be redirected to our website for further help.")
+        display_tip = ("Click this box to be redirected to our website for help selecting the correct display type. " +
+                       "If you have no display attached to your CommandStation, leave this disabled.")
+        wifi_tip = ("If you have added WiFi capability to your CommandStation, you will need to select the correct " +
+                    "options to configure it as an access point (it will run as its own WiFi network you can connect " +
+                    "to) or to connect it to your existing WiFi network. Click this tip to be redirected to our " +
+                    "website for further information.")
+        ethernet_tip = ("If you have added Ethernet capability to your CommandStation, enable this option (this " +
+                        "will disable WiFi). Click this tip to be redirected to our website for further information.")
+        advanced_tip = ("If you need to specify additional options not available on this screen, enable this option " +
+                        "to edit the config files directly on the following screen. It is recommended not to touch " +
+                        "these unless you're comfortable you know what you're doing.")
+        track_tip = ("To make use of the new TrackManager feature, you will need to enable this option and set the " +
+                     "appropriate mode for each motor driver output. Click this tip to be redirected to our website " +
+                     "for further information.")
+
         # Set up hardware instruction label
         self.hardware_label = ctk.CTkLabel(self.config_frame, text=self.hardware_text,
                                            wraplength=780, font=self.instruction_font)
@@ -124,12 +142,16 @@ class EXCommandStation(WindowLayout):
         self.motor_driver_label = ctk.CTkLabel(self.config_frame, text="Select your motor driver")
         self.motor_driver_combo = ctk.CTkComboBox(self.config_frame, values=["Select motor driver"],
                                                   width=300, command=self.check_motor_driver)
+        CreateToolTip(self.motor_driver_combo, motor_tip,
+                      "https://dcc-ex.com/reference/hardware/motor-boards.html")
 
         # Set up display widgets
         self.display_enabled = ctk.StringVar(self, value="off")
         self.display_switch = ctk.CTkSwitch(self.config_frame, text="I have a display", width=150,
                                             onvalue="on", offvalue="off", variable=self.display_enabled,
                                             command=self.set_display)
+        CreateToolTip(self.display_switch, display_tip,
+                      "https://dcc-ex.com/reference/hardware/i2c-displays.html")
         self.display_combo = ctk.CTkComboBox(self.config_frame, values=list(self.supported_displays),
                                              width=300)
 
@@ -141,6 +163,8 @@ class EXCommandStation(WindowLayout):
         self.wifi_switch = ctk.CTkSwitch(self.config_frame, text="I have WiFi", width=150,
                                          onvalue="on", offvalue="off", variable=self.wifi_enabled,
                                          command=self.set_wifi)
+        CreateToolTip(self.wifi_switch, wifi_tip,
+                      "https://dcc-ex.com/ex-commandstation/advanced-setup/supported-wifi/index.html")
         self.wifi_options_frame = ctk.CTkFrame(self.wifi_frame,
                                                border_width=2,
                                                fg_color="#E5E5E5")
@@ -176,12 +200,16 @@ class EXCommandStation(WindowLayout):
         self.ethernet_switch = ctk.CTkSwitch(self.config_frame, text="I have ethernet", width=150,
                                              onvalue="on", offvalue="off", variable=self.ethernet_enabled,
                                              command=self.set_ethernet)
+        CreateToolTip(self.ethernet_switch, ethernet_tip,
+                      "https://dcc-ex.com/reference/hardware/ethernet-boards.html")
 
         # Track Manager Options
         self.track_modes_enabled = ctk.StringVar(self, value="off")
         self.track_modes_switch = ctk.CTkSwitch(self.config_frame, text="Set track modes", width=150,
                                                 onvalue="on", offvalue="off", variable=self.track_modes_enabled,
                                                 command=self.set_track_modes)
+        CreateToolTip(self.track_modes_switch, track_tip,
+                      "https://dcc-ex.com/under-development/track-manager.html")
         self.track_modes_frame = ctk.CTkFrame(self.config_frame, border_width=2, fg_color="#E5E5E5")
         self.track_a_label = ctk.CTkLabel(self.track_modes_frame, text="Track A:")
         self.track_a_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
@@ -197,6 +225,7 @@ class EXCommandStation(WindowLayout):
         self.advanced_config_switch = ctk.CTkSwitch(self.config_frame, text="Advanced Config", width=150,
                                                     onvalue="on", offvalue="off", variable=self.advanced_config_enabled,
                                                     command=self.set_advanced_config)
+        CreateToolTip(self.advanced_config_switch, advanced_tip)
         self.advanced_config_label = ctk.CTkLabel(self.config_frame,
                                                   text="Config files can be directly edited on next screen")
 
