@@ -1,5 +1,22 @@
 """
 Module for managing the Arduino CLI page view
+
+© 2023, Peter Cole. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
@@ -7,7 +24,7 @@ import customtkinter as ctk
 import logging
 
 # Import local modules
-from .common_widgets import WindowLayout
+from .common_widgets import WindowLayout, CreateToolTip
 from . import images
 
 
@@ -102,11 +119,21 @@ class ManageArduinoCLI(WindowLayout):
                                                   text="Enable extra platforms")
         self.extra_platforms_label.grid(column=0, row=0, sticky="ew", **grid_options)
         switch_options = {"onvalue": "on", "offvalue": "off"}
+
+        # Tooltip
+        extra_platforms_tip = ("If you are using common Arduino AVR devices (eg. Mega2560, Uno, or Nano), then you " +
+                               "can disregard these options as support is already included with the Arduino CLI.")
+        CreateToolTip(self.extra_platforms_label, extra_platforms_tip)
+
         for index, platform in enumerate(self.acli.extra_platforms):
+            platform_tip = (f"Support for {platform} devices is not included with the Arduino CLI by default. " +
+                            "In order to be able to load any of our software on to these devices, you must " +
+                            "enable this option.")
             self.extra_platforms_frame.grid_rowconfigure(index+1, weight=1)
             switch_var = ctk.StringVar(value="off")
             switch = ctk.CTkSwitch(self.extra_platforms_frame, variable=switch_var, text=platform, **switch_options)
             switch.configure(command=lambda object=switch: self.update_package_list(object))
+            CreateToolTip(switch, platform_tip)
             switch.grid(column=0, row=index+1, sticky="w", **grid_options)
 
         # Layout frame

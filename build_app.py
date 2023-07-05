@@ -3,6 +3,24 @@ Python script to run as a wrapper around PyInstaller to simplify application bui
 
 This script takes the appropriate command line arguments required to build the application
 , generates the correct versioning info, and builds for the provided platform
+
+
+© 2023, Peter Cole. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
@@ -147,6 +165,9 @@ if not write_file:
 # Get the right directory to include customtkinter
 customtkinter_dir = os.path.join(get_site_packages_path(), "customtkinter")
 
+# Get the right directory to include CTkMessagebox icons
+ctkmessagebox_dir = os.path.join(get_site_packages_path(), "CTkMessagebox", "icons")
+
 # Display the version info for confirmation in case it hasn't been updated yet
 confirm = input(f"This will build {app_name} version {app_version}. If the version should be updated, " +
                 "please edit 'ex_installer/version.py'.\n" +
@@ -173,6 +194,8 @@ if platform_name.startswith("Win"):
         f"{theme_file};theme/.",
         "--add-data",
         f"{customtkinter_dir};customtkinter",
+        "--add-data",
+        f"{ctkmessagebox_dir};CTkMessagebox/icons",
         "--version-file",
         "file_version.txt"
     ]
@@ -185,6 +208,8 @@ else:
         f"{theme_file}:theme/.",
         "--add-data",
         f"{customtkinter_dir}:customtkinter",
+        "--add-data",
+        f"{ctkmessagebox_dir}:CTkMessagebox/icons",
         "--hidden-import=PIL._tkinter_finder"
     ]
 param_list += [script_file]

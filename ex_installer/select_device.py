@@ -1,5 +1,22 @@
 """
 Module for the Select Device page view
+
+© 2023, Peter Cole. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
@@ -8,7 +25,7 @@ import logging
 import serial.tools.list_ports
 
 # Import local modules
-from .common_widgets import WindowLayout
+from .common_widgets import WindowLayout, CreateToolTip
 from . import images
 
 
@@ -87,6 +104,13 @@ class SelectDevice(WindowLayout):
                                               font=self.instruction_font)
         self.device_list_label.grid(column=0, row=0, columnspan=2, **grid_options)
 
+        # Tooltips
+        no_device_tip = ("The Arduino CLI was unable to detect any valid devices connected to your computer. " +
+                         "This could be due to it not being connected properly, a faulty device or USB cable, " +
+                         "or not having the correct drivers installed for Windows. Refer to our documentation " +
+                         "for help by clicking this window.")
+        CreateToolTip(self.no_device_label, no_device_tip, "https://dcc-ex.com/support/index.html")
+
         # Layout window
         self.instruction_label.grid(column=0, row=0)
         self.no_device_label.grid(column=0, row=1)
@@ -116,6 +140,14 @@ class SelectDevice(WindowLayout):
         """
         Use the Arduino CLI to list attached devices
         """
+        multi_device_tip = ("The Arduino CLI has recognised that there are multiple options that match " +
+                            "the device you have plugged in. Please select the correct device from the list " +
+                            "provided.")
+        unknown_device_tip = ("The Arduino CLI has detected a device but is unable to determine the correct type. " +
+                              "This commonly occurs with clone devices using generic USB to serial converters, but " +
+                              "will also occur with ESP32 and STM32 Nucleo devices as they do not use genuine " +
+                              "Arduino device drivers. We have displayed as much information as possible from the " +
+                              "operating system to help you select the correct port your device is attached to.")
         if event == "list_devices":
             self.log.debug("List devices button clicked")
             self.acli.detected_devices.clear()
@@ -150,6 +182,7 @@ class SelectDevice(WindowLayout):
                         self.log.debug(self.acli.detected_devices)
                     for index, item in enumerate(self.acli.detected_devices):
                         text = None
+                        tip = None
                         row = index + 1
                         self.device_list_frame.grid_rowconfigure(row, weight=1)
                         self.log.debug("Process %s at index %s", item, index)
@@ -164,6 +197,7 @@ class SelectDevice(WindowLayout):
                             multi_combo.configure(values=matched_boards)
                             text = "Multiple matches detected"
                             text += " on " + self.acli.detected_devices[index]["port"]
+                            tip = multi_device_tip
                             self.log.debug("Multiple matched devices on %s", self.acli.detected_devices[index]["port"])
                             self.log.debug(self.acli.detected_devices[index]["matching_boards"])
                         elif self.acli.detected_devices[index]["matching_boards"][0]["name"] == "Unknown":
@@ -178,6 +212,7 @@ class SelectDevice(WindowLayout):
                             else:
                                 text = ("Unknown or clone device detected on " +
                                         self.acli.detected_devices[index]['port'])
+                            tip = unknown_device_tip
                             self.log.debug("Unknown or clone device on %s", self.acli.detected_devices[index]["port"])
                         else:
                             text = self.acli.detected_devices[index]["matching_boards"][0]["name"]
@@ -187,6 +222,8 @@ class SelectDevice(WindowLayout):
                         radio_button = ctk.CTkRadioButton(self.device_list_frame, text=text,
                                                           variable=self.selected_device, value=index,
                                                           command=self.select_device)
+                        if tip is not None:
+                            CreateToolTip(radio_button, tip)
                         radio_button.grid(column=0, row=row, sticky="w", **grid_options)
                 else:
                     self.no_device_label.configure(text="No devices found")

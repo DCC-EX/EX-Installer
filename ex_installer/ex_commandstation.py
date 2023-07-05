@@ -1,13 +1,32 @@
 """
 Module for the EX-CommandStation page view
+
+© 2023, Peter Cole. All rights reserved.
+© 2023, M Steve Todd. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
 import customtkinter as ctk
 import logging
+import re
 
 # Import local modules
-from .common_widgets import WindowLayout
+from .common_widgets import WindowLayout, CreateToolTip
 from .product_details import product_details as pd
 from .file_manager import FileManager as fm
 
@@ -115,6 +134,24 @@ class EXCommandStation(WindowLayout):
         """
         grid_options = {"padx": 5, "pady": 5}
 
+        # Text for tooltips
+        motor_tip = ("You need to select the appropriate motor driver used by your CommandStation. If you are " +
+                     "unsure which to choose, click this tip to be redirected to our website for further help.")
+        display_tip = ("Click this box to be redirected to our website for help selecting the correct display type. " +
+                       "If you have no display attached to your CommandStation, leave this disabled.")
+        wifi_tip = ("If you have added WiFi capability to your CommandStation, you will need to select the correct " +
+                    "options to configure it as an access point (it will run as its own WiFi network you can connect " +
+                    "to) or to connect it to your existing WiFi network. Click this tip to be redirected to our " +
+                    "website for further information.")
+        ethernet_tip = ("If you have added Ethernet capability to your CommandStation, enable this option (this " +
+                        "will disable WiFi). Click this tip to be redirected to our website for further information.")
+        advanced_tip = ("If you need to specify additional options not available on this screen, enable this option " +
+                        "to edit the config files directly on the following screen. It is recommended not to touch " +
+                        "these unless you're comfortable you know what you're doing.")
+        track_tip = ("To make use of the new TrackManager feature, you will need to enable this option and set the " +
+                     "appropriate mode for each motor driver output. Click this tip to be redirected to our website " +
+                     "for further information.")
+
         # Set up hardware instruction label
         self.hardware_label = ctk.CTkLabel(self.config_frame, text=self.hardware_text,
                                            wraplength=780, font=self.instruction_font)
@@ -123,12 +160,16 @@ class EXCommandStation(WindowLayout):
         self.motor_driver_label = ctk.CTkLabel(self.config_frame, text="Select your motor driver")
         self.motor_driver_combo = ctk.CTkComboBox(self.config_frame, values=["Select motor driver"],
                                                   width=300, command=self.check_motor_driver)
+        CreateToolTip(self.motor_driver_combo, motor_tip,
+                      "https://dcc-ex.com/reference/hardware/motor-boards.html")
 
         # Set up display widgets
         self.display_enabled = ctk.StringVar(self, value="off")
         self.display_switch = ctk.CTkSwitch(self.config_frame, text="I have a display", width=150,
                                             onvalue="on", offvalue="off", variable=self.display_enabled,
                                             command=self.set_display)
+        CreateToolTip(self.display_switch, display_tip,
+                      "https://dcc-ex.com/reference/hardware/i2c-displays.html")
         self.display_combo = ctk.CTkComboBox(self.config_frame, values=list(self.supported_displays),
                                              width=300)
 
@@ -140,6 +181,8 @@ class EXCommandStation(WindowLayout):
         self.wifi_switch = ctk.CTkSwitch(self.config_frame, text="I have WiFi", width=150,
                                          onvalue="on", offvalue="off", variable=self.wifi_enabled,
                                          command=self.set_wifi)
+        CreateToolTip(self.wifi_switch, wifi_tip,
+                      "https://dcc-ex.com/ex-commandstation/advanced-setup/supported-wifi/index.html")
         self.wifi_options_frame = ctk.CTkFrame(self.wifi_frame,
                                                border_width=2,
                                                fg_color="#E5E5E5")
@@ -175,12 +218,16 @@ class EXCommandStation(WindowLayout):
         self.ethernet_switch = ctk.CTkSwitch(self.config_frame, text="I have ethernet", width=150,
                                              onvalue="on", offvalue="off", variable=self.ethernet_enabled,
                                              command=self.set_ethernet)
+        CreateToolTip(self.ethernet_switch, ethernet_tip,
+                      "https://dcc-ex.com/reference/hardware/ethernet-boards.html")
 
         # Track Manager Options
         self.track_modes_enabled = ctk.StringVar(self, value="off")
         self.track_modes_switch = ctk.CTkSwitch(self.config_frame, text="Set track modes", width=150,
                                                 onvalue="on", offvalue="off", variable=self.track_modes_enabled,
                                                 command=self.set_track_modes)
+        CreateToolTip(self.track_modes_switch, track_tip,
+                      "https://dcc-ex.com/under-development/track-manager.html")
         self.track_modes_frame = ctk.CTkFrame(self.config_frame, border_width=2, fg_color="#E5E5E5")
         self.track_a_label = ctk.CTkLabel(self.track_modes_frame, text="Track A:")
         self.track_a_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
@@ -196,6 +243,7 @@ class EXCommandStation(WindowLayout):
         self.advanced_config_switch = ctk.CTkSwitch(self.config_frame, text="Advanced Config", width=150,
                                                     onvalue="on", offvalue="off", variable=self.advanced_config_enabled,
                                                     command=self.set_advanced_config)
+        CreateToolTip(self.advanced_config_switch, advanced_tip)
         self.advanced_config_label = ctk.CTkLabel(self.config_frame,
                                                   text="Config files can be directly edited on next screen")
 
@@ -273,7 +321,7 @@ class EXCommandStation(WindowLayout):
         else:
             self.master.advanced_config = False
             self.advanced_config_label.grid_remove()
-            self.next_back.set_next_text("Compile and Upload")
+            self.next_back.set_next_text("Compile and load")
             self.log.debug("Manual Edit disabled")
 
     def set_wifi(self):
@@ -380,6 +428,35 @@ class EXCommandStation(WindowLayout):
         else:
             self.next_back.enable_next()
 
+    def check_invalid_wifi_password(self):
+        """
+        Checks for an invalid WiFi password
+
+        If in access point mode:
+        - Must be between 8 and 64 characters
+
+        In either mode, must not contain \ or "
+
+        Returns tuple of (True|False, message)
+        """
+        error_list = []
+        invalid = False
+        if self.wifi_type.get() == 0:
+            if len(self.wifi_pwd_entry.get()) < 8 or len(self.wifi_pwd_entry.get()) > 64:
+                error_list.append("WiFi Password must be between 8 and 64 characters")
+                invalid = True
+        invalid_list = [r'\\', r'"']
+        for character in invalid_list:
+            if re.search(character, self.wifi_pwd_entry.get()):
+                display = character.replace("\\\\", chr(92))
+                error_list.append(f"WiFi password cannot contain {display}")
+                invalid = True
+        if len(error_list) > 0:
+            message = ", ".join(error_list)
+        else:
+            message = None
+        return (invalid, message)
+
     def generate_config(self):
         """
         Function to validate options and return any errors
@@ -407,8 +484,12 @@ class EXCommandStation(WindowLayout):
                 if self.wifi_pwd_entry.get() == "":
                     config_list.append('#define WIFI_PASSWORD "Your network passwd"\n')
                 else:
-                    line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
-                    config_list.append(line)
+                    invalid, issue = self.check_invalid_wifi_password()
+                    if invalid:
+                        param_errors.append(issue)
+                    else:
+                        line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
+                        config_list.append(line)
             elif self.wifi_type.get() == 1:
                 if self.wifi_ssid_entry.get() == "":
                     param_errors.append("WiFi SSID/name not set")
@@ -418,8 +499,12 @@ class EXCommandStation(WindowLayout):
                 if self.wifi_pwd_entry.get() == "":
                     param_errors.append("WiFi password not set")
                 else:
-                    line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
-                    config_list.append(line)
+                    invalid, issue = self.check_invalid_wifi_password()
+                    if invalid:
+                        param_errors.append(issue)
+                    else:
+                        line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
+                        config_list.append(line)
             if self.ethernet_switch.get() == "on":
                 param_errors.append("Can not have both Ethernet and WiFi enabled")
             else:
@@ -483,6 +568,7 @@ class EXCommandStation(WindowLayout):
         - Checks for file creation failures
         """
         (config, list) = self.generate_config()
+        generate_myautomation = False
         if config:
             file_contents = [("// config.h - Generated by EX-Installer " +
                               f"v{self.app_version} for {self.product_name} " +
@@ -494,29 +580,32 @@ class EXCommandStation(WindowLayout):
             if write_config != config_file_path:
                 self.process_error(f"Could not write config.h: {write_config}")
                 self.log.error("Could not write config file: %s", write_config)
+            else:
+                generate_myautomation = True
         else:
             message = ", ".join(list)
             self.process_error(message)
             self.log.error(message)
 
-        (config, list) = self.generate_myAutomation()
-        if config:
-            file_contents = [("// myAutomation.h - Generated by EX-Installer " +
-                              f"v{self.app_version} for {self.product_name} " +
-                              f"{self.product_version_name}\n\n")]
-            file_contents += self.default_myAutomation_options
-            file_contents += list
-            config_file_path = fm.get_filepath(self.ex_commandstation_dir, "myAutomation.h")
-            write_config = fm.write_config_file(config_file_path, file_contents)
-            if write_config == config_file_path:
-                if self.advanced_config_enabled.get() == "on":
-                    self.master.switch_view("advanced_config", self.product)
+        if generate_myautomation:
+            (config, list) = self.generate_myAutomation()
+            if config:
+                file_contents = [("// myAutomation.h - Generated by EX-Installer " +
+                                  f"v{self.app_version} for {self.product_name} " +
+                                  f"{self.product_version_name}\n\n")]
+                file_contents += self.default_myAutomation_options
+                file_contents += list
+                config_file_path = fm.get_filepath(self.ex_commandstation_dir, "myAutomation.h")
+                write_config = fm.write_config_file(config_file_path, file_contents)
+                if write_config == config_file_path:
+                    if self.advanced_config_enabled.get() == "on":
+                        self.master.switch_view("advanced_config", self.product)
+                    else:
+                        self.master.switch_view("compile_upload", self.product)
                 else:
-                    self.master.switch_view("compile_upload", self.product)
+                    self.process_error(f"Could not write myAutomation.h: {write_config}")
+                    self.log.error("Could not write myAutomation file: %s", write_config)
             else:
-                self.process_error(f"Could not write myAutomation.h: {write_config}")
-                self.log.error("Could not write myAutomation file: %s", write_config)
-        else:
-            message = ", ".join(list)
-            self.process_error(message)
-            self.log.error(message)
+                message = ", ".join(list)
+                self.process_error(message)
+                self.log.error(message)

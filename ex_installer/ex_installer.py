@@ -1,5 +1,23 @@
 """
 This is the root window of the EX-Installer application.
+
+© 2023, Peter Cole. All rights reserved.
+© 2023, Harald Barth. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
@@ -11,6 +29,8 @@ from CTkMessagebox import CTkMessagebox
 import subprocess
 import os
 import platform
+from tkinter import Menu
+import webbrowser
 
 # Import local modules
 from . import images
@@ -23,6 +43,7 @@ from .select_device import SelectDevice
 from .select_product import SelectProduct
 from .select_version_config import SelectVersionConfig
 from .ex_commandstation import EXCommandStation
+from .ex_ioexpander import EXIOExpander
 from .advanced_config import AdvancedConfig
 from .compile_upload import CompileUpload
 from ex_installer.version import ex_installer_version
@@ -79,12 +100,22 @@ class EXInstaller(ctk.CTk):
             "select_product": SelectProduct,
             "select_version_config": SelectVersionConfig,
             "ex_commandstation": EXCommandStation,
+            "ex_ioexpander": EXIOExpander,
             "advanced_config": AdvancedConfig,
             "compile_upload": CompileUpload
         }
         self.view = None
         self.use_existing = False  # needed for backing up to select_version_config
         self.advanced_config = False  # needed for backing up
+
+        # Create basic menu for Info -> About
+        self.menubar = Menu(self)
+        self.info_menu = Menu(self.menubar, tearoff=0)
+        self.info_menu.add_command(label="About", command=self.about)
+        self.info_menu.add_command(label="DCC-EX Website", command=self.website)
+        self.info_menu.add_command(label="EX-Installer Instructions", command=self.instructions)
+        self.menubar.add_cascade(label="Info", menu=self.info_menu)
+        self.configure(menu=self.menubar)
 
     def exception_handler(self, exc_type, exc_value, exc_traceback):
         """
@@ -181,3 +212,42 @@ class EXInstaller(ctk.CTk):
                     self.view.set_product_version(version, *version_details)
                 self.view.grid(column=0, row=0, sticky="nsew")
                 self.log.debug("Launching new instance of %s", view_class)
+
+    def about(self):
+        """
+        Message box popup for the Info -> About menu item
+        """
+        about_list = [f"EX-Installer version {self.app_version}"]
+        if self.acli.selected_device is not None:
+            index = self.acli.selected_device
+            board = self.acli.detected_devices[index]["matching_boards"][0]["name"]
+            port = self.acli.detected_devices[index]["port"]
+            about_list.append(f"Current selected device: {board} on port {port}")
+        about_message = "\n\n".join(about_list)
+        about_box = CTkMessagebox(master=self, title="About EX-Installer", icon="info",
+                                  message=about_message, border_width=3, cancel_button=None,
+                                  option_2="OK", option_1="Show log", icon_size=(30, 30),
+                                  font=ctk.CTkFont(family="Helvetica", size=14, weight="normal"))
+        if about_box.get() == "Show log":
+            log_file = None
+            for handler in self.log.parent.handlers:
+                if handler.__class__.__name__ == "FileHandler":
+                    log_file = handler.baseFilename
+            if platform.system() == "Darwin":
+                subprocess.call(("open", log_file))
+            elif platform.system() == "Windows":
+                os.startfile(log_file)
+            else:
+                subprocess.call(("xdg-open", log_file))
+
+    def website(self):
+        """
+        Link to the DCC-EX website from the Info menu
+        """
+        webbrowser.open_new("https://dcc-ex.com")
+
+    def instructions(self):
+        """
+        Link to EX-Installer instructions from the Info menu
+        """
+        webbrowser.open_new("https://dcc-ex.com/ex-installer/index.html")

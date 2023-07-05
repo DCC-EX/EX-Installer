@@ -7,11 +7,16 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.12"
+ex_installer_version = "0.0.13"
 
 """
 Version history:
 
+0.0.13      - Add EX-IOExpander support
+            - Add WiFi password validation in EX-CommandStation configuration
+            - Add command history to device monitor
+            - Add hover style tooltips for contextual help
+            - Add info menu with about information, website link, and instructions link
 0.0.12      - Enable device monitor title bar
             - Fix bug in Linux where device monitor is always on top of all windows
             - Fix bug where track manager options displaying for incorrect versions

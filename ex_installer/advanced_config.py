@@ -6,6 +6,23 @@ Module for the Advanced Configuration page view
   1) If user chooses "Use Existing Config Files"
   2) If user chooses "Advanced Config" on the product configuration page
   3) by backing up from Compile_Upload (only if reached from this view)
+
+© 2023, M Steve Todd. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
