@@ -1,5 +1,23 @@
 """
 This is the root window of the EX-Installer application.
+
+© 2023, Peter Cole. All rights reserved.
+© 2023, Harald Barth. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
@@ -208,7 +226,8 @@ class EXInstaller(ctk.CTk):
         about_message = "\n\n".join(about_list)
         about_box = CTkMessagebox(master=self, title="About EX-Installer", icon="info",
                                   message=about_message, border_width=3, cancel_button=None,
-                                  option_2="OK", option_1="Show log")
+                                  option_2="OK", option_1="Show log", icon_size=(30, 30),
+                                  font=ctk.CTkFont(family="Helvetica", size=14, weight="normal"))
         if about_box.get() == "Show log":
             log_file = None
             for handler in self.log.parent.handlers:
