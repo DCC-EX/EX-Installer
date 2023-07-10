@@ -13,6 +13,7 @@ ex_installer_version = "0.0.14"
 Version history:
 
 0.0.14      - Add timeout for Arduino CLI threads, default 5 minutes
+            - Split compile/upload process out to show output of each phase
 0.0.13      - Add EX-IOExpander support
             - Add WiFi password validation in EX-CommandStation configuration
             - Add command history to device monitor
