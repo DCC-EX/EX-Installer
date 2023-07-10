@@ -32,6 +32,7 @@ import json
 from threading import Thread, Lock
 from collections import namedtuple
 import logging
+from datetime import datetime, timedelta
 
 from .file_manager import ThreadedDownloader, ThreadedExtractor
 
@@ -52,11 +53,16 @@ def get_exception(error):
 class ThreadedArduinoCLI(Thread):
     """
     Class to run Arduino CLI commands in a separate thread, returning results to the provided queue
+
+    There is a default timeout of 5 minutes (300 seconds) for any thread being started, after which
+    they will be terminated
+
+    Specifying the "time_limit" parameter will override this if necessary
     """
 
     arduino_cli_lock = Lock()
 
-    def __init__(self, acli_path, params, queue):
+    def __init__(self, acli_path, params, queue, time_limit=300):
         """
         Initialise the object
 
@@ -75,6 +81,7 @@ class ThreadedArduinoCLI(Thread):
         self.process_params = [acli_path]
         self.process_params += self.params
         self.queue = queue
+        self.time_limit = timedelta(seconds=time_limit)
 
     def run(self, *args, **kwargs):
         """
@@ -84,6 +91,7 @@ class ThreadedArduinoCLI(Thread):
 
         Results are placed in the provided queue object
         """
+        start_time = datetime.now()
         self.queue.put(
             QueueMessage("info", "Run Arduino CLI", f"Arduino CLI parameters: {self.params}")
         )
@@ -103,52 +111,61 @@ class ThreadedArduinoCLI(Thread):
                     QueueMessage("error", str(error), str(error))
                 )
                 self.log.error("Caught exception error: %s", str(error))
-            if self.error:
-                error = json.loads(self.error.decode())
-                topic = "Error in compile or upload"
-                data = ""
-                if "error" in error:
-                    topic = str(error["error"])
-                if "output" in error:
-                    if "stdout" in error["output"]:
-                        if error["output"]["stdout"] != "":
-                            data = str(error["output"]["stdout"] + "\n")
-                    if "stderr" in error["output"]:
-                        if error["output"]["stderr"] != "":
-                            data += str(error["output"]["stderr"])
-                if data == "":
-                    data = error
+            if (self.time_limit is not None and ((datetime.now() - start_time) > self.time_limit)):
                 self.queue.put(
-                    QueueMessage("error", topic, data)
+                    QueueMessage("error", "The Arduino CLI command did not complete within the timeout period",
+                                 f"The running Arduino CLI command took longer than {self.time_limit}")
                 )
-                self.log.error("%s: %s", topic, data)
+                self.log.error(f"The running Arduino CLI command took longer than {self.time_limit}")
+                self.log.error(self.params)
+                self.process.terminate()
             else:
-                if self.output:
-                    details = json.loads(self.output.decode())
-                    if "success" in details:
-                        if details["success"] is True:
+                if self.error:
+                    error = json.loads(self.error.decode())
+                    topic = "Error in compile or upload"
+                    data = ""
+                    if "error" in error:
+                        topic = str(error["error"])
+                    if "output" in error:
+                        if "stdout" in error["output"]:
+                            if error["output"]["stdout"] != "":
+                                data = str(error["output"]["stdout"] + "\n")
+                        if "stderr" in error["output"]:
+                            if error["output"]["stderr"] != "":
+                                data += str(error["output"]["stderr"])
+                    if data == "":
+                        data = error
+                    self.queue.put(
+                        QueueMessage("error", topic, data)
+                    )
+                    self.log.error("%s: %s", topic, data)
+                else:
+                    if self.output:
+                        details = json.loads(self.output.decode())
+                        if "success" in details:
+                            if details["success"] is True:
+                                status = "success"
+                                topic = "Success"
+                                data = details["compiler_out"]
+                                self.log.debug("Success %s", data)
+                            else:
+                                status = "error"
+                                topic = details["error"]
+                                data = details["compiler_err"]
+                                self.log.error(data)
+                        else:
                             status = "success"
                             topic = "Success"
-                            data = details["compiler_out"]
+                            data = details
                             self.log.debug("Success %s", data)
-                        else:
-                            status = "error"
-                            topic = details["error"]
-                            data = details["compiler_err"]
-                            self.log.error(data)
                     else:
                         status = "success"
-                        topic = "Success"
-                        data = details
-                        self.log.debug("Success %s", data)
-                else:
-                    status = "success"
-                    topic = "No output"
-                    data = "No output"
-                    self.log.debug(data)
-                self.queue.put(
-                    QueueMessage(status, topic, data)
-                )
+                        topic = "No output"
+                        data = "No output"
+                        self.log.debug(data)
+                    self.queue.put(
+                        QueueMessage(status, topic, data)
+                    )
 
 
 class ArduinoCLI:
@@ -401,7 +418,7 @@ class ArduinoCLI:
         Returns a list of attached boards
         """
         params = ["board", "list", "--format", "jsonmini"]
-        acli = ThreadedArduinoCLI(file_path, params, queue)
+        acli = ThreadedArduinoCLI(file_path, params, queue, 120)
         acli.start()
 
     def upload_sketch(self, file_path, fqbn, port, sketch_dir, queue):
