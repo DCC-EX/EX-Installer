@@ -126,6 +126,7 @@ class ThreadedArduinoCLI(Thread):
                     data = ""
                     if "error" in error:
                         topic = str(error["error"])
+                        data = str(error["error"])
                     if "output" in error:
                         if "stdout" in error["output"]:
                             if error["output"]["stdout"] != "":
@@ -156,7 +157,10 @@ class ThreadedArduinoCLI(Thread):
                         else:
                             status = "success"
                             topic = "Success"
-                            data = details
+                            if "stdout" in details:
+                                data = details["stdout"]
+                            else:
+                                data = details
                             self.log.debug("Success %s", data)
                     else:
                         status = "success"
@@ -421,20 +425,12 @@ class ArduinoCLI:
         acli = ThreadedArduinoCLI(file_path, params, queue, 120)
         acli.start()
 
-    def upload_sketch(self, file_path, port, sketch_dir, queue):
+    def upload_sketch(self, file_path, fqbn, port, sketch_dir, queue):
         """
         Compiles and uploads the sketch in the specified directory to the provided board/port
         """
-        params = ["upload", "-t", "-p", port, sketch_dir, "--format", "jsonmini"]
+        params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
-        acli.start()
-
-    def attach_sketch(self, file_path, fqbn, port, sketch_dir, queue):
-        """
-        Sets the default values for the port and FQBN
-        """
-        params = ["board", "attach", "-p", port, "-b", fqbn, sketch_dir, "--format", "jsonmini"]
-        acli = ThreadedArduinoCLI(file_path, params, queue, 60)
         acli.start()
 
     def compile_sketch(self, file_path, fqbn, sketch_dir, queue):
