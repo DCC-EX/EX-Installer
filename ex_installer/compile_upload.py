@@ -101,6 +101,11 @@ class CompileUpload(WindowLayout):
         self.next_back.hide_next()
         self.next_back.hide_monitor_button()
 
+        # Set next button up
+        self.next_back.set_next_text("Close EX-Installer")
+        self.next_back.set_next_command(sys.exit)
+        self.next_back.enable_next()
+
     def set_product(self, product):
         """
         Function to set the product details of what's being uploaded
@@ -156,6 +161,7 @@ class CompileUpload(WindowLayout):
                 self.process_error(self.process_topic)
                 self.restore_input_states()
                 self.next_back.hide_monitor_button()
+                self.next_back.show_next()
                 self.next_back.show_log_button()
         elif self.process_phase == "uploading":
             if self.process_status == "success":
@@ -172,10 +178,7 @@ class CompileUpload(WindowLayout):
                 self.upload_error()
                 self.next_back.hide_monitor_button()
                 self.next_back.show_log_button()
-            self.next_back.enable_next()
             self.next_back.show_next()
-            self.next_back.set_next_text("Close EX-Installer")
-            self.next_back.set_next_command(sys.exit)
 
     def upload_success(self):
         """

@@ -120,7 +120,7 @@ class EXTurntable(WindowLayout):
         self.config_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
 
         # Instruction widgets
-        instruction_text = ("To load EX-Turntable, the only setting required is to specify the " +
+        instruction_text = ("To load EX-Turntable, you need to specify the " +
                             "I\u00B2C address.")
         self.instruction_label = ctk.CTkLabel(self.config_frame, text=instruction_text,
                                               **config_label_options)
@@ -140,14 +140,6 @@ class EXTurntable(WindowLayout):
         self.i2c_address_plus = ctk.CTkButton(self.i2c_address_frame, text="+", width=30,
                                               command=self.increment_address)
 
-        # Disable I2C pullup option
-        # pullup_text = ("Certain Arduino devices may have issues with I\u00B2C connectivity when utilising " +
-        #                "the internal pullup resistors. If required, you can disable these.")
-        # self.disable_pullup_label = ctk.CTkLabel(self.config_frame, text=pullup_text, **config_label_options)
-        # self.disable_pullups_switch = ctk.CTkSwitch(self.config_frame, onvalue="on", offvalue="off",
-        #                                             text="Disable internal I\u00B2C pullups",
-        #                                             font=self.instruction_font)
-
         # Validate I2C address if entered manually
         self.i2c_address_entry.bind("<FocusOut>", self.validate_i2c_address)
 
@@ -163,69 +155,26 @@ class EXTurntable(WindowLayout):
         self.i2c_entry_frame.grid(column=2, row=0, padx=0)
         self.i2c_address_plus.grid(column=3, row=0, sticky="w", padx=(0, 5))
 
-        # Create diagnostic and test frame widgets
-        # diag_test_text = ("While you can enable diagnostic and testing options using EX-Installer on this page, " +
-        #                   "it is recommended to use the interactive commands available via the serial console instead.")
-        # self.diag_test_label = ctk.CTkLabel(self.config_frame, text=diag_test_text, **config_label_options)
-        # self.diag_test_switch = ctk.CTkSwitch(self.config_frame, text="Show diagnostic and test options",
-        #                                       onvalue="on", offvalue="off", command=self.diag_test_options,
-        #                                       font=self.instruction_font)
-        # self.diag_test_frame = ctk.CTkFrame(self.config_frame)
-        # self.enable_diag_switch = ctk.CTkSwitch(self.diag_test_frame, text="Enable diagnostic output",
-        #                                         onvalue="on", offvalue="off", font=self.instruction_font)
-        # self.diag_delay_label = ctk.CTkLabel(self.diag_test_frame, text="Set diagnostic display frequency in seconds:",
-        #                                      font=self.instruction_font)
-        # self.diag_delay = ctk.StringVar(self, value=5)
-        # self.diag_delay_entry = ctk.CTkEntry(self.diag_test_frame, textvariable=self.diag_delay, width=30,
-        #                                      font=self.instruction_font)
+        # Create mode widgets
+        self.mode_frame = ctk.CTkFrame(self.config_frame)
+        self.mode_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.mode_frame.grid_rowconfigure(0, weight=1)
+        self.turntable_label = ctk.CTkLabel(self.mode_frame, text="Turntable", font=self.bold_instruction_font,
+                                            width=100)
+        self.mode_switch = ctk.CTkSwitch(self.mode_frame, text=None, onvalue="traverser", offvalue="turntable",
+                                         command=self.set_mode)
+        self.traverser_label = ctk.CTkLabel(self.mode_frame, text="Traverser", font=self.instruction_font,
+                                            width=100)
 
-        # Create test widgets
-        # self.test_frame = ctk.CTkFrame(self.diag_test_frame, border_width=0)
-        # test_options = {"font": self.instruction_font, "width": 170}
-        # self.analogue_switch = ctk.CTkSwitch(self.test_frame, text="Enable analogue input pin testing",
-        #                                      onvalue="on", offvalue="off",
-        #                                      command=lambda test="analogue": self.set_one_test(test),
-        #                                      **test_options)
-        # self.input_switch = ctk.CTkSwitch(self.test_frame, text="Enable digital input pin testing (no pullups)",
-        #                                   onvalue="on", offvalue="off",
-        #                                   command=lambda test="input": self.set_one_test(test),
-        #                                   **test_options)
-        # self.output_switch = ctk.CTkSwitch(self.test_frame, text="Enable digital output pin testing",
-        #                                    onvalue="on", offvalue="off",
-        #                                    command=lambda test="output": self.set_one_test(test),
-        #                                    **test_options)
-        # self.pullup_switch = ctk.CTkSwitch(self.test_frame, text="Enable digital input pin testing (with pullups)",
-        #                                    onvalue="on", offvalue="off",
-        #                                    command=lambda test="pullup": self.set_one_test(test),
-        #                                    **test_options)
-
-        # Layout test frame widgets
-        # self.test_frame.grid_columnconfigure((0, 1), weight=1)
-        # self.test_frame.grid_rowconfigure((0, 1), weight=1)
-        # self.input_switch.grid(column=0, row=0, sticky="w", **grid_options)
-        # self.analogue_switch.grid(column=1, row=0, sticky="w", **grid_options)
-        # self.pullup_switch.grid(column=0, row=1, sticky="w", **grid_options)
-        # self.output_switch.grid(column=1, row=1, sticky="w", **grid_options)
-
-        # Layout diag test frame
-        # self.diag_test_frame.grid_columnconfigure((0, 1, 2), weight=1)
-        # self.diag_test_frame.grid_rowconfigure((0, 1), weight=1)
-        # self.enable_diag_switch.grid(column=0, row=0, sticky="w", **grid_options)
-        # self.diag_delay_label.grid(column=1, row=0, sticky="e", **grid_options)
-        # self.diag_delay_entry.grid(column=2, row=0, sticky="w", **grid_options)
-        # self.test_frame.grid(column=0, row=1, columnspan=3, sticky="ew", **grid_options)
+        # Layout mode frame
+        self.turntable_label.grid(column=0, row=0, sticky="e", **grid_options)
+        self.mode_switch.grid(column=1, row=0, **grid_options)
+        self.traverser_label.grid(column=2, row=0, sticky="w", **grid_options)
 
         # Layout config frame
         self.instruction_label.grid(column=0, row=0, **grid_options)
         self.i2c_address_frame.grid(column=1, row=0, sticky="w", **grid_options)
-        # self.disable_pullup_label.grid(column=0, row=1, **grid_options)
-        # self.disable_pullups_switch.grid(column=1, row=1, sticky="w", **grid_options)
-        # self.diag_test_label.grid(column=0, row=2, **grid_options)
-        # self.diag_test_switch.grid(column=1, row=2, sticky="w", **grid_options)
-        # self.diag_test_frame.grid(column=0, row=3, columnspan=2, **grid_options)
-
-        # Set states
-        # self.diag_test_options()
+        self.mode_frame.grid(column=0, row=2, **grid_options)
 
     def decrement_address(self):
         """
@@ -266,33 +215,13 @@ class EXTurntable(WindowLayout):
             self.i2c_address_entry.configure(text_color="#00353D")
             self.next_back.enable_next()
 
-    # def diag_test_options(self):
-    #     if self.diag_test_switch.get() == "on":
-    #         self.diag_test_frame.grid()
-    #     else:
-    #         self.diag_test_frame.grid_remove()
-
-    # def set_one_test(self, test):
-    #     if test == "analogue":
-    #         if self.analogue_switch.get() == "on":
-    #             self.input_switch.deselect()
-    #             self.output_switch.deselect()
-    #             self.pullup_switch.deselect()
-    #     elif test == "input":
-    #         if self.input_switch.get() == "on":
-    #             self.analogue_switch.deselect()
-    #             self.output_switch.deselect()
-    #             self.pullup_switch.deselect()
-    #     elif test == "output":
-    #         if self.output_switch.get() == "on":
-    #             self.analogue_switch.deselect()
-    #             self.input_switch.deselect()
-    #             self.pullup_switch.deselect()
-    #     elif test == "pullup":
-    #         if self.pullup_switch.get() == "on":
-    #             self.analogue_switch.deselect()
-    #             self.input_switch.deselect()
-    #             self.output_switch.deselect()
+    def set_mode(self):
+        if self.mode_switch.get() == "turntable":
+            self.turntable_label.configure(font=self.bold_instruction_font)
+            self.traverser_label.configure(font=self.instruction_font)
+        else:
+            self.turntable_label.configure(font=self.instruction_font)
+            self.traverser_label.configure(font=self.bold_instruction_font)
 
     def generate_config(self):
         """
