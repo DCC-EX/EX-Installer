@@ -134,17 +134,36 @@ class CompileUpload(WindowLayout):
         """
         Function to start the upload process via the Arduino CLI
         """
+        device = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["name"]
+        fqbn = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"]
+        port = self.acli.detected_devices[self.acli.selected_device]["port"]
         if event == "upload_software":
             self.disable_input_states(self)
             self.set_details("")
-            self.process_start("uploading",
-                               f"Compiling and loading {pd[self.product]['product_name']} on to your device",
+            self.process_start("attaching",
+                               f"Setting the default device to your {device} on port {port}",
                                "Upload_Software")
-            self.acli.upload_sketch(self.acli.cli_file_path(),
-                                    self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"],
-                                    self.acli.detected_devices[self.acli.selected_device]["port"],
-                                    self.install_dir,
-                                    self.queue)
+            self.acli.attach_sketch(self.acli.cli_file_path(), fqbn, port, self.install_dir, self.queue)
+        elif self.process_phase == "attaching":
+            if self.process_status == "success":
+                self.process_start("compiling",
+                                   f"Compiling {pd[self.product]['product_name']} for your device",
+                                   "Upload_Software")
+                self.acli.compile_sketch(self.acli.cli_file_path(), fqbn, self.install_dir, self.queue)
+            elif self.process_status == "error":
+                self.process_error(self.process_topic)
+                self.restore_input_states()
+        elif self.process_phase == "compiling":
+            if self.process_status == "success":
+                self.set_details(self.process_data)
+                self.process_start("uploading",
+                                   f"Loading {pd[self.product]['product_name']} on to your device",
+                                   "Upload_Software")
+                self.acli.upload_sketch(self.acli.cli_file_path(), port, self.install_dir, self.queue)
+            elif self.process_status == "error":
+                self.set_details(self.process_data)
+                self.process_error(self.process_topic)
+                self.restore_input_states()
         elif self.process_phase == "uploading":
             if self.process_status == "success":
                 self.process_stop()
