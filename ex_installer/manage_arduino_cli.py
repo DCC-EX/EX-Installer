@@ -230,6 +230,7 @@ class ManageArduinoCLI(WindowLayout):
                 self.acli.install_cli(download_file, self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
                 self.process_error(self.process_topic)
+                self.restore_input_states()
         elif event == "refresh_cli" or self.process_phase == "extract_cli":
             if event == "refresh_cli":
                 self.disable_input_states(self)
@@ -243,13 +244,15 @@ class ManageArduinoCLI(WindowLayout):
                                 )
                 self.acli.initialise_config(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error("Error installing the Arduino CLI")
+                self.process_error(self.process_topic)
+                self.restore_input_states()
         elif self.process_phase == "config_cli":
             if self.process_status == "success":
                 self.process_start("update_index", "Updating core index", "Manage_CLI")
                 self.acli.update_index(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error("Error configuring the Arduino CLI")
+                self.process_error(self.process_topic)
+                self.restore_input_states()
         elif self.process_phase == "update_index" or self.process_phase == "install_packages":
             if self.process_status == "success":
                 if self.package_dict:
@@ -261,17 +264,20 @@ class ManageArduinoCLI(WindowLayout):
                     self.process_start("upgrade_platforms", "Upgrading Arduino platforms", "Manage_CLI")
                     self.acli.upgrade_platforms(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error("Error updating core index")
+                self.process_error(self.process_topic)
+                self.restore_input_states()
         elif self.process_phase == "upgrade_platforms":
             if self.process_status == "success":
                 self.process_start("refresh_list", "Refreshing Arduino CLI board list", "Manage_CLI")
                 self.acli.list_boards(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error("Error upgrading platforms")
+                self.process_error(self.process_topic)
+                self.restore_input_states()
         elif self.process_phase == "refresh_list":
             if self.process_status == "success":
                 self.process_stop()
                 self.restore_input_states()
                 self.set_state()
             elif self.process_status == "error":
-                self.process_error("Error refreshing board list")
+                self.process_error(self.process_topic)
+                self.restore_input_states()

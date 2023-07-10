@@ -7,11 +7,12 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.13"
+ex_installer_version = "0.0.14"
 
 """
 Version history:
 
+0.0.14      - Add timeout for Arduino CLI threads, default 5 minutes
 0.0.13      - Add EX-IOExpander support
             - Add WiFi password validation in EX-CommandStation configuration
             - Add command history to device monitor

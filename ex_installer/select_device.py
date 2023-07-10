@@ -231,7 +231,7 @@ class SelectDevice(WindowLayout):
                 self.process_stop()
                 self.restore_input_states()
             elif self.process_status == "error":
-                self.process_error("Error scanning for devices")
+                self.process_error(self.process_topic)
                 self.restore_input_states()
 
     def update_board(self, name, index):
