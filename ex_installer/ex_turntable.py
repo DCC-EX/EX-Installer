@@ -300,6 +300,12 @@ class EXTurntable(WindowLayout):
         self.relay_switch.grid(column=2, row=0, **grid_options)
         self.relay_high_label.grid(column=3, row=0, sticky="w", padx=(0, 5), pady=5)
 
+        # Advanced config widget
+        self.advanced_config_enabled = ctk.CTkSwitch(self.config_frame, text="Advanced Config",
+                                                     onvalue="on", offvalue="off",
+                                                     font=self.instruction_font,
+                                                     command=self.set_advanced_config)
+
         # Layout config frame
         self.i2c_label.grid(column=0, row=0, **grid_options)
         self.i2c_address_frame.grid(column=1, row=0, sticky="w", **grid_options)
@@ -316,6 +322,7 @@ class EXTurntable(WindowLayout):
         self.accel_label.grid(column=1, row=8, **grid_options)
         self.speed_entry.grid(column=0, row=9, **grid_options)
         self.accel_entry.grid(column=1, row=9, **grid_options)
+        self.advanced_config_enabled.grid(column=0, row=10, **grid_options)
 
         # Set toggles
         self.get_steppers()
@@ -448,6 +455,15 @@ class EXTurntable(WindowLayout):
         else:
             self.next_back.enable_next()
 
+    def set_advanced_config(self):
+        """
+        Sets next screen to be config editing rather than compile/upload
+        """
+        if self.advanced_config_enabled.get() == "on":
+            self.next_back.set_next_text("Advanced config")
+        else:
+            self.next_back.set_next_text("Compile and load")
+
     def generate_config(self):
         """
         Validates all configuration parameters and if valid generates myConfig.h
@@ -519,4 +535,7 @@ class EXTurntable(WindowLayout):
                 self.process_error(f"Could not write config.h: {write_config}")
                 self.log.error("Could not write config file: %s", write_config)
             else:
-                self.master.switch_view("compile_upload", self.product)
+                if self.advanced_config_enabled.get() == "on":
+                    self.master.switch_view("advanced_config", self.product)
+                else:
+                    self.master.switch_view("compile_upload", self.product)

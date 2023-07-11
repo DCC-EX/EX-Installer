@@ -111,7 +111,8 @@ class AdvancedConfig(WindowLayout):
         local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
         self.product_dir = fm.get_install_dir(local_repo_dir)
         self.edit_list = fm.get_config_files(self.product_dir, pd[self.product]["minimum_config_files"])
-        self.edit_list += fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
+        if "other_config_files" in pd[self.product]:
+            self.edit_list += fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
 
         self.edit_label = {}
         self.edit_textbox = {}
