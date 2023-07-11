@@ -252,9 +252,9 @@ class FileManager:
         - a valid Python regular expression with grouping, where a match is made on one group only (group 1)
         - a file name
 
-        This is a valid example of a pattern: r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
-        This is an invalid example of a pattern: r"^config\.h$"
-        This would be valid, but better to just provide filename: r"^(config\.h)$"
+        This is a valid example of a pattern: r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"  # noqa: W605
+        This is an invalid example of a pattern: r"^config\.h$"  # noqa: W605
+        This would be valid, but better to just provide filename: r"^(config\.h)$"  # noqa: W605
         """
         if os.path.exists(dir):
             config_files = []
