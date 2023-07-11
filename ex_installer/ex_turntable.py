@@ -22,6 +22,7 @@ along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 # Import Python modules
 import customtkinter as ctk
 import logging
+import webbrowser
 
 # Import local modules
 from .common_widgets import WindowLayout, CreateToolTip
@@ -121,11 +122,16 @@ class EXTurntable(WindowLayout):
         """
         grid_options = {"padx": 5, "pady": 5}
         toggle_instruction_options = {"width": 250, "font": self.instruction_font}
-        self.config_frame.grid_columnconfigure((0, 1), weight=1)
-        self.config_frame.grid_rowconfigure(0, weight=1)
+        self.config_frame.grid_columnconfigure(0, weight=1)
+        self.config_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
         toggle_options = {"text": None, "width": 30, "fg_color": "#00A3B9", "progress_color": "#00A3B9"}
         toggle_label_options = {"width": 100}
         subframe_options = {"border_width": 0, "fg_color": "#E5E5E5"}
+
+        # Instructions
+        instructions = ("EX-Turntable requires a litte more DIY knowledge when it comes to working with stepper " +
+                        "drivers and motors, and the home and limit sensors. Please ensure you read the " +
+                        "documentation prior to installing (Click this text to open it).")
 
         # Tooltip text
         i2c_tip = ("You need to specify an available, valid I\u00B2C address for EX-Turntable. Valid values are " +
@@ -148,15 +154,39 @@ class EXTurntable(WindowLayout):
         idle_tip = ("By default, the stepper is disabled when idle. This prevents the driver from over heating and " +
                     "consuming excess power. If your configuration requires the stepper to forcibly maintain " +
                     "position when idle, disable this option.")
+        speed_tip = ("This defines the top speed of the stepper. The limit here is determined by the Arduion " +
+                     "device. A sensible max speed for Nanos/Unos would be 4000.")
+        accel_tip = ("This defines the rate at which the stepper speed increases to the top speed, and decreases " +
+                     "until it stops.")
+
+        # Subframes for grouping
+        self.main_options_frame = ctk.CTkFrame(self.config_frame)   # I2C, operating mode
+        self.stepper_frame = ctk.CTkFrame(self.config_frame)        # Stepper driver, disable idle, speed/accel
+        self.phase_frame = ctk.CTkFrame(self.config_frame)          # Auto, angle, relay active
+        self.sensor_frame = ctk.CTkFrame(self.config_frame)         # Testing, home/limit
+
+        self.main_options_frame.grid_columnconfigure(0, weight=1)
+        self.main_options_frame.grid_rowconfigure(0, weight=1)
+        self.stepper_frame.grid_columnconfigure(0, weight=1)
+        self.stepper_frame.grid_rowconfigure(0, weight=1)
+        self.phase_frame.grid_columnconfigure(0, weight=1)
+        self.phase_frame.grid_rowconfigure(0, weight=1)
+        self.sensor_frame.grid_columnconfigure(0, weight=1)
+        self.sensor_frame.grid_rowconfigure(0, weight=1)
 
         # Instruction widgets
+        self.instruction_label = ctk.CTkLabel(self.config_frame, text=instructions, width=780, wraplength=760,
+                                              font=self.instruction_font)
+        self.instruction_label.bind("<Button-1>", lambda x:
+                                    webbrowser.open_new("https://dcc-ex.com/ex-turntable/index.html"))
+
         i2c_label_text = ("To load EX-Turntable, you need to specify the I\u00B2C address.")
-        self.i2c_label = ctk.CTkLabel(self.config_frame, text=i2c_label_text, font=self.instruction_font)
+        self.i2c_label = ctk.CTkLabel(self.main_options_frame, text=i2c_label_text, font=self.instruction_font)
         CreateToolTip(self.i2c_label, i2c_tip, "https://dcc-ex.com/ex-turntable/configure.html#i2c-address")
 
         # Create I2C widgets
         self.i2c_address = ctk.StringVar(self, value=60)
-        self.i2c_address_frame = ctk.CTkFrame(self.config_frame, border_width=0, fg_color="#E5E5E5")
+        self.i2c_address_frame = ctk.CTkFrame(self.main_options_frame, border_width=0, fg_color="#E5E5E5")
         self.i2c_address_label = ctk.CTkLabel(self.i2c_address_frame, text="Set I\u00B2C address:",
                                               font=self.instruction_font)
         CreateToolTip(self.i2c_address_label, i2c_tip, "https://dcc-ex.com/ex-turntable/configure.html#i2c-address")
@@ -307,22 +337,29 @@ class EXTurntable(WindowLayout):
                                                      command=self.set_advanced_config)
 
         # Layout config frame
-        self.i2c_label.grid(column=0, row=0, **grid_options)
-        self.i2c_address_frame.grid(column=1, row=0, sticky="w", **grid_options)
-        self.stepper_label.grid(column=0, row=1, **grid_options)
-        self.stepper_combo.grid(column=1, row=1, **grid_options)
-        self.phase_frame.grid(column=0, row=2, columnspan=2, **grid_options)
-        self.sensor_test_switch.grid(column=0, row=3, **grid_options)
-        self.disable_idle_switch.grid(column=1, row=3, **grid_options)
-        self.mode_frame.grid(column=0, row=4, columnspan=2, **grid_options)
-        self.home_sensor_frame.grid(column=0, row=5, columnspan=2, **grid_options)
-        self.limit_sensor_frame.grid(column=0, row=6, columnspan=2, **grid_options)
-        self.relay_frame.grid(column=0, row=7, columnspan=2, **grid_options)
-        self.speed_label.grid(column=0, row=8, **grid_options)
-        self.accel_label.grid(column=1, row=8, **grid_options)
-        self.speed_entry.grid(column=0, row=9, **grid_options)
-        self.accel_entry.grid(column=1, row=9, **grid_options)
-        self.advanced_config_enabled.grid(column=0, row=10, **grid_options)
+        self.instruction_label.grid(column=0, row=0, **grid_options)
+        self.main_options_frame.grid(column=0, row=1, **grid_options)
+        # self.stepper_frame.grid(column=0, row=2, **grid_options)
+        # self.phase_frame.grid(column=0, row=3, **grid_options)
+        # self.sensor_frame.grid(column=0, row=4, **grid_options)
+        self.advanced_config_enabled.grid(column=0, row=5, sticky="e", **grid_options)
+
+        # self.i2c_label.grid(column=0, row=0, **grid_options)
+        # self.i2c_address_frame.grid(column=1, row=0, sticky="w", **grid_options)
+        # self.stepper_label.grid(column=0, row=1, **grid_options)
+        # self.stepper_combo.grid(column=1, row=1, **grid_options)
+        # self.phase_frame.grid(column=0, row=2, columnspan=2, **grid_options)
+        # self.sensor_test_switch.grid(column=0, row=3, **grid_options)
+        # self.disable_idle_switch.grid(column=1, row=3, **grid_options)
+        # self.mode_frame.grid(column=0, row=4, columnspan=2, **grid_options)
+        # self.home_sensor_frame.grid(column=0, row=5, columnspan=2, **grid_options)
+        # self.limit_sensor_frame.grid(column=0, row=6, columnspan=2, **grid_options)
+        # self.relay_frame.grid(column=0, row=7, columnspan=2, **grid_options)
+        # self.speed_label.grid(column=0, row=8, **grid_options)
+        # self.accel_label.grid(column=1, row=8, **grid_options)
+        # self.speed_entry.grid(column=0, row=9, **grid_options)
+        # self.accel_entry.grid(column=1, row=9, **grid_options)
+        # self.advanced_config_enabled.grid(column=0, row=10, **grid_options)
 
         # Set toggles
         self.get_steppers()

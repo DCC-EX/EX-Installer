@@ -16,6 +16,7 @@ Version history:
             - Split compile/upload process out to show output of each phase
             - Add support for EX-Turntable
             - Improve error detection/handling for Arduino CLI commands
+            - Fix bug where closing app with device monitor open waits for thread join and errors
 0.0.13      - Add EX-IOExpander support
             - Add WiFi password validation in EX-CommandStation configuration
             - Add command history to device monitor

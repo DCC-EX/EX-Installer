@@ -161,6 +161,7 @@ class SerialMonitor(ctk.CTkToplevel):
             self.command_entry.configure(state="normal")
             self.command_button.configure(state="normal")
             self.read_thread = Thread(target=self.read_output)
+            self.read_thread.daemon = True
             self.read_thread.start()
 
     def read_output(self):
