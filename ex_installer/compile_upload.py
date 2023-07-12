@@ -256,6 +256,11 @@ class CompileUpload(WindowLayout):
             self.window_frame.grid(column=0, row=0, sticky="nsew")
             self.folder_label = ctk.CTkLabel(self.window_frame, text="Select the folder to store your config files:",
                                              font=self.instruction_font)
+            self.status_frame = ctk.CTkFrame(self.window_frame, border_width=2)
+            self.status_label = ctk.CTkLabel(self.status_frame, text="Status:",
+                                             font=self.instruction_font)
+            self.status_text = ctk.CTkLabel(self.status_frame, text="Enter or select backup destination",
+                                            font=self.bold_instruction_font)
             self.backup_path = ctk.StringVar(value=None)
             self.backup_path_entry = ctk.CTkEntry(self.window_frame, textvariable=self.backup_path,
                                                   width=300)
@@ -264,10 +269,15 @@ class CompileUpload(WindowLayout):
             self.backup_button = ctk.CTkButton(self.window_frame, width=200, height=50,
                                                text="Backup files", font=self.action_button_font,
                                                command=self.backup_config_files)
-            self.folder_label.grid(column=0, row=0, padx=(10, 1), pady=10)
-            self.backup_path_entry.grid(column=1, row=0, padx=1, pady=10)
-            self.browse_button.grid(column=2, row=0, padx=(1, 10), pady=10)
-            self.backup_button.grid(column=0, row=1, columnspan=3, padx=10, pady=10)
+            self.folder_label.grid(column=0, row=0, padx=(10, 1), pady=(10, 5))
+            self.backup_path_entry.grid(column=1, row=0, padx=1, pady=(10, 5))
+            self.browse_button.grid(column=2, row=0, padx=(1, 10), pady=(10, 5))
+            self.backup_button.grid(column=0, row=1, columnspan=3, padx=10, pady=5)
+            self.status_frame.grid_columnconfigure((0, 1), weight=1)
+            self.status_frame.grid_rowconfigure(0, weight=1)
+            self.status_frame.grid(column=0, row=2, columnspan=3, sticky="nsew", padx=10, pady=(5, 10))
+            self.status_label.grid(column=0, row=0, padx=5, pady=5)
+            self.status_text.grid(column=1, row=0, padx=5, pady=5)
 
     def browse_backup_dir(self):
         """
@@ -278,12 +288,12 @@ class CompileUpload(WindowLayout):
             self.backup_path.set(directory)
             self.log.debug("Backup config to %s", directory)
             self.backup_popup.focus()
-            self.backup_popup.lift(self)
 
     def backup_config_files(self):
         """
         Function to backup config files to the specified folder
         """
+        self.overwrite_backup = False
         if fm.is_valid_dir(self.backup_path.get()):
             local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
             install_dir = fm.get_install_dir(local_repo_dir)
@@ -292,9 +302,13 @@ class CompileUpload(WindowLayout):
                 extra_check_list = fm.get_config_files(install_dir, pd[self.product]["other_config_files"])
                 if extra_check_list:
                     check_list += extra_check_list
-            if check_list:
-                message = ", ".join(check_list)
-                self.process_error(f"Existing config files found in {self.backup_path.get()}: {message}")
+            if check_list and not self.overwrite_backup:
+                error_list = ", ".join(check_list)
+                message = ("Existing files found , click Overwrite to overwrite them\n" +
+                           f"File list: {error_list}")
+                self.backup_button.configure(text="Overwrite")
+                self.status_text.configure(text=message, text_color="orange")
+                self.log.debug(message)
             else:
                 copy_list = fm.get_config_files(install_dir, pd[self.product]["minimum_config_files"])
                 if copy_list:
@@ -305,13 +319,16 @@ class CompileUpload(WindowLayout):
                     file_copy = fm.copy_config_files(install_dir, self.backup_path.get(), copy_list)
                     if file_copy:
                         file_list = ", ".join(file_copy)
-                        self.process_error(f"Failed to copy one or more files: {file_list}")
+                        self.status_text.configure(text=f"Failed to copy one or more files: {file_list}",
+                                                   text_color="red")
                         self.log.error("Failed to copy: %s", file_list)
                     else:
+                        self.status_text.configure("Backup successful", text_color="green")
                         self.log.debug("Backup successful")
                 else:
-                    self.process_error("Selected configuration directory is missing the required files")
+                    self.status_text.configure("Selected configuration directory is missing the required files",
+                                               text_color="red")
                     self.log.error("Directory %s is missing required files", self.config_path.get())
         else:
-            self.process_error(f"Sorry but {self.backup_path.get()} is not a valid directory")
-        self.backup_popup.destroy()
+            self.status_text.configure(f"Sorry but {self.backup_path.get()} is not a valid directory",
+                                       text_color="red")
