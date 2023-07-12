@@ -108,7 +108,6 @@ class CompileUpload(WindowLayout):
 
         # Hide backup button to start
         self.backup_config_button.grid_remove()
-        self.show_backup_button()
 
         # Set next button up
         self.next_back.set_next_text("Close EX-Installer")
@@ -268,11 +267,16 @@ class CompileUpload(WindowLayout):
                                                width=80, command=self.browse_backup_dir)
             self.backup_button = ctk.CTkButton(self.window_frame, width=200, height=50,
                                                text="Backup files", font=self.action_button_font,
-                                               command=self.backup_config_files)
+                                               command=lambda overwrite=False: self.backup_config_files(overwrite))
+            self.overwrite_button = ctk.CTkButton(self.window_frame, width=200, height=50,
+                                                  text="Overwrite?", font=self.action_button_font,
+                                                  command=lambda overwrite=True: self.backup_config_files(overwrite))
             self.folder_label.grid(column=0, row=0, padx=(10, 1), pady=(10, 5))
             self.backup_path_entry.grid(column=1, row=0, padx=1, pady=(10, 5))
             self.browse_button.grid(column=2, row=0, padx=(1, 10), pady=(10, 5))
             self.backup_button.grid(column=0, row=1, columnspan=3, padx=10, pady=5)
+            self.overwrite_button.grid(column=0, row=1, columnspan=3, padx=10, pady=5)
+            self.overwrite_button.grid_remove()
             self.status_frame.grid_columnconfigure((0, 1), weight=1)
             self.status_frame.grid_rowconfigure(0, weight=1)
             self.status_frame.grid(column=0, row=2, columnspan=3, sticky="nsew", padx=10, pady=(5, 10))
@@ -289,11 +293,10 @@ class CompileUpload(WindowLayout):
             self.log.debug("Backup config to %s", directory)
             self.backup_popup.focus()
 
-    def backup_config_files(self):
+    def backup_config_files(self, overwrite):
         """
         Function to backup config files to the specified folder
         """
-        self.overwrite_backup = False
         if fm.is_valid_dir(self.backup_path.get()):
             local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
             install_dir = fm.get_install_dir(local_repo_dir)
@@ -302,12 +305,13 @@ class CompileUpload(WindowLayout):
                 extra_check_list = fm.get_config_files(install_dir, pd[self.product]["other_config_files"])
                 if extra_check_list:
                     check_list += extra_check_list
-            if check_list and not self.overwrite_backup:
+            if check_list and not overwrite:
                 error_list = ", ".join(check_list)
                 message = ("Existing files found , click Overwrite to overwrite them\n" +
-                           f"File list: {error_list}")
-                self.backup_button.configure(text="Overwrite")
+                           f"Files found: {error_list}")
                 self.status_text.configure(text=message, text_color="orange")
+                self.backup_button.grid_remove()
+                self.overwrite_button.grid()
                 self.log.debug(message)
             else:
                 copy_list = fm.get_config_files(install_dir, pd[self.product]["minimum_config_files"])
@@ -323,12 +327,20 @@ class CompileUpload(WindowLayout):
                                                    text_color="red")
                         self.log.error("Failed to copy: %s", file_list)
                     else:
-                        self.status_text.configure("Backup successful", text_color="green")
+                        self.status_text.configure(text="Backup successful", text_color="green")
                         self.log.debug("Backup successful")
                 else:
                     self.status_text.configure("Selected configuration directory is missing the required files",
                                                text_color="red")
                     self.log.error("Directory %s is missing required files", self.config_path.get())
+                self.overwrite_button.grid_remove()
+                self.backup_button.grid()
         else:
-            self.status_text.configure(f"Sorry but {self.backup_path.get()} is not a valid directory",
+            if self.backup_path.get() == "":
+                message = "You must specific a valid folder to backup to"
+            else:
+                message = f"{self.backup_path.get()} is not a valid directory"
+            self.status_text.configure(text=message,
                                        text_color="red")
+            self.overwrite_button.grid_remove()
+            self.backup_button.grid()
