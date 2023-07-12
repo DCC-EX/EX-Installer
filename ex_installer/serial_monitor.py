@@ -182,8 +182,10 @@ class SerialMonitor(ctk.CTkToplevel):
         """
         Function to update the textbox with output from the Arduino CLI in monitor mode
         """
+        self.output_textbox.configure(state="normal")
         self.output_textbox.insert("insert", output + "\n")
         self.output_textbox.see("end")
+        self.output_textbox.configure(state="disabled")
 
     def send_command(self, event=None):
         """

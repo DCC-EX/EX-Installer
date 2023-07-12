@@ -372,3 +372,15 @@ class FileManager:
             return failed_files
         else:
             return None
+
+    @staticmethod
+    def is_valid_dir(dir):
+        """
+        Simply checks directory exists and that it is a directory
+
+        Returns True or False
+        """
+        if os.path.exists(dir) and os.path.isdir(dir):
+            return True
+        else:
+            return False

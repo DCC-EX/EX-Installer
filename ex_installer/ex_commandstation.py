@@ -41,8 +41,8 @@ class EXCommandStation(WindowLayout):
 
     # List of supported displays and config lines for config.h
     supported_displays = {
-        "LCD - 16 columns x 2 rows": "#define LCD_DRIVER 0x27,16,2",
-        "LCD 16 columns x 4 rows": "#define LCD_DRIVER  0x27,16,4",
+        "LCD 16 columns x 2 rows": "#define LCD_DRIVER 0x27,16,2",
+        "LCD 16 columns x 4 rows": "#define LCD_DRIVER 0x27,16,4",
         "OLED 128 x 32": "#define OLED_DRIVER 128,32",
         "OLED 128 x 64": "#define OLED_DRIVER 128,64"
     }

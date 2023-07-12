@@ -17,6 +17,8 @@ Version history:
             - Add support for EX-Turntable
             - Improve error detection/handling for Arduino CLI commands
             - Fix bug where closing app with device monitor open waits for thread join and errors
+            - Set device manager output to read only
+            - Add option to backup generated config files to a selected folder
 0.0.13      - Add EX-IOExpander support
             - Add WiFi password validation in EX-CommandStation configuration
             - Add command history to device monitor
