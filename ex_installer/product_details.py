@@ -65,7 +65,7 @@ product_details = {
     "ex_turntable": {
         "product_name": "EX-Turntable",
         "product_logo": images.EX_TURNTABLE_LOGO,
-        "repo_name": "DCC-EX/EX-IOExpander",
+        "repo_name": "DCC-EX/EX-Turntable",
         "default_branch": "main",
         "repo_url": "https://github.com/DCC-EX/EX-Turntable.git",
         "supported_devices": [

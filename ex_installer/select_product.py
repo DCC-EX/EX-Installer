@@ -99,9 +99,10 @@ class SelectProduct(WindowLayout):
                                                   command=lambda product="ex_ioexpander":
                                                   self.check_product_device(product))
         self.ex_turntable_button = ctk.CTkButton(self.select_product_frame,
-                                                 text="(coming soon)",
+                                                 text=None,
                                                  image=self.ex_turntable_image, **button_options,
-                                                 state="disabled")
+                                                 command=lambda product="ex_turntable":
+                                                 self.check_product_device(product))
         self.ex_dccinspector_button = ctk.CTkButton(self.select_product_frame,
                                                     text="(coming soon)",
                                                     image=self.ex_dccinspector_image, **button_options,

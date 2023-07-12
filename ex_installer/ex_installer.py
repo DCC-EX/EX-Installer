@@ -44,6 +44,7 @@ from .select_product import SelectProduct
 from .select_version_config import SelectVersionConfig
 from .ex_commandstation import EXCommandStation
 from .ex_ioexpander import EXIOExpander
+from .ex_turntable import EXTurntable
 from .advanced_config import AdvancedConfig
 from .compile_upload import CompileUpload
 from ex_installer.version import ex_installer_version
@@ -101,6 +102,7 @@ class EXInstaller(ctk.CTk):
             "select_version_config": SelectVersionConfig,
             "ex_commandstation": EXCommandStation,
             "ex_ioexpander": EXIOExpander,
+            "ex_turntable": EXTurntable,
             "advanced_config": AdvancedConfig,
             "compile_upload": CompileUpload
         }

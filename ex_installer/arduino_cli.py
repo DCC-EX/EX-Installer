@@ -120,6 +120,9 @@ class ThreadedArduinoCLI(Thread):
                 self.log.error(self.params)
                 self.process.terminate()
             else:
+                # Returncode 0 = success, anything else is an error
+                topic = ""
+                data = ""
                 if self.error:
                     error = json.loads(self.error.decode())
                     topic = "Error in compile or upload"
@@ -136,40 +139,34 @@ class ThreadedArduinoCLI(Thread):
                                 data += str(error["output"]["stderr"])
                     if data == "":
                         data = error
-                    self.queue.put(
-                        QueueMessage("error", topic, data)
-                    )
-                    self.log.error("%s: %s", topic, data)
                 else:
                     if self.output:
                         details = json.loads(self.output.decode())
                         if "success" in details:
                             if details["success"] is True:
-                                status = "success"
                                 topic = "Success"
                                 data = details["compiler_out"]
-                                self.log.debug("Success %s", data)
                             else:
-                                status = "error"
                                 topic = details["error"]
                                 data = details["compiler_err"]
-                                self.log.error(data)
                         else:
-                            status = "success"
                             topic = "Success"
                             if "stdout" in details:
                                 data = details["stdout"]
                             else:
                                 data = details
-                            self.log.debug("Success %s", data)
                     else:
-                        status = "success"
                         topic = "No output"
                         data = "No output"
-                        self.log.debug(data)
-                    self.queue.put(
-                        QueueMessage(status, topic, data)
-                    )
+                if self.process.returncode == 0:
+                    status = "success"
+                    self.log.debug(data)
+                else:
+                    status = "error"
+                    self.log.error(data)
+                self.queue.put(
+                    QueueMessage(status, topic, data)
+                )
 
 
 class ArduinoCLI:

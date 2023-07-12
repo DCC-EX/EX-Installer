@@ -117,15 +117,16 @@ class EXIOExpander(WindowLayout):
 
         # Create I2C widgets
         self.i2c_address = ctk.StringVar(self, value=65)
-        self.i2c_address_frame = ctk.CTkFrame(self.config_frame, border_width=0, fg_color="#E5E5E5")
-        self.i2c_address_label = ctk.CTkLabel(self.i2c_address_frame, text="Set I\u00B2C address:")
+        self.i2c_address_frame = ctk.CTkFrame(self.config_frame, border_width=0)
+        self.i2c_address_label = ctk.CTkLabel(self.i2c_address_frame, text="Set I\u00B2C address:",
+                                              font=self.instruction_font)
         self.i2c_address_minus = ctk.CTkButton(self.i2c_address_frame, text="-", width=30,
                                                command=self.decrement_address)
         self.i2c_entry_frame = ctk.CTkFrame(self.i2c_address_frame, border_width=2, border_color="#00A3B9")
         self.i2c_0x_label = ctk.CTkLabel(self.i2c_entry_frame, text="0x", font=self.instruction_font,
-                                         width=20, padx=0, pady=0, fg_color="#E5E5E5")
+                                         width=20, padx=0, pady=0)
         self.i2c_address_entry = ctk.CTkEntry(self.i2c_entry_frame, textvariable=self.i2c_address,
-                                              width=30, fg_color="white", border_width=0, justify="left",
+                                              width=30, border_width=2, justify="left",
                                               font=self.instruction_font)
         self.i2c_address_plus = ctk.CTkButton(self.i2c_address_frame, text="+", width=30,
                                               command=self.increment_address)
