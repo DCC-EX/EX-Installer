@@ -121,16 +121,16 @@ class EXTurntable(WindowLayout):
         - #define STEPPER_ACCELERATION 25
         """
         grid_options = {"padx": 5, "pady": 5}
-        toggle_instruction_options = {"width": 250, "font": self.instruction_font}
         self.config_frame.grid_columnconfigure(0, weight=1)
         self.config_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
-        toggle_options = {"text": None, "width": 30, "fg_color": "#00A3B9", "progress_color": "#00A3B9"}
-        toggle_label_options = {"width": 100}
-        subframe_options = {"border_width": 0, "fg_color": "#E5E5E5"}
+        toggle_options = {"text": None, "fg_color": "#00A3B9", "progress_color": "#00A3B9",
+                          "width": 30, "bg_color": "#D9D9D9"}
+        toggle_label_options = {"width": 80, "bg_color": "#D9D9D9"}
+        subframe_options = {"border_width": 0}
 
         # Instructions
         instructions = ("EX-Turntable requires a litte more DIY knowledge when it comes to working with stepper " +
-                        "drivers and motors, and the home and limit sensors. Please ensure you read the " +
+                        "drivers and motors and the home and limit sensors. Please ensure you read the " +
                         "documentation prior to installing (Click this text to open it).")
 
         # Tooltip text
@@ -140,10 +140,13 @@ class EXTurntable(WindowLayout):
                        "turntable. Click this tip to open the stepper information in the documentation.")
         mode_tip = ("EX-Turntable can operate in either turntable (continuous rotation) or traverser ( limited " +
                     "rotation) mode. Click this tip to open the traverser documentation for more information.")
-        active_state_tip = ("Active low sensors set their output to 0V or ground when activated, whereas active high " +
-                            "sensors set their output to 5V. When using relays, active low means the relays are " +
-                            "activated when the input is set to 0V or ground, and deactivated when set to 5V. The " +
-                            "inverse is true for active high relays.")
+        relay_tip = ("When using relays, active low means the relays are activated when the input is set to 0V " +
+                     "or ground, and deactivated when set to 5V. The inverse is true for active high relays.")
+        home_tip = ("Active low sensors set their output to 0V or ground when activated, whereas active high " +
+                    "sensors set their output to 5V.")
+        limit_tip = ("Setting the limit sensor type is only valid when in traverser mode. " +
+                     "Active low sensors set their output to 0V or ground when activated, whereas active high " +
+                     "sensors set their output to 5V.")
         sensor_test_tip = ("When running EX-Turntable in traverser mode, it is recommended to run in sensor testing " +
                            "mode initially to ensure the home and limit sensors are configured correctly. Failure " +
                            "to check your sensors may lead to mechanical damage should the traverser be driven " +
@@ -154,25 +157,17 @@ class EXTurntable(WindowLayout):
         idle_tip = ("By default, the stepper is disabled when idle. This prevents the driver from over heating and " +
                     "consuming excess power. If your configuration requires the stepper to forcibly maintain " +
                     "position when idle, disable this option.")
-        speed_tip = ("This defines the top speed of the stepper. The limit here is determined by the Arduion " +
+        speed_tip = ("This defines the top speed of the stepper. The limit here is determined by the Arduino " +
                      "device. A sensible max speed for Nanos/Unos would be 4000.")
         accel_tip = ("This defines the rate at which the stepper speed increases to the top speed, and decreases " +
                      "until it stops.")
+        advanced_tip = ("Enable this option to be able to directly edit the configuration file on the next screen.")
 
-        # Subframes for grouping
-        self.main_options_frame = ctk.CTkFrame(self.config_frame)   # I2C, operating mode
-        self.stepper_frame = ctk.CTkFrame(self.config_frame)        # Stepper driver, disable idle, speed/accel
-        self.phase_frame = ctk.CTkFrame(self.config_frame)          # Auto, angle, relay active
-        self.sensor_frame = ctk.CTkFrame(self.config_frame)         # Testing, home/limit
-
-        self.main_options_frame.grid_columnconfigure(0, weight=1)
-        self.main_options_frame.grid_rowconfigure(0, weight=1)
-        self.stepper_frame.grid_columnconfigure(0, weight=1)
-        self.stepper_frame.grid_rowconfigure(0, weight=1)
-        self.phase_frame.grid_columnconfigure(0, weight=1)
-        self.phase_frame.grid_rowconfigure(0, weight=1)
-        self.sensor_frame.grid_columnconfigure(0, weight=1)
-        self.sensor_frame.grid_rowconfigure(0, weight=1)
+        # Create subframes for grouping
+        self.main_options_frame = ctk.CTkFrame(self.config_frame, width=760)   # I2C, operating mode
+        self.stepper_frame = ctk.CTkFrame(self.config_frame, width=760)    # Stepper driver, disable idle, speed/accel
+        self.phase_frame = ctk.CTkFrame(self.config_frame, width=760)      # Auto, angle, relay active
+        self.sensor_frame = ctk.CTkFrame(self.config_frame, width=760)     # Testing, home/limit
 
         # Instruction widgets
         self.instruction_label = ctk.CTkLabel(self.config_frame, text=instructions, width=780, wraplength=760,
@@ -180,13 +175,9 @@ class EXTurntable(WindowLayout):
         self.instruction_label.bind("<Button-1>", lambda x:
                                     webbrowser.open_new("https://dcc-ex.com/ex-turntable/index.html"))
 
-        i2c_label_text = ("To load EX-Turntable, you need to specify the I\u00B2C address.")
-        self.i2c_label = ctk.CTkLabel(self.main_options_frame, text=i2c_label_text, font=self.instruction_font)
-        CreateToolTip(self.i2c_label, i2c_tip, "https://dcc-ex.com/ex-turntable/configure.html#i2c-address")
-
         # Create I2C widgets
         self.i2c_address = ctk.StringVar(self, value=60)
-        self.i2c_address_frame = ctk.CTkFrame(self.main_options_frame, border_width=0, fg_color="#E5E5E5")
+        self.i2c_address_frame = ctk.CTkFrame(self.main_options_frame, border_width=0)
         self.i2c_address_label = ctk.CTkLabel(self.i2c_address_frame, text="Set I\u00B2C address:",
                                               font=self.instruction_font)
         CreateToolTip(self.i2c_address_label, i2c_tip, "https://dcc-ex.com/ex-turntable/configure.html#i2c-address")
@@ -194,9 +185,9 @@ class EXTurntable(WindowLayout):
                                                command=self.decrement_address)
         self.i2c_entry_frame = ctk.CTkFrame(self.i2c_address_frame, border_width=2, border_color="#00A3B9")
         self.i2c_0x_label = ctk.CTkLabel(self.i2c_entry_frame, text="0x", font=self.instruction_font,
-                                         width=20, padx=0, pady=0, fg_color="#E5E5E5")
+                                         width=20, padx=0, pady=0)
         self.i2c_address_entry = ctk.CTkEntry(self.i2c_entry_frame, textvariable=self.i2c_address,
-                                              width=30, fg_color="white", border_width=0, justify="left",
+                                              width=30, border_width=2, justify="left",
                                               font=self.instruction_font)
         self.i2c_address_plus = ctk.CTkButton(self.i2c_address_frame, text="+", width=30,
                                               command=self.increment_address)
@@ -216,20 +207,12 @@ class EXTurntable(WindowLayout):
         self.i2c_entry_frame.grid(column=2, row=0, padx=0)
         self.i2c_address_plus.grid(column=3, row=0, sticky="w", padx=(0, 5))
 
-        # Create stepper selection widgets
-        self.stepper_label = ctk.CTkLabel(self.config_frame, text="Select the stepper driver:",
-                                          font=self.instruction_font)
-        CreateToolTip(self.stepper_label, stepper_tip,
-                      "https://dcc-ex.com/ex-turntable/purchasing.html#supported-stepper-drivers-and-motors")
-        self.stepper_combo = ctk.CTkComboBox(self.config_frame, values=["Select stepper driver"],
-                                             width=200, command=self.check_stepper)
-
         # Create mode widgets
-        self.mode_frame = ctk.CTkFrame(self.config_frame, **subframe_options)
+        self.mode_frame = ctk.CTkFrame(self.main_options_frame, **subframe_options)
         self.mode_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.mode_frame.grid_rowconfigure(0, weight=1)
         self.mode_label = ctk.CTkLabel(self.mode_frame, text="Select the operating mode:",
-                                       **toggle_instruction_options)
+                                       font=self.instruction_font)
         CreateToolTip(self.mode_label, mode_tip,
                       "https://dcc-ex.com/ex-turntable/traverser.html")
         self.turntable_label = ctk.CTkLabel(self.mode_frame, text="Turntable", **toggle_label_options)
@@ -238,40 +221,82 @@ class EXTurntable(WindowLayout):
         self.traverser_label = ctk.CTkLabel(self.mode_frame, text="Traverser", **toggle_label_options)
 
         # Layout mode frame
-        self.mode_label.grid(column=0, row=0, **grid_options)
-        self.turntable_label.grid(column=1, row=0, sticky="e", padx=(5, 0), pady=5)
-        self.mode_switch.grid(column=2, row=0, **grid_options)
-        self.traverser_label.grid(column=3, row=0, sticky="w", padx=(0, 5), pady=5)
+        self.mode_label.grid(column=0, row=0, sticky="e", **grid_options)
+        self.turntable_label.grid(column=1, row=0, sticky="nse", padx=(5, 0), pady=5)
+        self.mode_switch.grid(column=2, row=0, sticky="nsew", padx=0, pady=5)
+        self.traverser_label.grid(column=3, row=0, sticky="nsw", padx=(0, 5), pady=5)
+
+        # Create stepper selection widgets
+        self.stepper_label = ctk.CTkLabel(self.stepper_frame, text="Select the stepper driver:",
+                                          font=self.instruction_font)
+        CreateToolTip(self.stepper_label, stepper_tip,
+                      "https://dcc-ex.com/ex-turntable/purchasing.html#supported-stepper-drivers-and-motors")
+        self.stepper_combo = ctk.CTkComboBox(self.stepper_frame, values=["Select stepper driver"],
+                                             width=200, command=self.check_stepper)
+
+        # Create disable stepper widget
+        self.disable_idle_switch = ctk.CTkSwitch(self.stepper_frame, text="Disable stepper when idle",
+                                                 onvalue="on", offvalue="off", font=self.instruction_font)
+        self.disable_idle_switch.select()
+        CreateToolTip(self.disable_idle_switch, idle_tip)
+
+        # Create stepper tuning widgets
+        self.speed_label = ctk.CTkLabel(self.stepper_frame, text="Set the stepper top speed",
+                                        font=self.instruction_font)
+        CreateToolTip(self.speed_label, speed_tip)
+        self.speed = ctk.StringVar(self, value="200")
+        self.speed_entry = ctk.CTkEntry(self.stepper_frame, textvariable=self.speed, font=self.instruction_font,
+                                        width=60)
+        self.accel_label = ctk.CTkLabel(self.stepper_frame, text="Set acceleration rate",
+                                        font=self.instruction_font)
+        CreateToolTip(self.accel_label, accel_tip)
+        self.accel = ctk.StringVar(self, value="25")
+        self.accel_entry = ctk.CTkEntry(self.stepper_frame, textvariable=self.accel, font=self.instruction_font,
+                                        width=40)
 
         # Create phase switch widgets
-        self.phase_frame = ctk.CTkFrame(self.config_frame)
-        self.auto_switch = ctk.CTkSwitch(self.phase_frame, text="Enable automatic phase switching",
+        self.auto_switch = ctk.CTkSwitch(self.phase_frame, text="Automatic phase switch at angle:",
                                          onvalue="AUTO", offvalue="MANUAL", font=self.instruction_font,
                                          command=self.set_phase_switching)
+        CreateToolTip(self.auto_switch, phase_tip,
+                      "https://dcc-ex.com/ex-turntable/overview.html#important-phase-or-polarity-switching")
         self.auto_switch.select()
         self.phase_angle = ctk.StringVar(self, value="45")
         self.phase_angle_entry = ctk.CTkEntry(self.phase_frame, textvariable=self.phase_angle, width=40,
                                               font=self.instruction_font)
 
-        # Layout phase frame
-        self.auto_switch.grid(column=0, row=0, **grid_options)
-        CreateToolTip(self.auto_switch, phase_tip,
-                      "https://dcc-ex.com/ex-turntable/overview.html#important-phase-or-polarity-switching")
-        self.phase_angle_entry.grid(column=1, row=0, **grid_options)
+        # Create relay widgets
+        self.relay_frame = ctk.CTkFrame(self.phase_frame, **subframe_options)
+        self.relay_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        self.relay_frame.grid_rowconfigure(0, weight=1)
+        self.relay_label = ctk.CTkLabel(self.relay_frame, text="Relay type:",
+                                        font=self.instruction_font)
+        CreateToolTip(self.relay_label, relay_tip)
+        self.relay_low_label = ctk.CTkLabel(self.relay_frame, text="Active Low", **toggle_label_options)
+        self.relay_switch = ctk.CTkSwitch(self.relay_frame, onvalue="HIGH", offvalue="LOW",
+                                          command=self.set_relay, **toggle_options)
+        self.relay_switch.select()
+        self.relay_high_label = ctk.CTkLabel(self.relay_frame, text="Active High", **toggle_label_options)
+
+        # Layout relay frame
+        self.relay_label.grid(column=0, row=0, sticky="e", padx=(5, 1), pady=5)
+        self.relay_low_label.grid(column=1, row=0, sticky="nse", padx=(5, 0), pady=5)
+        self.relay_switch.grid(column=2, row=0, sticky="nsew", padx=0, pady=5)
+        self.relay_high_label.grid(column=3, row=0, sticky="nsw", padx=(0, 5), pady=5)
 
         # Create sensor widgets
-        self.home_sensor_frame = ctk.CTkFrame(self.config_frame, **subframe_options)
-        self.limit_sensor_frame = ctk.CTkFrame(self.config_frame, **subframe_options)
+        self.home_sensor_frame = ctk.CTkFrame(self.sensor_frame, **subframe_options)
+        self.limit_sensor_frame = ctk.CTkFrame(self.sensor_frame, **subframe_options)
         self.home_sensor_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.home_sensor_frame.grid_rowconfigure(0, weight=1)
         self.limit_sensor_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.limit_sensor_frame.grid_rowconfigure(0, weight=1)
-        self.home_label = ctk.CTkLabel(self.home_sensor_frame, text="Set the home sensor active type:",
-                                       **toggle_instruction_options)
-        CreateToolTip(self.home_label, active_state_tip)
-        self.limit_label = ctk.CTkLabel(self.limit_sensor_frame, text="Set the limit sensor active type:",
-                                        **toggle_instruction_options)
-        CreateToolTip(self.limit_label, active_state_tip)
+        self.home_label = ctk.CTkLabel(self.home_sensor_frame, text="Home sensor type:",
+                                       font=self.instruction_font)
+        CreateToolTip(self.home_label, home_tip)
+        self.limit_label = ctk.CTkLabel(self.limit_sensor_frame, text="Limit sensor type:",
+                                        font=self.instruction_font)
+        CreateToolTip(self.limit_label, limit_tip)
         self.home_low_label = ctk.CTkLabel(self.home_sensor_frame, text="Active Low", **toggle_label_options)
         self.home_switch = ctk.CTkSwitch(self.home_sensor_frame, onvalue="HIGH", offvalue="LOW",
                                          command=self.set_home, **toggle_options)
@@ -282,84 +307,67 @@ class EXTurntable(WindowLayout):
         self.limit_high_label = ctk.CTkLabel(self.limit_sensor_frame, text="Active High", **toggle_label_options)
 
         # Layout sensor frames
-        self.home_label.grid(column=0, row=0, **grid_options)
-        self.home_low_label.grid(column=1, row=0, sticky="e", padx=(5, 0), pady=5)
-        self.home_switch.grid(column=2, row=0, **grid_options)
-        self.home_high_label.grid(column=3, row=0, sticky="w", padx=(0, 5), pady=5)
-        self.limit_label.grid(column=0, row=0, **grid_options)
-        self.limit_low_label.grid(column=1, row=0, sticky="e", padx=(5, 0), pady=5)
-        self.limit_switch.grid(column=2, row=0, **grid_options)
-        self.limit_high_label.grid(column=3, row=0, sticky="w", padx=(0, 5), pady=5)
+        self.home_label.grid(column=0, row=0, sticky="e", **grid_options)
+        self.home_low_label.grid(column=1, row=0, sticky="nse", padx=(5, 0), pady=5)
+        self.home_switch.grid(column=2, row=0, sticky="nsew", padx=0, pady=5)
+        self.home_high_label.grid(column=3, row=0, sticky="nww", padx=(0, 5), pady=5)
+        self.limit_label.grid(column=0, row=0, sticky="e", **grid_options)
+        self.limit_low_label.grid(column=1, row=0, sticky="nse", padx=(5, 0), pady=5)
+        self.limit_switch.grid(column=2, row=0, sticky="nsew", padx=0, pady=5)
+        self.limit_high_label.grid(column=3, row=0, sticky="nsw", padx=(0, 5), pady=5)
 
         # Create test and stepper disable idle widgets
-        self.sensor_test_switch = ctk.CTkSwitch(self.config_frame, text="Enable sensor testing mode",
+        self.sensor_test_switch = ctk.CTkSwitch(self.sensor_frame, text="Enable sensor testing mode",
                                                 onvalue="on", offvalue="off", font=self.instruction_font)
         CreateToolTip(self.sensor_test_switch, sensor_test_tip,
                       "https://dcc-ex.com/ex-turntable/traverser.html#considerations-turntable-vs-traverser")
-        self.disable_idle_switch = ctk.CTkSwitch(self.config_frame, text="Disable stepper when idle",
-                                                 onvalue="on", offvalue="off", font=self.instruction_font)
-        self.disable_idle_switch.select()
-        CreateToolTip(self.disable_idle_switch, idle_tip)
-
-        # Create stepper tuning widgets
-        self.speed_label = ctk.CTkLabel(self.config_frame, text="Set the stepper top speed",
-                                        font=self.instruction_font)
-        self.speed = ctk.StringVar(self, value="200")
-        self.speed_entry = ctk.CTkEntry(self.config_frame, textvariable=self.speed, font=self.instruction_font)
-        self.accel_label = ctk.CTkLabel(self.config_frame, text="Set acceleration/deceleration rate",
-                                        font=self.instruction_font)
-        self.accel = ctk.StringVar(self, value="25")
-        self.accel_entry = ctk.CTkEntry(self.config_frame, textvariable=self.accel, font=self.instruction_font)
-
-        # Create relay widgets
-        self.relay_frame = ctk.CTkFrame(self.config_frame, **subframe_options)
-        self.relay_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
-        self.relay_frame.grid_rowconfigure(0, weight=1)
-        self.relay_label = ctk.CTkLabel(self.relay_frame, text="Set the relay active type:",
-                                        **toggle_instruction_options)
-        CreateToolTip(self.relay_label, active_state_tip)
-        self.relay_low_label = ctk.CTkLabel(self.relay_frame, text="Active Low", **toggle_label_options)
-        self.relay_switch = ctk.CTkSwitch(self.relay_frame, onvalue="HIGH", offvalue="LOW",
-                                          command=self.set_relay, **toggle_options)
-        self.relay_switch.select()
-        self.relay_high_label = ctk.CTkLabel(self.relay_frame, text="Active High", **toggle_label_options)
-
-        # Layout relay frame
-        self.relay_label.grid(column=0, row=0, **grid_options)
-        self.relay_low_label.grid(column=1, row=0, sticky="e", padx=(5, 0), pady=5)
-        self.relay_switch.grid(column=2, row=0, **grid_options)
-        self.relay_high_label.grid(column=3, row=0, sticky="w", padx=(0, 5), pady=5)
 
         # Advanced config widget
         self.advanced_config_enabled = ctk.CTkSwitch(self.config_frame, text="Advanced Config",
                                                      onvalue="on", offvalue="off",
                                                      font=self.instruction_font,
                                                      command=self.set_advanced_config)
+        CreateToolTip(self.advanced_config_enabled, advanced_tip)
 
-        # Layout config frame
+        # Layout main options frame
+        self.main_options_frame.grid_columnconfigure((0, 1), weight=1)
+        self.main_options_frame.grid_rowconfigure(0, weight=1)
+        self.i2c_address_frame.grid(column=0, row=0, padx=(5, 0), pady=5)
+        self.mode_frame.grid(column=1, row=0, padx=(0, 5), pady=5)
+
+        # Layout stepper frame
+        self.stepper_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        self.stepper_frame.grid_rowconfigure((0, 1), weight=1)
+        self.stepper_label.grid(column=0, row=0, sticky="e", **grid_options)
+        self.stepper_combo.grid(column=1, row=0, columnspan=2, sticky="w", **grid_options)
+        self.disable_idle_switch.grid(column=3, row=0, **grid_options)
+        self.speed_label.grid(column=0, row=1, sticky="e", **grid_options)
+        self.speed_entry.grid(column=1, row=1, sticky="w", **grid_options)
+        self.accel_label.grid(column=2, row=1, sticky="e", **grid_options)
+        self.accel_entry.grid(column=3, row=1, sticky="w", **grid_options)
+
+        # Layout phase frame
+        self.phase_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.phase_frame.grid_rowconfigure(0, weight=1)
+        self.auto_switch.grid(column=0, row=0, sticky="e", padx=(5, 1), pady=5)
+        self.phase_angle_entry.grid(column=1, row=0, sticky="w", padx=(1, 5), pady=5)
+        self.relay_frame.grid(column=2, row=0, **grid_options)
+
+        # Layout sensor frame
+        self.sensor_frame.grid_columnconfigure(0, weight=1)
+        self.sensor_frame.grid_rowconfigure(0, weight=1)
+        self.home_sensor_frame.grid(column=0, row=0, **grid_options)
+        self.limit_sensor_frame.grid(column=1, row=0, **grid_options)
+        self.sensor_test_switch.grid(column=0, row=1, columnspan=2, **grid_options)
+
+        # Layout main config frame
+        frame_grid_options = {"sticky": "ew", "padx": 30, "pady": 5}
         self.instruction_label.grid(column=0, row=0, **grid_options)
-        self.main_options_frame.grid(column=0, row=1, **grid_options)
-        # self.stepper_frame.grid(column=0, row=2, **grid_options)
-        # self.phase_frame.grid(column=0, row=3, **grid_options)
-        # self.sensor_frame.grid(column=0, row=4, **grid_options)
+        self.main_options_frame.grid(column=0, row=1, **frame_grid_options)
+        self.stepper_frame.grid(column=0, row=2, **frame_grid_options)
+        self.phase_frame.grid(column=0, row=3, **frame_grid_options)
+        self.sensor_frame.grid(column=0, row=4, **frame_grid_options)
         self.advanced_config_enabled.grid(column=0, row=5, sticky="e", **grid_options)
-
-        # self.i2c_label.grid(column=0, row=0, **grid_options)
-        # self.i2c_address_frame.grid(column=1, row=0, sticky="w", **grid_options)
-        # self.stepper_label.grid(column=0, row=1, **grid_options)
-        # self.stepper_combo.grid(column=1, row=1, **grid_options)
-        # self.phase_frame.grid(column=0, row=2, columnspan=2, **grid_options)
-        # self.sensor_test_switch.grid(column=0, row=3, **grid_options)
-        # self.disable_idle_switch.grid(column=1, row=3, **grid_options)
-        # self.mode_frame.grid(column=0, row=4, columnspan=2, **grid_options)
-        # self.home_sensor_frame.grid(column=0, row=5, columnspan=2, **grid_options)
-        # self.limit_sensor_frame.grid(column=0, row=6, columnspan=2, **grid_options)
-        # self.relay_frame.grid(column=0, row=7, columnspan=2, **grid_options)
-        # self.speed_label.grid(column=0, row=8, **grid_options)
-        # self.accel_label.grid(column=1, row=8, **grid_options)
-        # self.speed_entry.grid(column=0, row=9, **grid_options)
-        # self.accel_entry.grid(column=1, row=9, **grid_options)
-        # self.advanced_config_enabled.grid(column=0, row=10, **grid_options)
 
         # Set toggles
         self.get_steppers()
@@ -417,13 +425,15 @@ class EXTurntable(WindowLayout):
             self.traverser_label.configure(font=self.small_italic_instruction_font)
             self.limit_switch.configure(state="disabled")
             self.limit_switch.configure(fg_color="#939BA2", progress_color="#939BA2")
-            self.limit_high_label.configure(font=self.small_italic_instruction_font)
-            self.limit_low_label.configure(font=self.small_italic_instruction_font)
+            self.limit_high_label.configure(font=self.small_italic_instruction_font, text_color="white")
+            self.limit_low_label.configure(font=self.small_italic_instruction_font, text_color="white")
         else:
             self.turntable_label.configure(font=self.small_italic_instruction_font)
             self.traverser_label.configure(font=self.bold_instruction_font)
             self.limit_switch.configure(state="normal")
             self.limit_switch.configure(fg_color="#00A3B9", progress_color="#00A3B9")
+            self.limit_high_label.configure(text_color="#00353D")
+            self.limit_low_label.configure(text_color="#00353D")
             self.set_limit()
 
     def set_home(self):
@@ -464,9 +474,9 @@ class EXTurntable(WindowLayout):
         Function to hide/display phase switching angle
         """
         if self.auto_switch.get() == "AUTO":
-            self.phase_angle_entry.grid()
+            self.phase_angle_entry.configure(border_color="#00A3B9", text_color="#00353D", state="normal")
         else:
-            self.phase_angle_entry.grid_remove()
+            self.phase_angle_entry.configure(border_color="#979DA2", text_color="white", state="disabled")
 
     def get_steppers(self):
         """
