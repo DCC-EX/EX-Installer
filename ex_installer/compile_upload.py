@@ -28,6 +28,7 @@ import logging
 from .common_widgets import WindowLayout
 from .product_details import product_details as pd
 from .file_manager import FileManager as fm
+from . import images
 
 
 class CompileUpload(WindowLayout):
@@ -83,23 +84,31 @@ class CompileUpload(WindowLayout):
                                           font=self.instruction_font)
         self.details_textbox = ctk.CTkTextbox(self.compile_upload_frame, border_width=2, border_spacing=5,
                                               fg_color="#E5E5E5", width=780, height=180, state="disabled")
+        self.backup_config_button = ctk.CTkButton(self.compile_upload_frame, width=200, height=50,
+                                                  text="Backup config files", font=self.action_button_font,
+                                                  command=self.show_backup_popup)
 
         # Layout frame
         grid_options = {"padx": 5, "pady": 5}
-        self.compile_upload_frame.grid_columnconfigure(0, weight=1)
+        self.compile_upload_frame.grid_columnconfigure((0, 1), weight=1)
         self.compile_upload_frame.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
-        self.intro_label.grid(column=0, row=0, **grid_options)
-        self.congrats_label.grid(column=0, row=0, **grid_options)
-        self.instruction_label.grid(column=0, row=1, **grid_options)
-        self.success_label.grid(column=0, row=1, **grid_options)
-        self.upload_button.grid(column=0, row=2, **grid_options)
-        self.details_label.grid(column=0, row=3, **grid_options)
-        self.details_textbox.grid(column=0, row=4, **grid_options)
+        self.intro_label.grid(column=0, row=0, columnspan=2, **grid_options)
+        self.congrats_label.grid(column=0, row=0, columnspan=2, **grid_options)
+        self.instruction_label.grid(column=0, row=1, columnspan=2, **grid_options)
+        self.success_label.grid(column=0, row=1, columnspan=2, **grid_options)
+        self.upload_button.grid(column=0, row=2, columnspan=2, **grid_options)
+        self.backup_config_button.grid(column=1, row=2, **grid_options)
+        self.details_label.grid(column=0, row=3, columnspan=2, **grid_options)
+        self.details_textbox.grid(column=0, row=4, columnspan=2, **grid_options)
 
         # Hide next and log buttons to start
         self.next_back.hide_log_button()
         self.next_back.hide_next()
         self.next_back.hide_monitor_button()
+
+        # Hide backup button to start
+        self.backup_config_button.grid_remove()
+        self.show_backup_button()
 
         # Set next button up
         self.next_back.set_next_text("Close EX-Installer")
@@ -135,6 +144,11 @@ class CompileUpload(WindowLayout):
             self.next_back.set_back_text(f"Configure {pd[self.product]['product_name']}")
             self.next_back.set_back_command(lambda view=product: self.master.switch_view(view))
 
+    def show_backup_button(self):
+        self.upload_button.configure(text="Upload again")
+        self.upload_button.grid_configure(columnspan=1)
+        self.backup_config_button.grid()
+
     def upload_software(self, event):
         """
         Function to start the upload process via the Arduino CLI
@@ -163,6 +177,7 @@ class CompileUpload(WindowLayout):
                 self.next_back.hide_monitor_button()
                 self.next_back.show_next()
                 self.next_back.show_log_button()
+                self.show_backup_button()
         elif self.process_phase == "uploading":
             if self.process_status == "success":
                 self.process_stop()
@@ -179,6 +194,7 @@ class CompileUpload(WindowLayout):
                 self.next_back.hide_monitor_button()
                 self.next_back.show_log_button()
             self.next_back.show_next()
+            self.show_backup_button()
 
     def upload_success(self):
         """
@@ -214,3 +230,57 @@ class CompileUpload(WindowLayout):
         self.details_textbox.delete("0.0", "end")
         self.details_textbox.insert("0.0", text)
         self.details_textbox.configure(state="disabled")
+
+    def show_backup_popup(self):
+        """
+        Function to show the message box to select the backup folder
+        """
+        if hasattr(self, "backup_popup") and self.backup_popup is not None and self.backup_popup.winfo_exists():
+            self.backup_popup.focus()
+        else:
+            self.backup_popup = ctk.CTkToplevel(self)
+            self.backup_popup.focus()
+            self.backup_popup.lift(self)
+
+            # Set icon and title
+            if sys.platform.startswith("win"):
+                self.backup_popup.after(250, lambda icon=images.DCC_EX_ICON_ICO: self.backup_popup.iconbitmap(icon))
+            self.backup_popup.title("Backup config files")
+            self.backup_popup.withdraw()
+            self.backup_popup.after(250, self.backup_popup.deiconify)
+            # Set up popup geometry and parent frame
+            # self.backup_popup.geometry("800x550")
+            # self.backup_popup.minsize(width=800, height=550)
+            self.backup_popup.grid_columnconfigure(0, weight=1)
+            self.backup_popup.grid_rowconfigure(0, weight=1)
+            self.window_frame = ctk.CTkFrame(self.backup_popup, fg_color="grey95")
+            self.window_frame.grid_columnconfigure(0, weight=1)
+            self.window_frame.grid_rowconfigure(2, weight=1)
+            self.window_frame.grid(column=0, row=0, sticky="nsew")
+            self.folder_label = ctk.CTkLabel(self.window_frame, text="Select the folder to store your config files:",
+                                             font=self.instruction_font)
+            self.backup_path = ctk.StringVar(value=None)
+            self.backup_path_entry = ctk.CTkEntry(self.window_frame, textvariable=self.backup_path,
+                                                  width=300)
+            self.browse_button = ctk.CTkButton(self.window_frame, text="Browse",
+                                               width=80, command=self.browse_backup_dir)
+            self.folder_label.grid(column=0, row=0)
+            self.backup_path_entry.grid(column=1, row=0)
+            self.browse_button.grid(column=2, row=0)
+
+    def browse_backup_dir(self):
+        """
+        Opens a directory browser dialogue to select the folder containing config files
+        """
+        directory = ctk.filedialog.askdirectory()
+        if directory:
+            self.backup_path.set(directory)
+            self.log.debug("Backup config to %s", directory)
+            self.backup_popup.focus()
+            self.backup_popup.lift(self)
+
+    def backup_config_files(self):
+        """
+        Function to backup config files to the specified folder
+        """
+        pass
