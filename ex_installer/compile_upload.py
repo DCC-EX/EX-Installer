@@ -144,7 +144,7 @@ class CompileUpload(WindowLayout):
             self.next_back.set_back_command(lambda view=product: self.master.switch_view(view))
 
     def show_backup_button(self):
-        self.upload_button.configure(text="Upload again")
+        self.upload_button.configure(text="Load again")
         self.upload_button.grid_configure(columnspan=1)
         self.backup_config_button.grid()
 

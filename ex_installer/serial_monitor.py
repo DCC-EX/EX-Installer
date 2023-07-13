@@ -41,17 +41,17 @@ monitor_highlights = {
     "WiFi AP IP": {
         "regex": r"^\<\*\sWifi\sAP\sIP\s(\d*\.\d*\.\d*\.\d*)\s\*\>$",
         "matches": 1,
-        "tag": "orange"
+        "tag": "purple"
     },
     "Port (ESP32)": {
         "regex": r"^\<\*\sServer\swill\sbe\sstarted\son\sport\s(\d*)\s\*\>$",
         "matches": 1,
-        "tag": "oragne"
+        "tag": "purple"
     },
     "Port (ESP8266)": {
         "regex": r"^AT\+CIPSERVER=\d*,(\d*).*$",
         "matches": 1,
-        "tag": "orange"
+        "tag": "purple"
     },
     "WiFi Firmware": {
         "regex": r"^AT\sversion\:(.+?)$",
@@ -66,7 +66,7 @@ monitor_highlights = {
     "WiFi ST IP": {
         "regex": r"\"(\d*\.\d*\.\d*\.\d*)\"",
         "matches": 1,
-        "tag": "orange"
+        "tag": "purple"
     }
 }
 
@@ -172,11 +172,15 @@ class SerialMonitor(ctk.CTkToplevel):
         self.output_textbox.tag_config("blue",
                                        background="blue",
                                        foreground="white")
-        self.output_textbox.tag_add("orange", "end")
-        self.output_textbox.tag_config("orange",
-                                       background="orange",
+        self.output_textbox.tag_add("purple", "end")
+        self.output_textbox.tag_config("purple",
+                                       background="purple3",
                                        foreground="white")
-        self.output_textbox.tag_add("red", "end")
+        self.output_textbox.tag_add("warning", "end")
+        self.output_textbox.tag_config("warning",
+                                       background="orange red",
+                                       foreground="white")
+        self.output_textbox.tag_add("error", "end")
         self.output_textbox.tag_config("red",
                                        background="red",
                                        foreground="white")
