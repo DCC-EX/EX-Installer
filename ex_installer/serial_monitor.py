@@ -16,9 +16,59 @@ from CTkMessagebox import CTkMessagebox
 import os
 import sys
 import serial
+import re
 
 # Import local modules
 from . import images
+
+# Define valid monitor highlights
+monitor_highlights = {
+    "Version": {
+        "regex": r"^\<(iDCC-EX\sV-.*)\>$",
+        "matches": 1,
+        "tag": "green"
+    },
+    "WiFi AP Details (ESP32)": {
+        "regex": r"^\<\*\sWifi\sAP\sSSID\s(.+?)\sPASS\s(.+?)\s\*\>$",
+        "matches": 2,
+        "tag": "blue"
+    },
+    "WiFi AP Details (ESP8266)": {
+        "regex": r"^AT\+CWSAP_CUR=\"(.+?)\",\"(.+?)\".*$",
+        "matches": 2,
+        "tag": "blue"
+    },
+    "WiFi AP IP": {
+        "regex": r"^\<\*\sWifi\sAP\sIP\s(\d*\.\d*\.\d*\.\d*)\s\*\>$",
+        "matches": 1,
+        "tag": "orange"
+    },
+    "Port (ESP32)": {
+        "regex": r"^\<\*\sServer\swill\sbe\sstarted\son\sport\s(\d*)\s\*\>$",
+        "matches": 1,
+        "tag": "oragne"
+    },
+    "Port (ESP8266)": {
+        "regex": r"^AT\+CIPSERVER=\d*,(\d*).*$",
+        "matches": 1,
+        "tag": "orange"
+    },
+    "WiFi Firmware": {
+        "regex": r"^AT\sversion\:(.+?)$",
+        "matches": 1,
+        "tag": "green"
+    },
+    "WiFi ST Details": {
+        "regex": r"^AT\+CWJAP_CUR=\"(.+?)\",\"(.+?)\".*$",
+        "matches": 2,
+        "tag": "blue"
+    },
+    "WiFi ST IP": {
+        "regex": r"\"(\d*\.\d*\.\d*\.\d*)\"",
+        "matches": 1,
+        "tag": "orange"
+    }
+}
 
 
 class SerialMonitor(ctk.CTkToplevel):
@@ -113,6 +163,24 @@ class SerialMonitor(ctk.CTkToplevel):
                                              fg_color="#E5E5E5", border_color="#00A3B9")
         self.output_textbox.grid(column=0, row=0, sticky="nsew")
 
+        # Create highlighter tags
+        self.output_textbox.tag_add("green", "end")
+        self.output_textbox.tag_config("green",
+                                       background="green",
+                                       foreground="white")
+        self.output_textbox.tag_add("blue", "end")
+        self.output_textbox.tag_config("blue",
+                                       background="blue",
+                                       foreground="white")
+        self.output_textbox.tag_add("orange", "end")
+        self.output_textbox.tag_config("orange",
+                                       background="orange",
+                                       foreground="white")
+        self.output_textbox.tag_add("red", "end")
+        self.output_textbox.tag_config("red",
+                                       background="red",
+                                       foreground="white")
+
         # Create device frame widgets and layout
         self.device_label = ctk.CTkLabel(self.device_frame, text=None, font=instruction_font)
         self.device_label.grid(column=0, row=0, sticky="ew", padx=5, pady=5)
@@ -138,7 +206,7 @@ class SerialMonitor(ctk.CTkToplevel):
 
     def monitor(self, event=None):
         """
-        Function to start the Arduino CLI in monitor mode
+        Function to monitoring using PySerial
 
         Starts the process, and then creates a thread to read the output continuously
         """
@@ -155,7 +223,9 @@ class SerialMonitor(ctk.CTkToplevel):
                 self.serial_port = serial.Serial(port, 115200)
             except serial.SerialException as e:
                 self.log.error(f"Failed to open serial connection: {e}")
+                self.output_textbox.configure(state="normal")
                 self.output_textbox.insert("insert", f"Failed to open serial connection: {e}")
+                self.output_textbox.configure(state="disabled")
                 return
 
             self.command_entry.configure(state="normal")
@@ -183,6 +253,17 @@ class SerialMonitor(ctk.CTkToplevel):
         Function to update the textbox with output from the Arduino CLI in monitor mode
         """
         self.output_textbox.configure(state="normal")
+        for highlight in monitor_highlights.keys():
+            regex = monitor_highlights[highlight]["regex"]
+            matches = monitor_highlights[highlight]["matches"]
+            tag = monitor_highlights[highlight]["tag"]
+            match = re.search(regex, output)
+            if match and len(match.groups()) == matches:
+                for group in match.groups():
+                    temp = output.split(group)
+                    self.output_textbox.insert("insert", temp[0])
+                    self.output_textbox.insert("insert", group, tag)
+                    output = temp[1]
         self.output_textbox.insert("insert", output + "\n")
         self.output_textbox.see("end")
         self.output_textbox.configure(state="disabled")
@@ -198,7 +279,9 @@ class SerialMonitor(ctk.CTkToplevel):
                 self.command_history.append(command_text)
             self.command_entry.configure(values=self.command_history)
             self.command_entry.set("")
+        self.output_textbox.configure(state="normal")
         self.output_textbox.insert("insert", command_text + "\n")
+        self.output_textbox.configure(state="disabled")
         self.output_textbox.see("end")
 
     def exception_handler(self, exc_type, exc_value, exc_traceback):
