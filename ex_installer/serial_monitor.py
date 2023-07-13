@@ -16,9 +16,39 @@ from CTkMessagebox import CTkMessagebox
 import os
 import sys
 import serial
+import re
+from pprint import pprint
 
 # Import local modules
 from . import images
+
+# Define valid monitor highlights
+monitor_highlights = {
+    "Version": {
+        "regex": r"^\<(iDCC-EX\sV-.*)\>$",
+        "matches": 1,
+        "bg_colour": "black",
+        "colour": "green"
+    },
+    "WiFi AP Details": {
+        "regex": r"^\<\*\sWifi\sAP\sSSID\s(.+?)\sPASS\s(.+?)\s\*\>$",
+        "matches": 2,
+        "bg_colour": "black",
+        "colour": "blue"
+    },
+    "WiFi AP IP": {
+        "regex": r"^\<\*\sWifi\sAP\sIP\s(\d*\.\d*\.\d*\.\d*)\s\*\>$",
+        "matches": 1,
+        "bg_colour": "black",
+        "colour": "orange"
+    },
+    "Port": {
+        "regex": r"^\<\*\sServer\swill\sbe\sstarted\son\sport\s(\d*)\s\*\>$",
+        "matches": 1,
+        "bg_colour": "black",
+        "colour": "orange"
+    }
+}
 
 
 class SerialMonitor(ctk.CTkToplevel):
@@ -138,7 +168,7 @@ class SerialMonitor(ctk.CTkToplevel):
 
     def monitor(self, event=None):
         """
-        Function to start the Arduino CLI in monitor mode
+        Function to monitoring using PySerial
 
         Starts the process, and then creates a thread to read the output continuously
         """
@@ -183,6 +213,15 @@ class SerialMonitor(ctk.CTkToplevel):
         Function to update the textbox with output from the Arduino CLI in monitor mode
         """
         self.output_textbox.configure(state="normal")
+        for highlight in monitor_highlights.keys():
+            regex = monitor_highlights[highlight]["regex"]
+            matches = monitor_highlights[highlight]["matches"]
+            match = re.search(regex, output)
+            if match and len(match.groups()) == matches:
+                for group in match.groups():
+                    print(f"Found {highlight}: {group}")
+                    # new_output = output.split(tag_text)
+                    # pprint(new_output)
         self.output_textbox.insert("insert", output + "\n")
         self.output_textbox.see("end")
         self.output_textbox.configure(state="disabled")
