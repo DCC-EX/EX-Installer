@@ -28,8 +28,13 @@ monitor_highlights = {
         "matches": 1,
         "tag": "green"
     },
-    "WiFi AP Details": {
+    "WiFi AP Details (ESP32)": {
         "regex": r"^\<\*\sWifi\sAP\sSSID\s(.+?)\sPASS\s(.+?)\s\*\>$",
+        "matches": 2,
+        "tag": "blue"
+    },
+    "WiFi AP Details (ESP8266)": {
+        "regex": r"^AT\+CWSAP_CUR=\"(.+?)\",\"(.+?)\".*$",
         "matches": 2,
         "tag": "blue"
     },
@@ -38,8 +43,28 @@ monitor_highlights = {
         "matches": 1,
         "tag": "orange"
     },
-    "Port": {
+    "Port (ESP32)": {
         "regex": r"^\<\*\sServer\swill\sbe\sstarted\son\sport\s(\d*)\s\*\>$",
+        "matches": 1,
+        "tag": "oragne"
+    },
+    "Port (ESP8266)": {
+        "regex": r"^AT\+CIPSERVER=\d*,(\d*).*$",
+        "matches": 1,
+        "tag": "orange"
+    },
+    "WiFi Firmware": {
+        "regex": r"^AT\sversion\:(.+?)$",
+        "matches": 1,
+        "tag": "green"
+    },
+    "WiFi ST Details": {
+        "regex": r"^AT\+CWJAP_CUR=\"(.+?)\",\"(.+?)\".*$",
+        "matches": 2,
+        "tag": "blue"
+    },
+    "WiFi ST IP": {
+        "regex": r"\"(\d*\.\d*\.\d*\.\d*)\"",
         "matches": 1,
         "tag": "orange"
     }
@@ -141,16 +166,20 @@ class SerialMonitor(ctk.CTkToplevel):
         # Create highlighter tags
         self.output_textbox.tag_add("green", "end")
         self.output_textbox.tag_config("green",
-                                       background="grey95",
-                                       foreground="green")
+                                       background="green",
+                                       foreground="white")
         self.output_textbox.tag_add("blue", "end")
         self.output_textbox.tag_config("blue",
-                                       background="grey95",
-                                       foreground="blue")
+                                       background="blue",
+                                       foreground="white")
         self.output_textbox.tag_add("orange", "end")
         self.output_textbox.tag_config("orange",
-                                       background="grey95",
-                                       foreground="orange")
+                                       background="orange",
+                                       foreground="white")
+        self.output_textbox.tag_add("red", "end")
+        self.output_textbox.tag_config("red",
+                                       background="red",
+                                       foreground="white")
 
         # Create device frame widgets and layout
         self.device_label = ctk.CTkLabel(self.device_frame, text=None, font=instruction_font)
