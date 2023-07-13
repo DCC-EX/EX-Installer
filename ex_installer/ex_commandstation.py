@@ -151,6 +151,8 @@ class EXCommandStation(WindowLayout):
         track_tip = ("To make use of the new TrackManager feature, you will need to enable this option and set the " +
                      "appropriate mode for each motor driver output. Click this tip to be redirected to our website " +
                      "for further information.")
+        power_tip = ("To enable track power to be on during startup, enable this option. Note that it will also join " +
+                     "the programming and main tracks.")
 
         # Set up hardware instruction label
         self.hardware_label = ctk.CTkLabel(self.config_frame, text=self.hardware_text,
@@ -238,7 +240,14 @@ class EXCommandStation(WindowLayout):
         self.track_b_combo.set("MAIN")  # default to MAIN and PROG
         self.track_b_combo.set("PROG")
 
-        # advanced configuration option
+        # Set track power on startup
+        self.power_on_switch = ctk.CTkSwitch(self.config_frame, text="Power on", width=150,
+                                             onvalue="on", offvalue="off")
+        CreateToolTip(self.power_on_switch, power_tip)
+        self.power_on_label = ctk.CTkLabel(self.config_frame, font=self.instruction_font,
+                                           text="Turn track power on at startup and join program/main")
+
+        # Advanced configuration option
         self.advanced_config_enabled = ctk.StringVar(self, value="off")
         self.advanced_config_switch = ctk.CTkSwitch(self.config_frame, text="Advanced Config", width=150,
                                                     onvalue="on", offvalue="off", variable=self.advanced_config_enabled,
@@ -284,8 +293,10 @@ class EXCommandStation(WindowLayout):
         self.ethernet_switch.grid(column=0, row=6, sticky="e", **grid_options)
         self.track_modes_switch.grid(column=0, row=7, sticky="e", **grid_options)
         self.track_modes_frame.grid(column=1, row=7, sticky="w", **grid_options)
-        self.advanced_config_switch.grid(column=0, row=8, sticky="e", **grid_options)
-        self.advanced_config_label.grid(column=1, row=8, sticky="w", **grid_options)
+        self.power_on_switch.grid(column=0, row=8, sticky="e", **grid_options)
+        self.power_on_label.grid(column=1, row=8, stick="w", **grid_options)
+        self.advanced_config_switch.grid(column=0, row=9, sticky="e", **grid_options)
+        self.advanced_config_label.grid(column=1, row=9, sticky="w", **grid_options)
 
     def set_display(self):
         """
@@ -537,23 +548,26 @@ class EXCommandStation(WindowLayout):
         param_errors = []
         config_list = []
 
-        # if Track Modes not enabled, return empty list
-        if self.track_modes_enabled.get() == "off":
-            return (True, config_list)
+        # Enable join on startup if enabled
+        if self.power_on_switch.get() == "on":
+            config_list.append("AUTOSTART\n")
+            config_list.append("JOIN\n")
+            config_list.append("DONE\n\n")
 
         # write out trackmanager config, including roster entries if DCx
-        if (self.track_a_combo.get().startswith("DC")):
-            line = "AUTOSTART SETLOCO(1) SET_TRACK(A," + self.track_a_combo.get() + ") DONE\n"
-            line += "ROSTER(1,\"DC TRACK A\",\"/* /\")\n"
-        else:
-            line = "AUTOSTART SET_TRACK(A," + self.track_a_combo.get() + ") DONE\n"
-        config_list.append(line)
-        if (self.track_b_combo.get().startswith("DC")):
-            line = "AUTOSTART SETLOCO(2) SET_TRACK(B," + self.track_b_combo.get() + ") DONE\n"
-            line += "ROSTER(2,\"DC TRACK B\",\"/* /\")\n"
-        else:
-            line = "AUTOSTART SET_TRACK(B," + self.track_b_combo.get() + ") DONE\n"
-        config_list.append(line)
+        if self.track_modes_enabled.get() == "on":
+            if (self.track_a_combo.get().startswith("DC")):
+                line = "AUTOSTART SETLOCO(1) SET_TRACK(A," + self.track_a_combo.get() + ") DONE\n"
+                line += "ROSTER(1,\"DC TRACK A\",\"/* /\")\n"
+            else:
+                line = "AUTOSTART SET_TRACK(A," + self.track_a_combo.get() + ") DONE\n"
+            config_list.append(line)
+            if (self.track_b_combo.get().startswith("DC")):
+                line = "AUTOSTART SETLOCO(2) SET_TRACK(B," + self.track_b_combo.get() + ") DONE\n"
+                line += "ROSTER(2,\"DC TRACK B\",\"/* /\")\n"
+            else:
+                line = "AUTOSTART SET_TRACK(B," + self.track_b_combo.get() + ") DONE\n"
+            config_list.append(line)
 
         if len(param_errors) > 0:
             self.log.error("Missing parameters: %s", param_errors)

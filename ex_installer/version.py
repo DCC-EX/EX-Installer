@@ -21,6 +21,7 @@ Version history:
             - Add option to backup generated config files to a selected folder
             - Add highlights to device monitor for version and WiFi info
             - Updated 4 row LCD definition for 20 columns
+            - Add option to power on/join at startup
 0.0.13      - Add EX-IOExpander support
             - Add WiFi password validation in EX-CommandStation configuration
             - Add command history to device monitor
