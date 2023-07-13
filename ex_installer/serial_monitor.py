@@ -17,7 +17,6 @@ import os
 import sys
 import serial
 import re
-from pprint import pprint
 
 # Import local modules
 from . import images
@@ -27,26 +26,22 @@ monitor_highlights = {
     "Version": {
         "regex": r"^\<(iDCC-EX\sV-.*)\>$",
         "matches": 1,
-        "bg_colour": "black",
-        "colour": "green"
+        "tag": "green"
     },
     "WiFi AP Details": {
         "regex": r"^\<\*\sWifi\sAP\sSSID\s(.+?)\sPASS\s(.+?)\s\*\>$",
         "matches": 2,
-        "bg_colour": "black",
-        "colour": "blue"
+        "tag": "blue"
     },
     "WiFi AP IP": {
         "regex": r"^\<\*\sWifi\sAP\sIP\s(\d*\.\d*\.\d*\.\d*)\s\*\>$",
         "matches": 1,
-        "bg_colour": "black",
-        "colour": "orange"
+        "tag": "orange"
     },
     "Port": {
         "regex": r"^\<\*\sServer\swill\sbe\sstarted\son\sport\s(\d*)\s\*\>$",
         "matches": 1,
-        "bg_colour": "black",
-        "colour": "orange"
+        "tag": "orange"
     }
 }
 
@@ -143,6 +138,20 @@ class SerialMonitor(ctk.CTkToplevel):
                                              fg_color="#E5E5E5", border_color="#00A3B9")
         self.output_textbox.grid(column=0, row=0, sticky="nsew")
 
+        # Create highlighter tags
+        self.output_textbox.tag_add("green", "end")
+        self.output_textbox.tag_config("green",
+                                       background="grey95",
+                                       foreground="green")
+        self.output_textbox.tag_add("blue", "end")
+        self.output_textbox.tag_config("blue",
+                                       background="grey95",
+                                       foreground="blue")
+        self.output_textbox.tag_add("orange", "end")
+        self.output_textbox.tag_config("orange",
+                                       background="grey95",
+                                       foreground="orange")
+
         # Create device frame widgets and layout
         self.device_label = ctk.CTkLabel(self.device_frame, text=None, font=instruction_font)
         self.device_label.grid(column=0, row=0, sticky="ew", padx=5, pady=5)
@@ -185,7 +194,9 @@ class SerialMonitor(ctk.CTkToplevel):
                 self.serial_port = serial.Serial(port, 115200)
             except serial.SerialException as e:
                 self.log.error(f"Failed to open serial connection: {e}")
+                self.output_textbox.configure(state="normal")
                 self.output_textbox.insert("insert", f"Failed to open serial connection: {e}")
+                self.output_textbox.configure(state="disabled")
                 return
 
             self.command_entry.configure(state="normal")
@@ -216,12 +227,14 @@ class SerialMonitor(ctk.CTkToplevel):
         for highlight in monitor_highlights.keys():
             regex = monitor_highlights[highlight]["regex"]
             matches = monitor_highlights[highlight]["matches"]
+            tag = monitor_highlights[highlight]["tag"]
             match = re.search(regex, output)
             if match and len(match.groups()) == matches:
                 for group in match.groups():
-                    print(f"Found {highlight}: {group}")
-                    # new_output = output.split(tag_text)
-                    # pprint(new_output)
+                    temp = output.split(group)
+                    self.output_textbox.insert("insert", temp[0])
+                    self.output_textbox.insert("insert", group, tag)
+                    output = temp[1]
         self.output_textbox.insert("insert", output + "\n")
         self.output_textbox.see("end")
         self.output_textbox.configure(state="disabled")
@@ -237,7 +250,9 @@ class SerialMonitor(ctk.CTkToplevel):
                 self.command_history.append(command_text)
             self.command_entry.configure(values=self.command_history)
             self.command_entry.set("")
+        self.output_textbox.configure(state="normal")
         self.output_textbox.insert("insert", command_text + "\n")
+        self.output_textbox.configure(state="disabled")
         self.output_textbox.see("end")
 
     def exception_handler(self, exc_type, exc_value, exc_traceback):
