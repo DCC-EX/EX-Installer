@@ -41,7 +41,8 @@ product_details = {
             "config.h"
         ],
         "other_config_files": [
-            r"(^myHal\.cpp$)",
+            "myHal.cpp",
+            "myFilter.cpp",
             r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
         ]
     },
