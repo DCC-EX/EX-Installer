@@ -7,7 +7,7 @@ import customtkinter as ctk
 import logging
 
 # Import local modules
-from .common_widgets import WindowLayout, FormattedTextbox, CreateToolTip
+from .common_widgets import WindowLayout, FormattedTextbox
 from . import images
 
 
@@ -44,18 +44,11 @@ class Welcome(WindowLayout):
         self.version_label = ctk.CTkLabel(self.welcome_frame, text=(f"Version {self.app_version}"),
                                           font=self.instruction_font)
 
-        # Debug switch
-        self.debug_switch = ctk.CTkSwitch(self.welcome_frame, text="Enable debug logging",
-                                          onvalue="on", offvalue="off", command=self.set_debug)
-        CreateToolTip(self.debug_switch,
-                      "Enabling this option turns on debug logging to the log file")
-
         # Layout frame
         grid_options = {"padx": 5, "pady": 5}
 
         self.welcome_textbox.grid(column=0, row=0, **grid_options)
         self.version_label.grid(column=0, row=20, sticky="s", **grid_options)
-        self.debug_switch.grid(column=0, row=20, sticky="se", **grid_options)
 
         self.set_text()
 
@@ -87,12 +80,3 @@ class Welcome(WindowLayout):
             "left of each page will allow you to go back and change your selections.)\n\n"
         )
         self.welcome_textbox.configure(state="disabled")
-
-    def set_debug(self):
-        """
-        Function to enable or disable debug logging
-        """
-        if self.debug_switch.get() == "on":
-            self.log.parent.setLevel(logging.DEBUG)
-        elif self.debug_switch.get() == "off":
-            self.log.parent.setLevel(logging.WARNING)

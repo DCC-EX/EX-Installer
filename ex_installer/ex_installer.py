@@ -116,6 +116,9 @@ class EXInstaller(ctk.CTk):
         self.info_menu.add_command(label="About", command=self.about)
         self.info_menu.add_command(label="DCC-EX Website", command=self.website)
         self.info_menu.add_command(label="EX-Installer Instructions", command=self.instructions)
+        self.enable_debug = ctk.StringVar(self, value="off")
+        self.info_menu.add_checkbutton(label="Enable debug logging", command=self.toggle_debug,
+                                       variable=self.enable_debug, onvalue="on", offvalue="off")
         self.menubar.add_cascade(label="Info", menu=self.info_menu)
         self.configure(menu=self.menubar)
 
@@ -253,3 +256,12 @@ class EXInstaller(ctk.CTk):
         Link to EX-Installer instructions from the Info menu
         """
         webbrowser.open_new("https://dcc-ex.com/ex-installer/index.html")
+
+    def toggle_debug(self):
+        """
+        Function to enable/disable debug logging from the menu
+        """
+        if self.enable_debug.get() == "on":
+            self.log.parent.setLevel(logging.DEBUG)
+        else:
+            self.log.parent.setLevel(logging.WARNING)
