@@ -7,11 +7,26 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.13"
+ex_installer_version = "0.0.14"
 
 """
 Version history:
 
+0.0.14      - Add timeout for Arduino CLI threads, default 5 minutes
+            - Split compile/upload process out to show output of each phase
+            - Add support for EX-Turntable
+            - Improve error detection/handling for Arduino CLI commands
+            - Fix bug where closing app with device monitor open waits for thread join and errors
+            - Set device manager output to read only
+            - Add option to backup generated config files to a selected folder
+            - Add highlights to device monitor for version and WiFi info
+            - Updated 4 row LCD definition for 20 columns
+            - Add option to power on/join at startup
+            - Revised EX-CommandStation configuration layout
+            - Updated optional config file list for EX-CommandStation to include my*.cpp
+            - Enable overriding current limit as introduced in 4.2.61
+            - Enable setting WiFi hostname in ST mode
+            - Enable setting loco/cab IDs in DC/DCX mode for TrackManager
 0.0.13      - Add EX-IOExpander support
             - Add WiFi password validation in EX-CommandStation configuration
             - Add command history to device monitor

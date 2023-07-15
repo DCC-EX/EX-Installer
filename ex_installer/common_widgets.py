@@ -82,6 +82,13 @@ class WindowLayout(ctk.CTkFrame):
         self.bold_instruction_font = ctk.CTkFont(family="Helvetica",
                                                  size=14,
                                                  weight="bold")
+        self.large_bold_instruction_font = ctk.CTkFont(family="Helvetica",
+                                                       size=16,
+                                                       weight="bold")
+        self.small_italic_instruction_font = ctk.CTkFont(family="Helvetica",
+                                                         size=12,
+                                                         weight="normal",
+                                                         slant="italic")
         self.title_font = ctk.CTkFont(family="Helvetica",
                                       size=30,
                                       weight="normal")

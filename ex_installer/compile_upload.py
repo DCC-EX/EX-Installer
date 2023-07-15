@@ -28,6 +28,7 @@ import logging
 from .common_widgets import WindowLayout
 from .product_details import product_details as pd
 from .file_manager import FileManager as fm
+from . import images
 
 
 class CompileUpload(WindowLayout):
@@ -83,23 +84,35 @@ class CompileUpload(WindowLayout):
                                           font=self.instruction_font)
         self.details_textbox = ctk.CTkTextbox(self.compile_upload_frame, border_width=2, border_spacing=5,
                                               fg_color="#E5E5E5", width=780, height=180, state="disabled")
+        self.backup_config_button = ctk.CTkButton(self.compile_upload_frame, width=200, height=50,
+                                                  text="Backup config files", font=self.action_button_font,
+                                                  command=self.show_backup_popup)
 
         # Layout frame
         grid_options = {"padx": 5, "pady": 5}
-        self.compile_upload_frame.grid_columnconfigure(0, weight=1)
+        self.compile_upload_frame.grid_columnconfigure((0, 1), weight=1)
         self.compile_upload_frame.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
-        self.intro_label.grid(column=0, row=0, **grid_options)
-        self.congrats_label.grid(column=0, row=0, **grid_options)
-        self.instruction_label.grid(column=0, row=1, **grid_options)
-        self.success_label.grid(column=0, row=1, **grid_options)
-        self.upload_button.grid(column=0, row=2, **grid_options)
-        self.details_label.grid(column=0, row=3, **grid_options)
-        self.details_textbox.grid(column=0, row=4, **grid_options)
+        self.intro_label.grid(column=0, row=0, columnspan=2, **grid_options)
+        self.congrats_label.grid(column=0, row=0, columnspan=2, **grid_options)
+        self.instruction_label.grid(column=0, row=1, columnspan=2, **grid_options)
+        self.success_label.grid(column=0, row=1, columnspan=2, **grid_options)
+        self.upload_button.grid(column=0, row=2, columnspan=2, **grid_options)
+        self.backup_config_button.grid(column=1, row=2, **grid_options)
+        self.details_label.grid(column=0, row=3, columnspan=2, **grid_options)
+        self.details_textbox.grid(column=0, row=4, columnspan=2, **grid_options)
 
         # Hide next and log buttons to start
         self.next_back.hide_log_button()
         self.next_back.hide_next()
         self.next_back.hide_monitor_button()
+
+        # Hide backup button to start
+        self.backup_config_button.grid_remove()
+
+        # Set next button up
+        self.next_back.set_next_text("Close EX-Installer")
+        self.next_back.set_next_command(sys.exit)
+        self.next_back.enable_next()
 
     def set_product(self, product):
         """
@@ -130,37 +143,57 @@ class CompileUpload(WindowLayout):
             self.next_back.set_back_text(f"Configure {pd[self.product]['product_name']}")
             self.next_back.set_back_command(lambda view=product: self.master.switch_view(view))
 
+    def show_backup_button(self):
+        self.upload_button.configure(text="Load again")
+        self.upload_button.grid_configure(columnspan=1)
+        self.backup_config_button.grid()
+
     def upload_software(self, event):
         """
         Function to start the upload process via the Arduino CLI
         """
+        device = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["name"]
+        fqbn = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"]
+        port = self.acli.detected_devices[self.acli.selected_device]["port"]
         if event == "upload_software":
             self.disable_input_states(self)
             self.set_details("")
-            self.process_start("uploading",
-                               f"Compiling and loading {pd[self.product]['product_name']} on to your device",
+            self.process_start("compiling",
+                               f"Compiling {pd[self.product]['product_name']} for your {device}",
                                "Upload_Software")
-            self.acli.upload_sketch(self.acli.cli_file_path(),
-                                    self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"],
-                                    self.acli.detected_devices[self.acli.selected_device]["port"],
-                                    self.install_dir,
-                                    self.queue)
+            self.acli.compile_sketch(self.acli.cli_file_path(), fqbn, self.install_dir, self.queue)
+        elif self.process_phase == "compiling":
+            if self.process_status == "success":
+                self.set_details(self.process_data)
+                self.process_start("uploading",
+                                   f"Loading {pd[self.product]['product_name']} on to your {device}",
+                                   "Upload_Software")
+                self.acli.upload_sketch(self.acli.cli_file_path(), fqbn, port, self.install_dir, self.queue)
+            elif self.process_status == "error":
+                self.set_details(self.process_data)
+                self.process_error(self.process_topic)
+                self.restore_input_states()
+                self.next_back.hide_monitor_button()
+                self.next_back.show_next()
+                self.next_back.show_log_button()
+                self.show_backup_button()
         elif self.process_phase == "uploading":
             if self.process_status == "success":
                 self.process_stop()
                 self.restore_input_states()
                 self.set_details(self.process_data)
                 self.upload_success()
+                self.next_back.hide_log_button()
+                self.next_back.show_monitor_button()
             elif self.process_status == "error":
                 self.process_error(self.process_topic)
                 self.restore_input_states()
                 self.set_details(self.process_data)
                 self.upload_error()
-            self.next_back.enable_next()
+                self.next_back.hide_monitor_button()
+                self.next_back.show_log_button()
             self.next_back.show_next()
-            self.next_back.set_next_text("Close EX-Installer")
-            self.next_back.set_next_command(sys.exit)
-            self.next_back.show_monitor_button()
+            self.show_backup_button()
 
     def upload_success(self):
         """
@@ -196,3 +229,118 @@ class CompileUpload(WindowLayout):
         self.details_textbox.delete("0.0", "end")
         self.details_textbox.insert("0.0", text)
         self.details_textbox.configure(state="disabled")
+
+    def show_backup_popup(self):
+        """
+        Function to show the message box to select the backup folder
+        """
+        if hasattr(self, "backup_popup") and self.backup_popup is not None and self.backup_popup.winfo_exists():
+            self.backup_popup.focus()
+        else:
+            self.backup_popup = ctk.CTkToplevel(self)
+            self.backup_popup.focus()
+            self.backup_popup.lift(self)
+
+            # Set icon and title
+            if sys.platform.startswith("win"):
+                self.backup_popup.after(250, lambda icon=images.DCC_EX_ICON_ICO: self.backup_popup.iconbitmap(icon))
+            self.backup_popup.title("Backup config files")
+            self.backup_popup.withdraw()
+            self.backup_popup.after(250, self.backup_popup.deiconify)
+            self.backup_popup.grid_columnconfigure(0, weight=1)
+            self.backup_popup.grid_rowconfigure(0, weight=1)
+            self.window_frame = ctk.CTkFrame(self.backup_popup, fg_color="grey95")
+            self.window_frame.grid_columnconfigure((0, 1, 2), weight=1)
+            self.window_frame.grid_rowconfigure((0, 1), weight=1)
+            self.window_frame.grid(column=0, row=0, sticky="nsew")
+            self.folder_label = ctk.CTkLabel(self.window_frame, text="Select the folder to store your config files:",
+                                             font=self.instruction_font)
+            self.status_frame = ctk.CTkFrame(self.window_frame, border_width=2)
+            self.status_label = ctk.CTkLabel(self.status_frame, text="Status:",
+                                             font=self.instruction_font)
+            self.status_text = ctk.CTkLabel(self.status_frame, text="Enter or select backup destination",
+                                            font=self.bold_instruction_font)
+            self.backup_path = ctk.StringVar(value=None)
+            self.backup_path_entry = ctk.CTkEntry(self.window_frame, textvariable=self.backup_path,
+                                                  width=300)
+            self.browse_button = ctk.CTkButton(self.window_frame, text="Browse",
+                                               width=80, command=self.browse_backup_dir)
+            self.backup_button = ctk.CTkButton(self.window_frame, width=200, height=50,
+                                               text="Backup files", font=self.action_button_font,
+                                               command=lambda overwrite=False: self.backup_config_files(overwrite))
+            self.overwrite_button = ctk.CTkButton(self.window_frame, width=200, height=50,
+                                                  text="Overwrite?", font=self.action_button_font,
+                                                  command=lambda overwrite=True: self.backup_config_files(overwrite))
+            self.folder_label.grid(column=0, row=0, padx=(10, 1), pady=(10, 5))
+            self.backup_path_entry.grid(column=1, row=0, padx=1, pady=(10, 5))
+            self.browse_button.grid(column=2, row=0, padx=(1, 10), pady=(10, 5))
+            self.backup_button.grid(column=0, row=1, columnspan=3, padx=10, pady=5)
+            self.overwrite_button.grid(column=0, row=1, columnspan=3, padx=10, pady=5)
+            self.overwrite_button.grid_remove()
+            self.status_frame.grid_columnconfigure((0, 1), weight=1)
+            self.status_frame.grid_rowconfigure(0, weight=1)
+            self.status_frame.grid(column=0, row=2, columnspan=3, sticky="nsew", padx=10, pady=(5, 10))
+            self.status_label.grid(column=0, row=0, padx=5, pady=5)
+            self.status_text.grid(column=1, row=0, padx=5, pady=5)
+
+    def browse_backup_dir(self):
+        """
+        Opens a directory browser dialogue to select the folder containing config files
+        """
+        directory = ctk.filedialog.askdirectory()
+        if directory:
+            self.backup_path.set(directory)
+            self.log.debug("Backup config to %s", directory)
+            self.backup_popup.focus()
+
+    def backup_config_files(self, overwrite):
+        """
+        Function to backup config files to the specified folder
+        """
+        if fm.is_valid_dir(self.backup_path.get()):
+            local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
+            install_dir = fm.get_install_dir(local_repo_dir)
+            check_list = fm.get_config_files(self.backup_path.get(), pd[self.product]["minimum_config_files"])
+            if hasattr(pd[self.product], "other_config_files"):
+                extra_check_list = fm.get_config_files(install_dir, pd[self.product]["other_config_files"])
+                if extra_check_list:
+                    check_list += extra_check_list
+            if check_list and not overwrite:
+                error_list = ", ".join(check_list)
+                message = ("Existing files found , click Overwrite to overwrite them\n" +
+                           f"Files found: {error_list}")
+                self.status_text.configure(text=message, text_color="orange")
+                self.backup_button.grid_remove()
+                self.overwrite_button.grid()
+                self.log.debug(message)
+            else:
+                copy_list = fm.get_config_files(install_dir, pd[self.product]["minimum_config_files"])
+                if copy_list:
+                    if "other_config_files" in pd[self.product]:
+                        extra_list = fm.get_config_files(install_dir, pd[self.product]["other_config_files"])
+                        if extra_list:
+                            copy_list += extra_list
+                    file_copy = fm.copy_config_files(install_dir, self.backup_path.get(), copy_list)
+                    if file_copy:
+                        file_list = ", ".join(file_copy)
+                        self.status_text.configure(text=f"Failed to copy one or more files: {file_list}",
+                                                   text_color="red")
+                        self.log.error("Failed to copy: %s", file_list)
+                    else:
+                        self.status_text.configure(text="Backup successful", text_color="green")
+                        self.log.debug("Backup successful")
+                else:
+                    self.status_text.configure("Selected configuration directory is missing the required files",
+                                               text_color="red")
+                    self.log.error("Directory %s is missing required files", self.config_path.get())
+                self.overwrite_button.grid_remove()
+                self.backup_button.grid()
+        else:
+            if self.backup_path.get() == "":
+                message = "You must specific a valid folder to backup to"
+            else:
+                message = f"{self.backup_path.get()} is not a valid directory"
+            self.status_text.configure(text=message,
+                                       text_color="red")
+            self.overwrite_button.grid_remove()
+            self.backup_button.grid()

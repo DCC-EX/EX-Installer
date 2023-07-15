@@ -37,20 +37,21 @@ class EXCommandStation(WindowLayout):
     """
 
     hardware_text = ("Select the appropriate options on this page to suit the hardware devices you are using with " +
-                     "your EX-CommandStation device.\n\n")
+                     "your EX-CommandStation device.\n\n" +
+                     "If you are enabling WiFi or configuring TrackManager, enable the appropriate option and " +
+                     "navigate to the appropriate tab to configure the relevant options.")
 
     # List of supported displays and config lines for config.h
     supported_displays = {
-        "LCD - 16 columns x 2 rows": "#define LCD_DRIVER 0x27,16,2",
-        "LCD 16 columns x 4 rows": "#define LCD_DRIVER  0x27,16,4",
-        "OLED 128 x 32": "#define OLED_DRIVER 128,32",
-        "OLED 128 x 64": "#define OLED_DRIVER 128,64"
+        "LCD 16 columns x 2 rows": "#define LCD_DRIVER 0x27,16,2\n",
+        "LCD 20 columns x 4 rows": "#define LCD_DRIVER 0x27,20,4\n",
+        "OLED 128 x 32": "#define OLED_DRIVER 128,32\n",
+        "OLED 128 x 64": "#define OLED_DRIVER 128,64\n"
     }
 
     # List of default config options to include in config.h
     default_config_options = [
         '#define IP_PORT 2560\n',
-        '#define WIFI_HOSTNAME "dccex"\n',
         '#define SCROLLMODE 1\n'
     ]
     # List of default myAutomation options to include in myAutomation.h (none for now)
@@ -122,11 +123,17 @@ class EXCommandStation(WindowLayout):
                 if patch is not None:
                     self.product_patch_version = patch
         if self.product_major_version >= 4 and self.product_minor_version >= 2:
-            self.track_modes_switch.grid()
+            self.track_modes_switch.configure(state="normal")
         else:
             self.track_modes_switch.deselect()  # make sure it's off
-            self.track_modes_switch.grid_remove()
+            self.track_modes_switch.configure(state="disabled")
+        if self.product_major_version >= 4 and self.product_minor_version >= 2 and self.product_patch_version >= 61:
+            self.override_current_limit.configure(state="normal")
+        else:
+            self.override_current_limit.deselect()
+            self.override_current_limit.configure(state="disabled")
         self.set_track_modes()
+        self.current_override()
 
     def setup_config_frame(self):
         """
@@ -150,60 +157,125 @@ class EXCommandStation(WindowLayout):
                         "these unless you're comfortable you know what you're doing.")
         track_tip = ("To make use of the new TrackManager feature, you will need to enable this option and set the " +
                      "appropriate mode for each motor driver output. Click this tip to be redirected to our website " +
-                     "for further information.")
+                     "for further information. If this option is disabled, the version you have selected does not " +
+                     "include TrackManager features.")
+        power_tip = ("To enable track power to be on during startup, enable this option. Note that it will also join " +
+                     "the programming and main tracks.")
+        current_tip = ("It is possible to define a custom current limit for the motor driver by enabling this option " +
+                       "and specifying a new limit in mA. If this option is disabled, the version you have selected " +
+                       "does not have this feature available.")
 
         # Set up hardware instruction label
         self.hardware_label = ctk.CTkLabel(self.config_frame, text=self.hardware_text,
                                            wraplength=780, font=self.instruction_font)
 
+        # Setup tabview for config options
+        self.config_tabview = ctk.CTkTabview(self.config_frame, border_width=2,
+                                             segmented_button_fg_color="#00A3B9",
+                                             segmented_button_unselected_color="#00A3B9",
+                                             segmented_button_selected_color="#00353D",
+                                             segmented_button_selected_hover_color="#017E8F",
+                                             text_color="white")
+        tab_list = [
+            "General",
+            "WiFi Options",
+            "TrackManager Config"
+        ]
+        for tab in tab_list:
+            self.config_tabview.add(tab)
+            self.config_tabview.tab(tab).grid_columnconfigure(0, weight=1)
+            self.config_tabview.tab(tab).grid_rowconfigure(0, weight=1)
+
+        # Tab frames
+        tab_frame_options = {"column": 0, "row": 0, "sticky": "nsew"}
+        self.general_tab_frame = ctk.CTkFrame(self.config_tabview.tab("General"), border_width=0)
+        self.general_tab_frame.grid(**tab_frame_options)
+        self.wifi_tab_frame = ctk.CTkFrame(self.config_tabview.tab("WiFi Options"), border_width=0)
+        self.wifi_tab_frame.grid(**tab_frame_options)
+        self.track_tab_frame = ctk.CTkFrame(self.config_tabview.tab("TrackManager Config"), border_width=0)
+        self.track_tab_frame.grid(**tab_frame_options)
+
+        # Create options frames
+        self.switch_frame = ctk.CTkFrame(self.general_tab_frame, border_width=0)
+        self.options_frame = ctk.CTkFrame(self.general_tab_frame, border_width=0)
+
         # Set up motor driver widgets
-        self.motor_driver_label = ctk.CTkLabel(self.config_frame, text="Select your motor driver")
-        self.motor_driver_combo = ctk.CTkComboBox(self.config_frame, values=["Select motor driver"],
+        self.motor_driver_label = ctk.CTkLabel(self.options_frame, text="Select your motor driver:",
+                                               font=self.instruction_font)
+        self.motor_driver_combo = ctk.CTkComboBox(self.options_frame, values=["Select motor driver"],
                                                   width=300, command=self.check_motor_driver)
         CreateToolTip(self.motor_driver_combo, motor_tip,
                       "https://dcc-ex.com/reference/hardware/motor-boards.html")
 
         # Set up display widgets
+        self.display_type_label = ctk.CTkLabel(self.options_frame, text="Select display type (if in use):",
+                                               font=self.instruction_font)
         self.display_enabled = ctk.StringVar(self, value="off")
-        self.display_switch = ctk.CTkSwitch(self.config_frame, text="I have a display", width=150,
+        self.display_type = ctk.StringVar(self)
+        self.display_switch = ctk.CTkSwitch(self.switch_frame, text="I have a display", width=200,
                                             onvalue="on", offvalue="off", variable=self.display_enabled,
-                                            command=self.set_display)
+                                            command=self.set_display, font=self.instruction_font)
         CreateToolTip(self.display_switch, display_tip,
                       "https://dcc-ex.com/reference/hardware/i2c-displays.html")
-        self.display_combo = ctk.CTkComboBox(self.config_frame, values=list(self.supported_displays),
-                                             width=300)
+        self.display_radio_frame = ctk.CTkFrame(self.options_frame, fg_color="#D9D9D9", border_width=0)
+        row = 0
+        for display in self.supported_displays.keys():
+            display_radio = ctk.CTkRadioButton(self.display_radio_frame, text=display, variable=self.display_type,
+                                               font=self.instruction_font, value=self.supported_displays[display],
+                                               width=200)
+            display_radio.grid(column=0, row=row, sticky="w", **grid_options)
+            if row == 0:
+                display_radio.select()
+            row += 1
+
+        # Set up current limit widgets
+        self.override_current_limit = ctk.CTkSwitch(self.switch_frame, text="Override current limit",
+                                                    onvalue="on", offvalue="off",
+                                                    width=200, command=self.current_override,
+                                                    font=self.instruction_font)
+        CreateToolTip(self.override_current_limit, current_tip)
+        self.current_limit = ctk.StringVar(self, value="")
+        self.current_limit_label = ctk.CTkLabel(self.options_frame, text="Specify current limit in mA:",
+                                                font=self.instruction_font)
+        self.current_limit_entry = ctk.CTkEntry(self.options_frame, textvariable=self.current_limit,
+                                                width=50, fg_color="white")
 
         # Set up WiFi widgets
         self.wifi_type = ctk.IntVar(self, value=0)
         self.wifi_channel = ctk.StringVar(self, value=1)
         self.wifi_enabled = ctk.StringVar(self, value="off")
-        self.wifi_frame = ctk.CTkFrame(self.config_frame, border_width=0)
-        self.wifi_switch = ctk.CTkSwitch(self.config_frame, text="I have WiFi", width=150,
+        self.wifi_switch = ctk.CTkSwitch(self.switch_frame, text="I have WiFi", width=200,
                                          onvalue="on", offvalue="off", variable=self.wifi_enabled,
-                                         command=self.set_wifi)
+                                         command=self.set_wifi, font=self.instruction_font)
         CreateToolTip(self.wifi_switch, wifi_tip,
                       "https://dcc-ex.com/ex-commandstation/advanced-setup/supported-wifi/index.html")
-        self.wifi_options_frame = ctk.CTkFrame(self.wifi_frame,
-                                               border_width=2,
-                                               fg_color="#E5E5E5")
-        self.wifi_ap_radio = ctk.CTkRadioButton(self.wifi_options_frame,
+        self.wifi_options_frame = ctk.CTkFrame(self.wifi_tab_frame, border_width=0)
+        self.wifi_ap_radio = ctk.CTkRadioButton(self.wifi_options_frame, width=400,
                                                 text="Use my EX-CommandStation as an access point",
                                                 variable=self.wifi_type,
                                                 command=self.set_wifi_widgets,
                                                 value=0)
-        self.wifi_st_radio = ctk.CTkRadioButton(self.wifi_options_frame,
+        self.wifi_st_radio = ctk.CTkRadioButton(self.wifi_options_frame, width=400,
                                                 text="Connect my EX-CommandStation to my existing wireless network",
                                                 variable=self.wifi_type,
                                                 command=self.set_wifi_widgets,
                                                 value=1)
-        self.wifi_ssid_label = ctk.CTkLabel(self.wifi_options_frame, text="WiFi SSID:")
-        self.wifi_ssid_entry = ctk.CTkEntry(self.wifi_options_frame,  # textvariable=self.wifi_ssid,
+        self.wifi_ssid_label = ctk.CTkLabel(self.wifi_options_frame, text="WiFi SSID:",
+                                            font=self.instruction_font)
+        self.wifi_ssid_entry = ctk.CTkEntry(self.wifi_options_frame,
                                             placeholder_text="Enter your WiFi SSID/name",
-                                            width=200, fg_color="white")
-        self.wifi_pwd_label = ctk.CTkLabel(self.wifi_options_frame, text="WiFi Password:")
-        self.wifi_pwd_entry = ctk.CTkEntry(self.wifi_options_frame,  # textvariable=self.wifi_pwd,
+                                            width=200, fg_color="white", font=self.instruction_font)
+        self.wifi_pwd_label = ctk.CTkLabel(self.wifi_options_frame, text="WiFi Password:",
+                                           font=self.instruction_font)
+        self.wifi_hostname = ctk.StringVar(self, value="dccex")
+        self.wifi_pwd_entry = ctk.CTkEntry(self.wifi_options_frame,
                                            placeholder_text="Enter your WiFi password",
-                                           width=200, fg_color="white")
+                                           width=200, fg_color="white", font=self.instruction_font)
+        self.wifi_hostname_label = ctk.CTkLabel(self.wifi_options_frame, text="WiFi hostname:",
+                                                font=self.instruction_font)
+        self.wifi_hostname_entry = ctk.CTkEntry(self.wifi_options_frame, textvariable=self.wifi_hostname,
+                                                width=200, fg_color="white",
+                                                font=self.instruction_font)
         self.wifi_channel_frame = ctk.CTkFrame(self.wifi_options_frame, border_width=0, fg_color="#E5E5E5")
         self.wifi_channel_label = ctk.CTkLabel(self.wifi_channel_frame, text="Select WiFi channel:")
         self.wifi_channel_minus = ctk.CTkButton(self.wifi_channel_frame, text="-", width=30,
@@ -211,91 +283,141 @@ class EXCommandStation(WindowLayout):
         self.wifi_channel_plus = ctk.CTkButton(self.wifi_channel_frame, text="+", width=30,
                                                command=self.increment_channel)
         self.wifi_channel_entry = ctk.CTkEntry(self.wifi_channel_frame, textvariable=self.wifi_channel,
-                                               width=30, fg_color="white", state="disabled", justify="center")
+                                               width=30, fg_color="white", state="disabled", justify="center",
+                                               font=self.instruction_font)
 
         # Ethernet switch
         self.ethernet_enabled = ctk.StringVar(self, value="off")
-        self.ethernet_switch = ctk.CTkSwitch(self.config_frame, text="I have ethernet", width=150,
+        self.ethernet_switch = ctk.CTkSwitch(self.switch_frame, text="I have ethernet", width=200,
                                              onvalue="on", offvalue="off", variable=self.ethernet_enabled,
-                                             command=self.set_ethernet)
+                                             command=self.set_ethernet, font=self.instruction_font)
         CreateToolTip(self.ethernet_switch, ethernet_tip,
                       "https://dcc-ex.com/reference/hardware/ethernet-boards.html")
 
         # Track Manager Options
         self.track_modes_enabled = ctk.StringVar(self, value="off")
-        self.track_modes_switch = ctk.CTkSwitch(self.config_frame, text="Set track modes", width=150,
+        self.track_modes_switch = ctk.CTkSwitch(self.switch_frame, text="Configure TrackManager", width=200,
                                                 onvalue="on", offvalue="off", variable=self.track_modes_enabled,
-                                                command=self.set_track_modes)
+                                                command=self.set_track_modes, font=self.instruction_font)
         CreateToolTip(self.track_modes_switch, track_tip,
                       "https://dcc-ex.com/under-development/track-manager.html")
-        self.track_modes_frame = ctk.CTkFrame(self.config_frame, border_width=2, fg_color="#E5E5E5")
-        self.track_a_label = ctk.CTkLabel(self.track_modes_frame, text="Track A:")
+        self.track_modes_frame = ctk.CTkFrame(self.track_tab_frame, border_width=0)
+        self.track_a_label = ctk.CTkLabel(self.track_modes_frame, text="Track A:", font=self.instruction_font)
         self.track_a_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
-                                             width=100)
+                                             width=100, font=self.instruction_font, command=self.set_a_mode)
+        self.track_a_id = ctk.StringVar(self, value="1")
+        self.track_a_id_label = ctk.CTkLabel(self.track_modes_frame, text="Track A loco/cab ID:",
+                                             font=self.instruction_font)
+        self.track_a_entry = ctk.CTkEntry(self.track_modes_frame, textvariable=self.track_a_id,
+                                          font=self.instruction_font, width=60, fg_color="white")
         self.track_b_label = ctk.CTkLabel(self.track_modes_frame, text="Track B:")
         self.track_b_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
-                                             width=100)
+                                             width=100, font=self.instruction_font, command=self.set_b_mode)
+        self.track_b_id = ctk.StringVar(self, value="2")
+        self.track_b_id_label = ctk.CTkLabel(self.track_modes_frame, text="Track B loco/cab ID:",
+                                             font=self.instruction_font)
+        self.track_b_entry = ctk.CTkEntry(self.track_modes_frame, textvariable=self.track_b_id,
+                                          font=self.instruction_font, width=60, fg_color="white")
         self.track_b_combo.set("MAIN")  # default to MAIN and PROG
         self.track_b_combo.set("PROG")
 
-        # advanced configuration option
+        # Set track power on startup
+        self.power_on_switch = ctk.CTkSwitch(self.switch_frame, text="Start with power on", width=200,
+                                             onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.power_on_switch, power_tip)
+
+        # Advanced configuration option
         self.advanced_config_enabled = ctk.StringVar(self, value="off")
-        self.advanced_config_switch = ctk.CTkSwitch(self.config_frame, text="Advanced Config", width=150,
+        self.advanced_config_switch = ctk.CTkSwitch(self.switch_frame, text="Advanced Config", width=200,
                                                     onvalue="on", offvalue="off", variable=self.advanced_config_enabled,
-                                                    command=self.set_advanced_config)
+                                                    command=self.set_advanced_config, font=self.instruction_font)
         CreateToolTip(self.advanced_config_switch, advanced_tip)
-        self.advanced_config_label = ctk.CTkLabel(self.config_frame,
-                                                  text="Config files can be directly edited on next screen")
 
         # Layout wifi_frame
-        self.wifi_frame.grid_columnconfigure((0, 1), weight=1)
-        self.wifi_frame.grid_rowconfigure(0, weight=1)
+        self.wifi_tab_frame.grid_columnconfigure((0, 1), weight=1)
+        self.wifi_tab_frame.grid_rowconfigure(0, weight=1)
         self.wifi_options_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.wifi_options_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
         self.wifi_channel_frame.grid_columnconfigure(0, weight=1)
         self.wifi_channel_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
         self.wifi_options_frame.grid(column=1, row=0)
-        self.wifi_ap_radio.grid(column=0, row=0, columnspan=4, sticky="w", **grid_options)
-        self.wifi_st_radio.grid(column=0, row=1, columnspan=4, sticky="w", **grid_options)
-        self.wifi_ssid_label.grid(column=0, row=2, **grid_options)
-        self.wifi_ssid_entry.grid(column=1, row=2, **grid_options)
-        self.wifi_pwd_label.grid(column=2, row=2, **grid_options)
-        self.wifi_pwd_entry.grid(column=3, row=2, **grid_options)
-        self.wifi_channel_frame.grid(column=0, row=2, **grid_options)
+        self.wifi_ap_radio.grid(column=0, row=0, columnspan=4, **grid_options)
+        self.wifi_st_radio.grid(column=0, row=1, columnspan=4, **grid_options)
+        self.wifi_ssid_label.grid(column=0, row=2, sticky="e", **grid_options)
+        self.wifi_ssid_entry.grid(column=1, row=2, sticky="w", **grid_options)
+        self.wifi_pwd_label.grid(column=2, row=2, sticky="e", **grid_options)
+        self.wifi_pwd_entry.grid(column=3, row=2, sticky="w", **grid_options)
+        self.wifi_hostname_label.grid(column=0, row=3, sticky="e", **grid_options)
+        self.wifi_hostname_entry.grid(column=1, row=3, sticky="w", **grid_options)
+        self.wifi_channel_frame.grid(column=0, row=2, columnspan=2, **grid_options)
         self.wifi_channel_label.grid(column=0, row=0, **grid_options)
         self.wifi_channel_minus.grid(column=1, row=0, sticky="e")
         self.wifi_channel_entry.grid(column=2, row=0)
         self.wifi_channel_plus.grid(column=3, row=0, sticky="w", padx=(0, 5))
 
-        # layout track_frame
-        self.track_a_label.grid(column=0, row=0, stick="e", **grid_options)
+        # Layout switch frame
+        self.display_switch.grid(column=0, row=0, **grid_options)
+        self.wifi_switch.grid(column=0, row=1, **grid_options)
+        self.ethernet_switch.grid(column=0, row=2, **grid_options)
+        self.track_modes_switch.grid(column=0, row=3, **grid_options)
+        self.power_on_switch.grid(column=0, row=4, **grid_options)
+        self.override_current_limit.grid(column=0, row=5, **grid_options)
+        self.advanced_config_switch.grid(column=0, row=6, **grid_options)
+
+        # Layout options frame
+        self.options_frame.grid_columnconfigure((0, 1), weight=1)
+        self.options_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
+        self.motor_driver_label.grid(column=0, row=0, sticky="e", **grid_options)
+        self.motor_driver_combo.grid(column=1, row=0, sticky="w", **grid_options)
+        self.display_type_label.grid(column=0, row=1, columnspan=2, sticky="w", padx=5, pady=(5, 1))
+        self.display_radio_frame.grid(column=0, row=2, columnspan=2, sticky="w", padx=5, pady=(1, 5))
+        self.current_limit_label.grid(column=0, row=3, sticky="e", **grid_options)
+        self.current_limit_entry.grid(column=1, row=3, sticky="w", **grid_options)
+
+        # Layout track_frame
+        self.track_tab_frame.grid_columnconfigure(0, weight=1)
+        self.track_tab_frame.grid_rowconfigure(0, weight=1)
+        self.track_modes_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        self.track_modes_frame.grid_rowconfigure((0, 1), weight=1)
+        self.track_a_label.grid(column=0, row=0, sticky="e", **grid_options)
         self.track_a_combo.grid(column=1, row=0, sticky="w", **grid_options)
-        self.track_b_label.grid(column=0, row=1, stick="e", **grid_options)
+        self.track_a_id_label.grid(column=2, row=0, sticky="e", **grid_options)
+        self.track_a_entry.grid(column=3, row=0, sticky="w", **grid_options)
+        self.track_b_label.grid(column=0, row=1, sticky="e", **grid_options)
         self.track_b_combo.grid(column=1, row=1, sticky="w", **grid_options)
+        self.track_b_id_label.grid(column=2, row=1, sticky="e", **grid_options)
+        self.track_b_entry.grid(column=3, row=1, sticky="w", **grid_options)
+
+        # Layout general tab
+        self.general_tab_frame.grid_columnconfigure(0, weight=1)
+        self.general_tab_frame.grid_columnconfigure(1, weight=2)
+        self.general_tab_frame.grid_rowconfigure(0, weight=1)
+        self.switch_frame.grid(column=0, row=0, **grid_options)
+        self.options_frame.grid(column=1, row=0, **grid_options)
+
+        # Layout WiFi tab
+        self.wifi_options_frame.grid(column=0, row=0, sticky="nsew")
+
+        # Layout TrackManager tab
+        self.track_modes_frame.grid(column=0, row=0, sticky="nsew")
 
         # Layout config_frame
-        self.hardware_label.grid(column=0, row=2, columnspan=2, **grid_options)
-        self.motor_driver_label.grid(column=0, row=3, stick="e", **grid_options)
-        self.motor_driver_combo.grid(column=1, row=3, sticky="w", **grid_options)
-        self.display_switch.grid(column=0, row=4, sticky="e", **grid_options)
-        self.display_combo.grid(column=1, row=4, sticky="w", **grid_options)
-        self.wifi_switch.grid(column=0, row=5, sticky="e", **grid_options)
-        self.wifi_frame.grid(column=1, row=5, sticky="w", **grid_options)
-        self.ethernet_switch.grid(column=0, row=6, sticky="e", **grid_options)
-        self.track_modes_switch.grid(column=0, row=7, sticky="e", **grid_options)
-        self.track_modes_frame.grid(column=1, row=7, sticky="w", **grid_options)
-        self.advanced_config_switch.grid(column=0, row=8, sticky="e", **grid_options)
-        self.advanced_config_label.grid(column=1, row=8, sticky="w", **grid_options)
+        self.config_frame.grid_columnconfigure(0, weight=1)
+        self.config_frame.grid_rowconfigure(1, weight=1)
+        self.hardware_label.grid(column=0, row=0, **grid_options)
+        self.config_tabview.grid(column=0, row=1, sticky="nsew", **grid_options)
 
     def set_display(self):
         """
         Sets display options on or off
         """
         if self.display_switch.get() == "on":
-            self.display_combo.grid()
+            for widget in self.display_radio_frame.winfo_children():
+                widget.configure(state="normal")
             self.log.debug("Display enabled")
         else:
-            self.display_combo.grid_remove()
+            for widget in self.display_radio_frame.winfo_children():
+                widget.configure(state="disabled")
             self.log.debug("Display disabled")
 
     def set_track_modes(self):
@@ -303,11 +425,35 @@ class EXCommandStation(WindowLayout):
         Sets track mode options on or off
         """
         if self.track_modes_switch.get() == "on":
-            self.track_modes_frame.grid()
+            self.config_tabview._segmented_button._buttons_dict["TrackManager Config"].configure(state="normal")
             self.log.debug("Track modes frame shown")
         else:
-            self.track_modes_frame.grid_remove()
+            self.config_tabview._segmented_button._buttons_dict["TrackManager Config"].configure(state="disabled")
             self.log.debug("Track modes frame hidden")
+        self.set_a_mode()
+        self.set_b_mode()
+
+    def set_a_mode(self, event=None):
+        """
+        If setting track A to DC or DCX, allow setting loco/cab ID
+        """
+        if self.track_a_combo.get() == "DC" or self.track_a_combo.get() == "DCX":
+            self.track_a_id_label.grid()
+            self.track_a_entry.grid()
+        else:
+            self.track_a_id_label.grid_remove()
+            self.track_a_entry.grid_remove()
+
+    def set_b_mode(self, event=None):
+        """
+        If setting track B to DC or DCX, allow setting loco/cab ID
+        """
+        if self.track_b_combo.get() == "DC" or self.track_b_combo.get() == "DCX":
+            self.track_b_id_label.grid()
+            self.track_b_entry.grid()
+        else:
+            self.track_b_id_label.grid_remove()
+            self.track_b_entry.grid_remove()
 
     def set_advanced_config(self):
         """
@@ -315,12 +461,10 @@ class EXCommandStation(WindowLayout):
         """
         if self.advanced_config_switch.get() == "on":
             self.master.advanced_config = True
-            self.advanced_config_label.grid()
             self.next_back.set_next_text("Advanced Config")
             self.log.debug("Manual Edit enabled")
         else:
             self.master.advanced_config = False
-            self.advanced_config_label.grid_remove()
             self.next_back.set_next_text("Compile and load")
             self.log.debug("Manual Edit disabled")
 
@@ -331,11 +475,11 @@ class EXCommandStation(WindowLayout):
         if self.wifi_switch.get() == "on":
             if self.ethernet_switch.get() == "on":
                 self.ethernet_switch.deselect()
-            self.wifi_frame.grid()
+            self.config_tabview._segmented_button._buttons_dict["WiFi Options"].configure(state="normal")
             self.set_wifi_widgets()
             self.log.debug("WiFi enabled")
         else:
-            self.wifi_frame.grid_remove()
+            self.config_tabview._segmented_button._buttons_dict["WiFi Options"].configure(state="disabled")
             self.log.debug("WiFi disabled")
 
     def set_wifi_widgets(self):
@@ -345,6 +489,8 @@ class EXCommandStation(WindowLayout):
         if self.wifi_type.get() == 0:
             self.wifi_ssid_label.grid_remove()
             self.wifi_ssid_entry.grid_remove()
+            self.wifi_hostname_label.grid_remove()
+            self.wifi_hostname_entry.grid_remove()
             self.wifi_channel_frame.grid()
             if self.wifi_pwd_entry.get() == "":
                 self.wifi_pwd_entry.configure(placeholder_text="Custom WiFi password")
@@ -352,6 +498,8 @@ class EXCommandStation(WindowLayout):
         elif self.wifi_type.get() == 1:
             self.wifi_ssid_label.grid()
             self.wifi_ssid_entry.grid()
+            self.wifi_hostname_label.grid()
+            self.wifi_hostname_entry.grid()
             self.wifi_channel_frame.grid_remove()
             if self.wifi_pwd_entry.get() == "":
                 self.wifi_pwd_entry.configure(placeholder_text="Enter your WiFi password")
@@ -435,7 +583,7 @@ class EXCommandStation(WindowLayout):
         If in access point mode:
         - Must be between 8 and 64 characters
 
-        In either mode, must not contain \ or "
+        In either mode, must not contain \ or "  # noqa: W605
 
         Returns tuple of (True|False, message)
         """
@@ -457,6 +605,17 @@ class EXCommandStation(WindowLayout):
             message = None
         return (invalid, message)
 
+    def current_override(self):
+        """
+        Function to enable overriding current limit
+        """
+        if self.override_current_limit.get() == "on":
+            self.current_limit_label.grid()
+            self.current_limit_entry.grid()
+        else:
+            self.current_limit_label.grid_remove()
+            self.current_limit_entry.grid_remove()
+
     def generate_config(self):
         """
         Function to validate options and return any errors
@@ -473,12 +632,10 @@ class EXCommandStation(WindowLayout):
             line = "#define MOTOR_SHIELD_TYPE " + self.motor_driver_combo.get() + "\n"
             config_list.append(line)
         if self.display_switch.get() == "on":
-            if not self.display_combo.get():
-                param_errors.append("Display type not selected")
-            else:
-                line = self.supported_displays[self.display_combo.get()] + "\n"
-                config_list.append(line)
+            config_list.append(self.display_type.get())
         if self.wifi_switch.get() == "on":
+            line = '#define WIFI_HOSTNAME "' + self.wifi_hostname.get() + '"\n'
+            config_list.append(line)
             if self.wifi_type.get() == 0:
                 config_list.append('#define WIFI_SSID "Your network name"\n')
                 if self.wifi_pwd_entry.get() == "":
@@ -519,6 +676,13 @@ class EXCommandStation(WindowLayout):
                 param_errors.append("Can not have both Ethernet and WiFi enabled")
             else:
                 config_list.append("#define ENABLE_ETHERNET true\n")
+        if self.override_current_limit.get() == "on":
+            try:
+                int(self.current_limit.get())
+            except Exception:
+                param_errors.append("Current limit must be a number in mA")
+            else:
+                config_list.append(f"#define MAX_CURRENT {self.current_limit.get()}\n")
         if len(param_errors) > 0:
             self.log.error("Missing parameters: %s", param_errors)
             return (False, param_errors)
@@ -537,23 +701,42 @@ class EXCommandStation(WindowLayout):
         param_errors = []
         config_list = []
 
-        # if Track Modes not enabled, return empty list
-        if self.track_modes_enabled.get() == "off":
-            return (True, config_list)
+        # Enable join on startup if enabled
+        if self.power_on_switch.get() == "on":
+            config_list.append("AUTOSTART\n")
+            config_list.append("JOIN\n")
+            config_list.append("DONE\n\n")
 
         # write out trackmanager config, including roster entries if DCx
-        if (self.track_a_combo.get().startswith("DC")):
-            line = "AUTOSTART SETLOCO(1) SET_TRACK(A," + self.track_a_combo.get() + ") DONE\n"
-            line += "ROSTER(1,\"DC TRACK A\",\"/* /\")\n"
-        else:
-            line = "AUTOSTART SET_TRACK(A," + self.track_a_combo.get() + ") DONE\n"
-        config_list.append(line)
-        if (self.track_b_combo.get().startswith("DC")):
-            line = "AUTOSTART SETLOCO(2) SET_TRACK(B," + self.track_b_combo.get() + ") DONE\n"
-            line += "ROSTER(2,\"DC TRACK B\",\"/* /\")\n"
-        else:
-            line = "AUTOSTART SET_TRACK(B," + self.track_b_combo.get() + ") DONE\n"
-        config_list.append(line)
+        if self.track_modes_enabled.get() == "on":
+            try:
+                int(self.track_a_id.get())
+            except Exception:
+                param_errors.append("Track A loco/cab ID must be from 1 to 10293")
+            else:
+                if int(self.track_a_id.get()) < 1 or int(self.track_a_id.get()) > 10293:
+                    param_errors.append("Track A loco/cab ID must be from 1 to 10293")
+            try:
+                int(self.track_b_id.get())
+            except Exception:
+                param_errors.append("Track B loco/cab ID must be from 1 to 10293")
+            else:
+                if int(self.track_b_id.get()) < 1 or int(self.track_b_id.get()) > 10293:
+                    param_errors.append("Track B loco/cab ID must be from 1 to 10293")
+            if (self.track_a_combo.get().startswith("DC")):
+                line = (f"AUTOSTART SETLOCO({self.track_a_id.get()}) SET_TRACK(A," + self.track_a_combo.get() + ") " +
+                        "DONE\n")
+                line += f"ROSTER({self.track_a_id.get()},\"DC TRACK A\",\"/* /\")\n"
+            else:
+                line = "AUTOSTART SET_TRACK(A," + self.track_a_combo.get() + ") DONE\n"
+            config_list.append(line)
+            if (self.track_b_combo.get().startswith("DC")):
+                line = (f"AUTOSTART SETLOCO({self.track_b_id.get()}) SET_TRACK(B," + self.track_b_combo.get() + ") " +
+                        "DONE\n")
+                line += f"ROSTER({self.track_b_id.get()},\"DC TRACK B\",\"/* /\")\n"
+            else:
+                line = "AUTOSTART SET_TRACK(B," + self.track_b_combo.get() + ") DONE\n"
+            config_list.append(line)
 
         if len(param_errors) > 0:
             self.log.error("Missing parameters: %s", param_errors)
