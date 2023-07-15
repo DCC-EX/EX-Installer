@@ -21,6 +21,12 @@ Version history:
             - Add option to backup generated config files to a selected folder
             - Add highlights to device monitor for version and WiFi info
             - Updated 4 row LCD definition for 20 columns
+            - Add option to power on/join at startup
+            - Revised EX-CommandStation configuration layout
+            - Updated optional config file list for EX-CommandStation to include my*.cpp
+            - Enable overriding current limit as introduced in 4.2.61
+            - Enable setting WiFi hostname in ST mode
+            - Enable setting loco/cab IDs in DC/DCX mode for TrackManager
 0.0.13      - Add EX-IOExpander support
             - Add WiFi password validation in EX-CommandStation configuration
             - Add command history to device monitor

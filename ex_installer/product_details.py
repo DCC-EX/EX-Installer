@@ -41,7 +41,7 @@ product_details = {
             "config.h"
         ],
         "other_config_files": [
-            r"(^myHal\.cpp$)",
+            r"^my.*\.[^?]*example\.cpp$|(^my.*\.cpp$)",
             r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
         ]
     },
