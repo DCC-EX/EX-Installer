@@ -270,6 +270,7 @@ class SerialMonitor(ctk.CTkToplevel):
                     output = temp[1]
         self.output_textbox.insert("insert", output + "\n")
         self.output_textbox.see("end")
+        self.output_textbox.update_idletasks()
         self.output_textbox.configure(state="disabled")
 
     def send_command(self, event=None):
