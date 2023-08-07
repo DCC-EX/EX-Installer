@@ -7,11 +7,13 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.14"
+ex_installer_version = "0.0.15"
 
 """
 Version history:
 
+0.0.15      - Update config directory browse to shows files as well as folders
+            - Validate user is not using EX-Installer generated config files
 0.0.14      - Add timeout for Arduino CLI threads, default 5 minutes
             - Split compile/upload process out to show output of each phase
             - Add support for EX-Turntable

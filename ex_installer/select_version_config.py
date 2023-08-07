@@ -303,10 +303,15 @@ class SelectVersionConfig(WindowLayout):
 
     def browse_configdir(self):
         """
-        Opens a directory browser dialogue to select the folder containing config files
+        Opens a file browser dialogue to allow user to select a config file to use
+
+        Uses directory of this file to set the config directory
+
+        This is a workaround for "askdirectory()" not showing files, which is confusing for users
         """
-        directory = ctk.filedialog.askdirectory()
-        if directory:
+        select_file = ctk.filedialog.askopenfilename()
+        if select_file:
+            directory = os.path.dirname(select_file)
             self.config_path.set(directory)
             self.config_option.set(1)
             self.set_next_config()
@@ -320,16 +325,21 @@ class SelectVersionConfig(WindowLayout):
         - Contains at least the specified minimum config files
         """
         if self.config_path.get():
-            config_files = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
-            if config_files:
-                self.next_back.enable_next()
-            else:
-                file_names = ", ".join(pd[self.product]["minimum_config_files"])
-                self.process_error(("Selected configuration directory is missing the required files: " +
-                                   f"{file_names}"))
+            if os.path.realpath(self.config_path.get()) == os.path.realpath(self.product_dir):
+                self.process_error("You cannot use EX-Installer's own generated files as these will be overwritten")
                 self.next_back.disable_next()
-                self.log.error("Config dir %s missing minimum config files %s", self.config_path.get(),
-                               config_files)
+                self.log.error(f"EX-Installer repository folder location chosen: {self.product_dir}")
+            else:
+                config_files = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
+                if config_files:
+                    self.next_back.enable_next()
+                else:
+                    file_names = ", ".join(pd[self.product]["minimum_config_files"])
+                    self.process_error(("Selected configuration directory is missing the required files: " +
+                                       f"{file_names}"))
+                    self.next_back.disable_next()
+                    self.log.error("Config dir %s missing minimum config files %s", self.config_path.get(),
+                                   config_files)
         else:
             self.next_back.disable_next()
 
