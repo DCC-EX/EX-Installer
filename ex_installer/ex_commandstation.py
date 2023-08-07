@@ -63,7 +63,6 @@ class EXCommandStation(WindowLayout):
         "PROG": "PROG",
         "DC": "DC",
         "DCX": "DCX",
-        "OFF": "OFF",
     }
 
     def __init__(self, parent, *args, **kwargs):

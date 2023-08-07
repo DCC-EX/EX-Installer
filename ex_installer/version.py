@@ -15,6 +15,8 @@ Version history:
 0.0.15      - Update config directory browse to shows files as well as folders
             - Validate user is not using EX-Installer generated config files
             - Add background update to Device Monitor to resolve bug on older Linux flavours
+            - Ensure consistency of upload vs. load
+            - Remove TrackManager OFF/NONE option
 0.0.14      - Add timeout for Arduino CLI threads, default 5 minutes
             - Split compile/upload process out to show output of each phase
             - Add support for EX-Turntable
