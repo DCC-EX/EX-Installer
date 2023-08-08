@@ -17,6 +17,7 @@ Version history:
             - Add background update to Device Monitor to resolve bug on older Linux flavours
             - Ensure consistency of upload vs. load
             - Remove TrackManager OFF/NONE option
+            - Fix bug where TrackManager and current override options disabled for EX-CommandStation v5
 0.0.14      - Add timeout for Arduino CLI threads, default 5 minutes
             - Split compile/upload process out to show output of each phase
             - Add support for EX-Turntable
