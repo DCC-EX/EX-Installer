@@ -116,17 +116,24 @@ class EXCommandStation(WindowLayout):
         """
         self.product_version_name = version
         if major is not None:
-            self.product_major_version = major
+            self.product_major_version = int(major)
             if minor is not None:
-                self.product_minor_version = minor
+                self.product_minor_version = int(minor)
                 if patch is not None:
-                    self.product_patch_version = patch
-        if self.product_major_version >= 4 and self.product_minor_version >= 2:
+                    self.product_patch_version = int(patch)
+        if (
+            self.product_major_version >= 5 or
+            (self.product_major_version == 4 and self.product_minor_version >= 2)
+        ):
             self.track_modes_switch.configure(state="normal")
+            print(self.product_major_version)
         else:
             self.track_modes_switch.deselect()  # make sure it's off
             self.track_modes_switch.configure(state="disabled")
-        if self.product_major_version >= 4 and self.product_minor_version >= 2 and self.product_patch_version >= 61:
+        if (
+            self.product_major_version >= 5 or
+            (self.product_major_version >= 4 and self.product_minor_version >= 2 and self.product_patch_version >= 61)
+        ):
             self.override_current_limit.configure(state="normal")
         else:
             self.override_current_limit.deselect()
