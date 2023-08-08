@@ -7,11 +7,18 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.14"
+ex_installer_version = "0.0.15"
 
 """
 Version history:
 
+0.0.15      - Update config directory browse to shows files as well as folders
+            - Validate user is not using EX-Installer generated config files
+            - Add background update to Device Monitor to resolve bug on older Linux flavours
+            - Ensure consistency of upload vs. load
+            - Remove TrackManager OFF/NONE option
+            - Fix bug where TrackManager and current override options disabled for EX-CommandStation v5
+            - Only generate myAutomation.h if appropriate options chosen, or switch to do so enabled
 0.0.14      - Add timeout for Arduino CLI threads, default 5 minutes
             - Split compile/upload process out to show output of each phase
             - Add support for EX-Turntable

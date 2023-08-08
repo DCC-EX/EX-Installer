@@ -162,5 +162,5 @@ class AdvancedConfig(WindowLayout):
         else:
             self.next_back.set_back_text(f"Configure {pd[self.product]['product_name']}")
             self.next_back.set_back_command(lambda view=self.product: self.master.switch_view(view))
-        self.next_back.set_next_text("Compile and Upload")
+        self.next_back.set_next_text("Compile and load")
         self.next_back.set_next_command(lambda: self.save_config_files())
