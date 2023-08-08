@@ -18,6 +18,7 @@ Version history:
             - Ensure consistency of upload vs. load
             - Remove TrackManager OFF/NONE option
             - Fix bug where TrackManager and current override options disabled for EX-CommandStation v5
+            - Only generate myAutomation.h if appropriate options chosen, or switch to do so enabled
 0.0.14      - Add timeout for Arduino CLI threads, default 5 minutes
             - Split compile/upload process out to show output of each phase
             - Add support for EX-Turntable
