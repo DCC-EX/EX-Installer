@@ -7,11 +7,12 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.15"
+ex_installer_version = "0.0.16"
 
 """
 Version history:
 
+0.0.16      - Implement less restrictive matching for context highlights in Device Monitor
 0.0.15      - Update config directory browse to shows files as well as folders
             - Validate user is not using EX-Installer generated config files
             - Add background update to Device Monitor to resolve bug on older Linux flavours
