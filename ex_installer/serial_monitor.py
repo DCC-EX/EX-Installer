@@ -39,12 +39,12 @@ monitor_highlights = {
         "tag": "blue"
     },
     "WiFi AP IP": {
-        "regex": r"^\<\*\sWifi\sAP\sIP\s(\d*\.\d*\.\d*\.\d*)\s\*\>$",
+        "regex": r"<\*\sWifi\sAP\sIP\s(\d*\.\d*\.\d*\.\d*)\s\*\>",
         "matches": 1,
         "tag": "purple"
     },
     "Port (ESP32)": {
-        "regex": r"^\<\*\sServer\swill\sbe\sstarted\son\sport\s(\d*)\s\*\>$",
+        "regex": r".*port\s(\d*)\s\*\>",
         "matches": 1,
         "tag": "purple"
     },
