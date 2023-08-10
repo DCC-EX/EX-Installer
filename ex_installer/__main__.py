@@ -70,16 +70,16 @@ def main(debug):
     else:
         import customtkinter
         dpi = app.winfo_fpixels('1i')
-        scaling = dpi/72  # 72 is the builtin default
+        scaling = dpi/96  # 96 looks good
         if scaling < 1:
             scaling = 1  # we do not scale smaller because of dpi
         winheight = app.winfo_screenheight()
         winwidth = app.winfo_screenwidth()
         # check if window would fit into onto screen
-        if winwidth > 200 and winwidth < scaling * 800:
-            scaling = winwidth / 800
-        if winheight > 150 and winheight < scaling * 600:
-            scaling = winheight / 600
+        if winwidth > 200 and winwidth < scaling * 880:
+            scaling = winwidth / 880
+        if winheight > 150 and winheight < scaling * 660:
+            scaling = winheight / 660
         # as scaling smaller does not work, just issue a warning and do not scale at all
         if scaling < 1:
             print("Warning: Not everything fits on screen")
