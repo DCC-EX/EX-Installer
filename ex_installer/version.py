@@ -13,6 +13,9 @@ ex_installer_version = "0.0.16"
 Version history:
 
 0.0.16      - Implement less restrictive matching for context highlights in Device Monitor
+            - Implement device specific restrictions and recommendations:
+            - Uno/Nano disable TrackManager, select disable EEPROM/PROG options by default
+            - STM32/ESP32 select disable EEPROM option and disable switch
 0.0.15      - Update config directory browse to shows files as well as folders
             - Validate user is not using EX-Installer generated config files
             - Add background update to Device Monitor to resolve bug on older Linux flavours
