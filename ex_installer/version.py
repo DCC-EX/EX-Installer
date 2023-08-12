@@ -17,6 +17,7 @@ Version history:
             - Uno/Nano disable TrackManager, select disable EEPROM/PROG options by default
             - STM32/ESP32 select disable EEPROM option and disable switch
             - Add fix for incorrect scaling on Linux due to incorrect DPI value - Harald Barth
+            - Add scaling options to menu for user selection
 0.0.15      - Update config directory browse to shows files as well as folders
             - Validate user is not using EX-Installer generated config files
             - Add background update to Device Monitor to resolve bug on older Linux flavours
