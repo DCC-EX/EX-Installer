@@ -108,15 +108,6 @@ if __name__ == "__main__":
         debug = True
     else:
         debug = False
-
-    # In Linux we also need to set up SSL certs properly
-    if getattr(sys, "frozen", None):
-        basedir = sys._MEIPASS
-    else:
-        basedir = os.path.dirname(__file__)
-        basedir = os.path.normpath(basedir)
-    os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(basedir, "requests", "cacert.pem")
-    print(os.path.join(basedir, "requests", "cacert.pem"))
     
     # Start the app
     main(debug)
