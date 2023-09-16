@@ -212,6 +212,11 @@ else:
         f"{ctkmessagebox_dir}:CTkMessagebox/icons",
         "--hidden-import=PIL._tkinter_finder"
     ]
+# Append Linux specific parameters
+if platform_name.startswith("Lin"):
+    param_list += [
+        "--additional-hooks-dir=."
+    ]
 param_list += [script_file]
 print(param_list)
 
