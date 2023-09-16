@@ -29,7 +29,9 @@ if getattr(sys, "frozen", None):
 else:
     basedir = os.path.dirname(__file__)
     basedir = os.path.normpath(basedir)
-os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(basedir, "requests", "cacert.pem")
-print(os.path.join(basedir, "requests", "cacert.pem"))
+os.environ["SSL_CERT_FILE"] = os.path.join(basedir, "certifi", "cacert.pem")
+print(os.path.join(basedir, "certifi", "cacert.pem"))
+for name, value in os.environ.items():
+    print("{0}: {1}".format(name, value))
 
 input("Wait here")
