@@ -31,3 +31,5 @@ else:
     basedir = os.path.normpath(basedir)
 os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(basedir, "requests", "cacert.pem")
 print(os.path.join(basedir, "requests", "cacert.pem"))
+
+input("Wait here")
