@@ -89,14 +89,6 @@ def main(debug):
         if scaling > 1.1:
             customtkinter.set_widget_scaling(scaling)
             customtkinter.set_window_scaling(scaling)
-        # In Linux we also need to set up SSL certs properly
-        if getattr(sys, "frozen", None):
-            basedir = sys._MEIPASS
-        else:
-            basedir = os.path.dirname(__file__)
-            basedir = os.path.normpath(basedir)
-        os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(basedir, "requests", "cacert.pem")
-        print(os.path.join(basedir, "requests", "cacert.pem"))
     # switch to first view _after_ the scaling because of a bug in Linux that would unhide all hidden buttons
     app.switch_view("welcome")
     app.mainloop()
@@ -117,5 +109,14 @@ if __name__ == "__main__":
     else:
         debug = False
 
+    # In Linux we also need to set up SSL certs properly
+    if getattr(sys, "frozen", None):
+        basedir = sys._MEIPASS
+    else:
+        basedir = os.path.dirname(__file__)
+        basedir = os.path.normpath(basedir)
+    os.environ["REQUESTS_CA_BUNDLE"] = os.path.join(basedir, "requests", "cacert.pem")
+    print(os.path.join(basedir, "requests", "cacert.pem"))
+    
     # Start the app
     main(debug)
