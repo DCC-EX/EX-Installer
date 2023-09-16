@@ -414,6 +414,14 @@ class ArduinoCLI:
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
 
+    def install_library(self, file_path, library, queue):
+        """
+        Install the specified Arduino library
+        """
+        params = ["lib", "install", library, "--format", "jsonmini"]
+        acli = ThreadedArduinoCLI(file_path, params, queue)
+        acli.start()
+
     def list_boards(self, file_path, queue):
         """
         Returns a list of attached boards
