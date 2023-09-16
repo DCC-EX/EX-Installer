@@ -26,6 +26,7 @@ import logging
 # Import local modules
 from .common_widgets import WindowLayout, CreateToolTip
 from . import images
+from .product_details import product_details as pd
 
 
 class ManageArduinoCLI(WindowLayout):
@@ -74,6 +75,9 @@ class ManageArduinoCLI(WindowLayout):
         self.package_dict = {
             "Arduino AVR": "arduino:avr"
         }
+
+        # Set up list for library installs
+        self.library_list = []
 
         # Set title and logo
         self.set_title_logo(images.EX_INSTALLER_LOGO)
@@ -147,6 +151,7 @@ class ManageArduinoCLI(WindowLayout):
 
     def set_state(self):
         self.next_back.hide_log_button()
+        self.get_library_list()
         if self.acli.is_installed(self.acli.cli_file_path()):
             self.cli_state_label.configure(text=self.installed_text,
                                            text_color="#00353D",
@@ -164,6 +169,16 @@ class ManageArduinoCLI(WindowLayout):
             self.manage_cli_button.configure(text="Install Arduino CLI",
                                              command=lambda event="install_cli": self.manage_cli(event))
             self.next_back.disable_next()
+
+    def get_library_list(self):
+        """
+        Get list of library dependencies from product details
+        """
+        self.library_list = []
+        for product in pd:
+            if "arduino_libraries" in pd[product]:
+                for library in pd[product]["arduino_libraries"]:
+                    self.library_list.append(library)
 
     def update_package_list(self, switch):
         """
@@ -234,6 +249,7 @@ class ManageArduinoCLI(WindowLayout):
         elif event == "refresh_cli" or self.process_phase == "extract_cli":
             if event == "refresh_cli":
                 self.disable_input_states(self)
+                self.get_library_list()
             if self.process_status == "success" or event == "refresh_cli":
                 self.process_start("config_cli", "Configuring the Arduino CLI", "Manage_CLI")
                 for widget in self.extra_platforms_frame.winfo_children():
@@ -260,6 +276,19 @@ class ManageArduinoCLI(WindowLayout):
                     self.process_start("install_packages", f"Installing package {package}", "Manage_CLI")
                     self.acli.install_package(self.acli.cli_file_path(), self.package_dict[package], self.queue)
                     del self.package_dict[package]
+                else:
+                    self.process_stop()
+                    self.manage_cli("install_libraries")
+            elif self.process_status == "error":
+                self.process_error(self.process_topic)
+                self.restore_input_states()
+        elif event == "install_libraries" or self.process_phase == "install_libraries":
+            if self.process_status == "success" or event == "install_libraries":
+                if len(self.library_list) > 0:
+                    library = self.library_list[0]
+                    del self.library_list[0]
+                    self.process_start("install_libraries", "Install Arduino library " + library, "Manage_CLI")
+                    self.acli.install_library(self.acli.cli_file_path(), library, self.queue)
                 else:
                     self.process_start("upgrade_platforms", "Upgrading Arduino platforms", "Manage_CLI")
                     self.acli.upgrade_platforms(self.acli.cli_file_path(), self.queue)
