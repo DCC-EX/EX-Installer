@@ -26,12 +26,4 @@ import os
 # In Linux we also need to set up SSL certs properly
 if getattr(sys, "frozen", None):
     basedir = sys._MEIPASS
-else:
-    basedir = os.path.dirname(__file__)
-    basedir = os.path.normpath(basedir)
-os.environ["SSL_CERT_FILE"] = os.path.join(basedir, "certifi", "cacert.pem")
-print(os.path.join(basedir, "certifi", "cacert.pem"))
-for name, value in os.environ.items():
-    print("{0}: {1}".format(name, value))
-
-input("Wait here")
+    os.environ["SSL_CERT_FILE"] = os.path.join(basedir, "certifi", "cacert.pem")
