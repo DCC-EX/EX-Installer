@@ -62,6 +62,8 @@ def main(debug):
     # Start the app
     _log.debug("EX-Installer launched")
     app = EXInstaller()
+
+    # Do OS specific stuff for scaling and SSL
     if sys.platform == "darwin":
         pass  # high DPI scaling works automatically it is said
     elif sys.platform.startswith("win"):
@@ -106,6 +108,6 @@ if __name__ == "__main__":
         debug = True
     else:
         debug = False
-
+    
     # Start the app
     main(debug)

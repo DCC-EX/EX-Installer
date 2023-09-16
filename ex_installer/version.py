@@ -18,6 +18,8 @@ Version history:
             - STM32/ESP32 select disable EEPROM option and disable switch
             - Add fix for incorrect scaling on Linux due to incorrect DPI value - Harald Barth
             - Add scaling options to menu for user selection
+            - Add fix for missing Ethernet library
+            - Add fix for SSL certificates missing in Fedora
 0.0.15      - Update config directory browse to shows files as well as folders
             - Validate user is not using EX-Installer generated config files
             - Add background update to Device Monitor to resolve bug on older Linux flavours
