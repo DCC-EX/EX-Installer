@@ -7,11 +7,19 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.15"
+ex_installer_version = "0.0.16"
 
 """
 Version history:
 
+0.0.16      - Implement less restrictive matching for context highlights in Device Monitor
+            - Implement device specific restrictions and recommendations:
+            - Uno/Nano disable TrackManager, select disable EEPROM/PROG options by default
+            - STM32/ESP32 select disable EEPROM option and disable switch
+            - Add fix for incorrect scaling on Linux due to incorrect DPI value - Harald Barth
+            - Add scaling options to menu for user selection
+            - Add fix for missing Ethernet library
+            - Add fix for SSL certificates missing in Fedora
 0.0.15      - Update config directory browse to shows files as well as folders
             - Validate user is not using EX-Installer generated config files
             - Add background update to Device Monitor to resolve bug on older Linux flavours

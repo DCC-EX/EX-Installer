@@ -1,7 +1,9 @@
 """
 Main application controller
 
-© 2023, Peter Cole. All rights reserved.
+© 2023, Peter Cole.
+© 2023, Harald Barth.
+All rights reserved.
 
 This file is part of EX-Installer.
 
@@ -60,6 +62,8 @@ def main(debug):
     # Start the app
     _log.debug("EX-Installer launched")
     app = EXInstaller()
+
+    # Do OS specific stuff for scaling and SSL
     if sys.platform == "darwin":
         pass  # high DPI scaling works automatically it is said
     elif sys.platform.startswith("win"):
@@ -68,8 +72,23 @@ def main(debug):
     else:
         import customtkinter
         dpi = app.winfo_fpixels('1i')
-        customtkinter.set_widget_scaling(dpi/72)
-        customtkinter.set_window_scaling(dpi/72)
+        scaling = dpi/96  # 96 looks good
+        if scaling < 1:
+            scaling = 1  # we do not scale smaller because of dpi
+        winheight = app.winfo_screenheight()
+        winwidth = app.winfo_screenwidth()
+        # check if window would fit into onto screen
+        if winwidth > 200 and winwidth < scaling * 880:
+            scaling = winwidth / 880
+        if winheight > 150 and winheight < scaling * 660:
+            scaling = winheight / 660
+        # as scaling smaller does not work, just issue a warning and do not scale at all
+        if scaling < 1:
+            print("Warning: Not everything fits on screen")
+        # check if we need to bother to scale
+        if scaling > 1.1:
+            customtkinter.set_widget_scaling(scaling)
+            customtkinter.set_window_scaling(scaling)
     # switch to first view _after_ the scaling because of a bug in Linux that would unhide all hidden buttons
     app.switch_view("welcome")
     app.mainloop()
@@ -89,6 +108,6 @@ if __name__ == "__main__":
         debug = True
     else:
         debug = False
-
+    
     # Start the app
     main(debug)

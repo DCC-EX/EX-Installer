@@ -81,6 +81,11 @@ class EXCommandStation(WindowLayout):
         local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
         self.ex_commandstation_dir = fm.get_install_dir(local_repo_dir)
 
+        # Variables for version dependent options
+        self.trackmanager_available = False
+        self.current_override_available = False
+        self.disable_prog_available = False
+
         # Set up title
         self.set_title_logo(pd[self.product]["product_logo"])
         self.set_title_text("Install EX-CommandStation")
@@ -126,19 +131,30 @@ class EXCommandStation(WindowLayout):
             (self.product_major_version == 4 and self.product_minor_version >= 2)
         ):
             self.track_modes_switch.configure(state="normal")
+            self.trackmanager_available = True
         else:
             self.track_modes_switch.deselect()  # make sure it's off
             self.track_modes_switch.configure(state="disabled")
+            self.trackmanager_available = False
         if (
             self.product_major_version >= 5 or
             (self.product_major_version >= 4 and self.product_minor_version >= 2 and self.product_patch_version >= 61)
         ):
             self.override_current_limit.configure(state="normal")
+            self.current_override_available = True
         else:
             self.override_current_limit.deselect()
             self.override_current_limit.configure(state="disabled")
+            self.current_override_available = False
+        if self.product_major_version >= 5:
+            self.disable_prog_switch.configure(state="normal")
+            self.disable_prog_available = True
+        else:
+            self.disable_prog_switch.configure(state="disabled")
+            self.disable_prog_available = False
         self.set_track_modes()
         self.current_override()
+        self.check_selected_device()
 
     def setup_config_frame(self):
         """
@@ -169,6 +185,11 @@ class EXCommandStation(WindowLayout):
         current_tip = ("It is possible to define a custom current limit for the motor driver by enabling this option " +
                        "and specifying a new limit in mA. If this option is disabled, the version you have selected " +
                        "does not have this feature available.")
+        disable_eeprom_tip = ("On memory restricted devices such as Uno and Nano, disabling EEPROM support frees up " +
+                              "valuable memory to enable using features such as limited EXRAIL scripts. This will " +
+                              "be disabled for boards such as ESP32 and Nucleo that have no EEPROM on board.")
+        disable_prog_tip = ("On memory restricted devices such as Uno and Nano, disabling programming support frees " +
+                            "up valuable memory to enable using features such as limited EXRAIL scripts.")
 
         # Set up hardware instruction label
         self.hardware_label = ctk.CTkLabel(self.config_frame, text=self.hardware_text,
@@ -213,7 +234,8 @@ class EXCommandStation(WindowLayout):
                       "https://dcc-ex.com/reference/hardware/motor-boards.html")
 
         # Set up display widgets
-        self.display_type_label = ctk.CTkLabel(self.options_frame, text="Select display type (if in use):",
+        self.display_frame = ctk.CTkFrame(self.options_frame, border_width=2)
+        self.display_type_label = ctk.CTkLabel(self.display_frame, text="Select display type (if in use):",
                                                font=self.instruction_font)
         self.display_enabled = ctk.StringVar(self, value="off")
         self.display_type = ctk.StringVar(self)
@@ -222,7 +244,7 @@ class EXCommandStation(WindowLayout):
                                             command=self.set_display, font=self.instruction_font)
         CreateToolTip(self.display_switch, display_tip,
                       "https://dcc-ex.com/reference/hardware/i2c-displays.html")
-        self.display_radio_frame = ctk.CTkFrame(self.options_frame, fg_color="#D9D9D9", border_width=0)
+        self.display_radio_frame = ctk.CTkFrame(self.display_frame, fg_color="#D9D9D9", border_width=0)
         row = 0
         for display in self.supported_displays.keys():
             display_radio = ctk.CTkRadioButton(self.display_radio_frame, text=display, variable=self.display_type,
@@ -232,6 +254,12 @@ class EXCommandStation(WindowLayout):
             if row == 0:
                 display_radio.select()
             row += 1
+
+        # Layout display frame
+        self.display_frame.grid_columnconfigure(0, weight=1)
+        self.display_frame.grid_rowconfigure(1, weight=1)
+        self.display_type_label.grid(column=0, row=0, columnspan=2, sticky="w", padx=5, pady=(5, 1))
+        self.display_radio_frame.grid(column=0, row=1, sticky="w", padx=5, pady=(1, 5))
 
         # Set up current limit widgets
         self.override_current_limit = ctk.CTkSwitch(self.switch_frame, text="Override current limit",
@@ -342,6 +370,29 @@ class EXCommandStation(WindowLayout):
                                                     command=self.set_advanced_config, font=self.instruction_font)
         CreateToolTip(self.advanced_config_switch, advanced_tip)
 
+        # Device hardware option widgets
+        self.hardware_options_frame = ctk.CTkFrame(self.options_frame, border_width=2)
+        self.device_options_label = ctk.CTkLabel(self.hardware_options_frame, text="Device hardware options:",
+                                                 font=self.instruction_font)
+        self.disable_eeprom_switch = ctk.CTkSwitch(self.hardware_options_frame, text="Disable EEPROM support",
+                                                   width=200, onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.disable_eeprom_switch, disable_eeprom_tip)
+        self.disable_prog_switch = ctk.CTkSwitch(self.hardware_options_frame, text="Disable programming support",
+                                                 width=200, onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.disable_prog_switch, disable_prog_tip)
+        low_mem = ("Note that you have selected a device that has limited memory available. We recommend disabling " +
+                   "EEPROM and programming support in order to support limited EXRAIL functionality.")
+        self.low_mem_label = ctk.CTkLabel(self.hardware_options_frame, text=low_mem, font=self.instruction_font,
+                                          text_color="orange", width=300, wraplength=295)
+
+        # Layout hardware options frame
+        self.hardware_options_frame.grid_columnconfigure(0, weight=1)
+        self.hardware_options_frame.grid_rowconfigure((1, 2), weight=1)
+        self.device_options_label.grid(column=0, row=0, sticky="w", **grid_options)
+        self.disable_eeprom_switch.grid(column=0, row=1, sticky="w", **grid_options)
+        self.disable_prog_switch.grid(column=0, row=2, sticky="w", **grid_options)
+        self.low_mem_label.grid(column=0, row=3, sticky="w", **grid_options)
+
         # Layout wifi_frame
         self.wifi_tab_frame.grid_columnconfigure((0, 1), weight=1)
         self.wifi_tab_frame.grid_rowconfigure(0, weight=1)
@@ -379,10 +430,10 @@ class EXCommandStation(WindowLayout):
         self.options_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
         self.motor_driver_label.grid(column=0, row=0, sticky="e", **grid_options)
         self.motor_driver_combo.grid(column=1, row=0, sticky="w", **grid_options)
-        self.display_type_label.grid(column=0, row=1, columnspan=2, sticky="w", padx=5, pady=(5, 1))
-        self.display_radio_frame.grid(column=0, row=2, columnspan=2, sticky="w", padx=5, pady=(1, 5))
+        self.display_frame.grid(column=0, row=2, sticky="w", **grid_options)
         self.current_limit_label.grid(column=0, row=3, sticky="e", **grid_options)
         self.current_limit_entry.grid(column=1, row=3, sticky="w", **grid_options)
+        self.hardware_options_frame.grid(column=1, row=2, stick="w", **grid_options)
 
         # Layout track_frame
         self.track_tab_frame.grid_columnconfigure(0, weight=1)
@@ -416,6 +467,34 @@ class EXCommandStation(WindowLayout):
         self.config_frame.grid_rowconfigure(1, weight=1)
         self.hardware_label.grid(column=0, row=0, **grid_options)
         self.config_tabview.grid(column=0, row=1, sticky="nsew", **grid_options)
+
+    def check_selected_device(self):
+        """
+        Sets recommended device options based on selected device
+
+        Disables EEPROM option for boards without it also
+        """
+        device = self.acli.selected_device
+        device_fqbn = self.acli.detected_devices[device]["matching_boards"][0]["fqbn"]
+        if device_fqbn.startswith("esp32") or device_fqbn.startswith("STMicroelectronics:stm32"):
+            self.disable_eeprom_switch.select()
+            self.disable_eeprom_switch.configure(state="disabled")
+        else:
+            self.disable_eeprom_switch.deselect()
+            self.disable_eeprom_switch.configure(state="normal")
+        if device_fqbn.startswith("arduino:avr:nano") or device_fqbn == "arduino:avr:uno":
+            self.track_modes_switch.deselect()
+            self.track_modes_switch.configure(state="disabled")
+            self.disable_eeprom_switch.select()
+            if self.disable_prog_available:
+                self.disable_prog_switch.select()
+            self.low_mem_label.grid()
+        else:
+            if self.trackmanager_available:
+                self.track_modes_switch.configure(state="normal")
+            self.disable_eeprom_switch.deselect()
+            self.disable_prog_switch.deselect()
+            self.low_mem_label.grid_remove()
 
     def set_display(self):
         """
@@ -693,6 +772,10 @@ class EXCommandStation(WindowLayout):
                 param_errors.append("Current limit must be a number in mA")
             else:
                 config_list.append(f"#define MAX_CURRENT {self.current_limit.get()}\n")
+        if self.disable_eeprom_switch.get() == "on":
+            config_list.append("#define DISABLE_EEPROM\n")
+        if self.disable_prog_switch.get() == "on":
+            config_list.append("#define DISABLE_PROG\n")
         if len(param_errors) > 0:
             self.log.error("Missing parameters: %s", param_errors)
             return (False, param_errors)

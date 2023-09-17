@@ -120,6 +120,20 @@ class EXInstaller(ctk.CTk):
         self.info_menu.add_checkbutton(label="Enable debug logging", command=self.toggle_debug,
                                        variable=self.enable_debug, onvalue="on", offvalue="off")
         self.menubar.add_cascade(label="Info", menu=self.info_menu)
+        # Create Tools menu and options
+        self.tools_menu = Menu(self.menubar, tearoff=0)
+        # self.tools_menu.add_command(label="WiFi Flasher", command=lambda parent=self: WiFiFlasher(parent))
+        self.menubar.add_cascade(label="Tools", menu=self.tools_menu)
+        # Submenu for screen scaling
+        self.scaling_option = ctk.IntVar(self, value=100)
+        self.scaling_menu = Menu(self.menubar, tearoff=0)
+        self.scaling_menu.add_radiobutton(label="90%", var=self.scaling_option, value=90, command=self.set_scaling)
+        self.scaling_menu.add_radiobutton(label="100%", var=self.scaling_option, value=100, command=self.set_scaling)
+        self.scaling_menu.add_radiobutton(label="110%", var=self.scaling_option, value=110, command=self.set_scaling)
+        self.scaling_menu.add_radiobutton(label="125%", var=self.scaling_option, value=125, command=self.set_scaling)
+        self.scaling_menu.add_radiobutton(label="150%", var=self.scaling_option, value=150, command=self.set_scaling)
+        self.scaling_menu.add_radiobutton(label="200%", var=self.scaling_option, value=200, command=self.set_scaling)
+        self.tools_menu.add_cascade(label="Scaling", menu=self.scaling_menu)
         self.configure(menu=self.menubar)
 
     def exception_handler(self, exc_type, exc_value, exc_traceback):
@@ -265,3 +279,11 @@ class EXInstaller(ctk.CTk):
             self.log.parent.setLevel(logging.DEBUG)
         else:
             self.log.parent.setLevel(logging.WARNING)
+
+    def set_scaling(self):
+        """
+        Function to set the screen scaling value
+        """
+        scale = self.scaling_option.get() / 100
+        ctk.set_widget_scaling(scale)
+        ctk.set_window_scaling(scale)
