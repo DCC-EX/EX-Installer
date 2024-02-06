@@ -389,8 +389,7 @@ class FormattedTextbox(ctk.CTkTextbox):
         # Set up fonts
         self.common_fonts = CommonFonts(self)
 
-        default_font = ctk.CTkFont(family="Helvetica", size=14, weight="normal")
-        # default_font = self.common_fonts.default_font
+        default_font = self.common_fonts.instruction_font
         em = default_font.measure("m")
         lmargin2 = em + default_font.measure("\u2022")
         self.tag_config("bullet", lmargin1=em, lmargin2=lmargin2, spacing1=1, spacing2=1, spacing3=1)
