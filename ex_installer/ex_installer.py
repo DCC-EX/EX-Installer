@@ -48,6 +48,7 @@ from .ex_turntable import EXTurntable
 from .advanced_config import AdvancedConfig
 from .compile_upload import CompileUpload
 from ex_installer.version import ex_installer_version
+from .common_fonts import CommonFonts
 
 # Set theme and appearance, and deactive screen scaling
 ctk.set_default_color_theme(theme.DCC_EX_THEME)
@@ -80,6 +81,9 @@ class EXInstaller(ctk.CTk):
 
         # Dictionary to retain views once created for switching between them while retaining options
         self.frames = {}
+
+        # Set up fonts
+        self.common_fonts = CommonFonts(self)
 
         # Set window geometry, title, and icon
         self.title("EX-Installer")
@@ -246,7 +250,7 @@ class EXInstaller(ctk.CTk):
         about_box = CTkMessagebox(master=self, title="About EX-Installer", icon="info",
                                   message=about_message, border_width=3, cancel_button=None,
                                   option_2="OK", option_1="Show log", icon_size=(30, 30),
-                                  font=ctk.CTkFont(family="Helvetica", size=14, weight="normal"))
+                                  font=self.common_fonts.instruction_font)
         if about_box.get() == "Show log":
             log_file = None
             for handler in self.log.parent.handlers:

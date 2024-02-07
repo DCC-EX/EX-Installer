@@ -20,6 +20,7 @@ import re
 
 # Import local modules
 from . import images
+from .common_fonts import CommonFonts
 
 # Define valid monitor highlights
 monitor_highlights = {
@@ -83,6 +84,9 @@ class SerialMonitor(ctk.CTkToplevel):
         self.log.debug("Open window")
         self.report_callback_exception = self.exception_handler
 
+        # Set up fonts
+        self.common_fonts = CommonFonts(self)
+
         # Set up event handlers
         event_callbacks = {
             "<<Monitor>>": self.monitor
@@ -125,8 +129,8 @@ class SerialMonitor(ctk.CTkToplevel):
         self.window_frame.grid(column=0, row=0, sticky="nsew")
 
         # Define fonts for use
-        button_font = ctk.CTkFont(family="Helvetica", size=13, weight="bold")
-        instruction_font = ctk.CTkFont(family="Helvetica", size=14, weight="normal")
+        button_font = self.common_fonts.button_font
+        instruction_font = self.common_fonts.instruction_font
 
         self.command_frame = ctk.CTkFrame(self.window_frame, width=790, height=40)
         self.monitor_frame = ctk.CTkFrame(self.window_frame, width=790, height=420)
