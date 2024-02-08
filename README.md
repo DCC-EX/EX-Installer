@@ -84,6 +84,8 @@ PyInstaller is used to build Windows executables and binaries for Linux/macOS.
 
 The use of CustomTkinter dictates that some extra options need to be defined to ensure non-Python files are included in the binary, otherwise they will not execute correctly.
 
+**NOTE** when building on Linux, you must use a flavour of Linux with fontconfig version 2.13.1 or later, otherwise users of newer Linux flavours will receive warnings or exceptions relating to the "description" element in the configuration.
+
 ### Build script
 
 A build script "build_app.py" has been written to make the build process simpler, and relies on a virtual environment being setup in a directory called "venv" within the EX-Installer repository directory.
@@ -93,7 +95,7 @@ The script will refer to the "version.py" file mentioned above, so this needs to
 To run the script, you need to pass the EX-Installer repository directory and the platform being built for:
 
 ```shell
-python build_app.py -D <Directory path> -P <Win32|Win64|Linux32|Linux64|macOS>
+python build_app.py -D <Directory path> -P <Win32|Win64|Linux64|macOS>
 ```
 
 ### Building manually
@@ -108,7 +110,6 @@ These directories are referenced in the commands below:
   - Win64 - Windows 64 bit
   - Win32 - Windows 32 bit
   - Linux64 - Linux 64 bit
-  - Linux32 - Linux 32 bit
   - macOS - macOS (64 bit only)
 
 The build commands should be executed in a command prompt or terminal window in the directory containing the cloned repository.
