@@ -37,8 +37,8 @@ from ex_installer.file_manager import FileManager as fm
 # Create the argument parser and add the various required arguments
 parser = argparse.ArgumentParser()
 
-parser.add_argument("-P", "--platform", help="Platform type: Win32|Win64|Linux32|Linux64|macOS",
-                    choices=["Win32", "Win64", "Linux32", "Linux64", "macOS"], required=True,
+parser.add_argument("-P", "--platform", help="Platform type: Win32|Win64|Linux64|macOS",
+                    choices=["Win32", "Win64", "Linux64", "macOS"], required=True,
                     dest="platform")
 parser.add_argument("-D", "--directory", help="Directory containing the cloned repository and virtual environment",
                     required=True,
