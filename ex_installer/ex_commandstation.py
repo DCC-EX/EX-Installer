@@ -799,7 +799,7 @@ class EXCommandStation(WindowLayout):
         # Enable join on startup if enabled
         if self.power_on_switch.get() == "on":
             config_list.append("AUTOSTART\n")
-            config_list.append("JOIN\n")
+            config_list.append("POWERON\n")
             config_list.append("DONE\n\n")
 
         # write out trackmanager config, including roster entries if DCx
