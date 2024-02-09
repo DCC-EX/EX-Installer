@@ -95,7 +95,7 @@ The script will refer to the "version.py" file mentioned above, so this needs to
 To run the script, you need to pass the EX-Installer repository directory and the platform being built for:
 
 ```shell
-python build_app.py -D <Directory path> -P <Win32|Win64|Linux64|macOS>
+python -m build_app -D <Directory path> -P <Win32|Win64|Linux64|macOS>
 ```
 
 ### Building manually
