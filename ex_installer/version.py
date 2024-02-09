@@ -15,6 +15,9 @@ Version history:
 0.0.17      - Move fonts to a separate common class
             - Change default font to Arial for Windows/Mac and FreeSans for Linux
             - Update various modules versions to resolve Dependapot identified vulnerabilities
+            - Remove option to select Nano with the old bootloader as this has never worked
+            - Disable enabling WiFi on Uno/Nano
+            - Change default behaviour of programming on Uno/Nano to enabled
 0.0.16      - Implement less restrictive matching for context highlights in Device Monitor
             - Implement device specific restrictions and recommendations:
             - Uno/Nano disable TrackManager, select disable EEPROM/PROG options by default

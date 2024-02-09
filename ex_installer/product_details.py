@@ -31,7 +31,6 @@ product_details = {
         "supported_devices": [
             "arduino:avr:uno",
             "arduino:avr:nano",
-            "arduino:avr:nano:cpu=atmega328",
             "arduino:avr:mega",
             "esp32:esp32:esp32",
             "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
@@ -57,7 +56,6 @@ product_details = {
         "supported_devices": [
             "arduino:avr:uno",
             "arduino:avr:nano",
-            "arduino:avr:nano:cpu=atmega328",
             "arduino:avr:mega",
             "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE"
         ],
@@ -74,7 +72,6 @@ product_details = {
         "supported_devices": [
             "arduino:avr:uno",
             "arduino:avr:nano",
-            "arduino:avr:nano:cpu=atmega328"
         ],
         "minimum_config_files": [
             "config.h"
