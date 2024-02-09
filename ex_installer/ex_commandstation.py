@@ -486,8 +486,8 @@ class EXCommandStation(WindowLayout):
             self.track_modes_switch.deselect()
             self.track_modes_switch.configure(state="disabled")
             self.disable_eeprom_switch.select()
-            if self.disable_prog_available:
-                self.disable_prog_switch.select()
+            self.wifi_switch.deselect()
+            self.wifi_switch.configure(state="disabled")
             self.low_mem_label.grid()
         else:
             if self.trackmanager_available:
@@ -495,6 +495,8 @@ class EXCommandStation(WindowLayout):
             self.disable_eeprom_switch.deselect()
             self.disable_prog_switch.deselect()
             self.low_mem_label.grid_remove()
+            self.wifi_switch.deselect()
+            self.wifi_switch.configure(state="enabled")
 
     def set_display(self):
         """
