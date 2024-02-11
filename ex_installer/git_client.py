@@ -114,6 +114,8 @@ class GitClient:
         """
         Function to check for local changes to files in the provided repo
 
+        If file ".DS_Store" is added/modified, this is forcefully discarded as it should be in .gitignore
+
         Returns False (no changes) or a list of changed files
         """
         file_list = None
@@ -123,6 +125,8 @@ class GitClient:
                 status = repo.status()
                 for file, flag in status.items():
                     change = "Unknown"
+                    if file == ".DS_Store":
+                        GitClient.log.info(".DS_Store file found and discarded")
                     if flag == pygit2.GIT_STATUS_WT_NEW:
                         change = "Added"
                     elif flag == pygit2.GIT_STATUS_WT_DELETED:

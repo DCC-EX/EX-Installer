@@ -169,7 +169,7 @@ class SelectVersionConfig(WindowLayout):
                     if self.repo:
                         changes = self.git.check_local_changes(self.repo)
                         if changes:
-                            self.process_error(f"Local changes detected: f{changes}")
+                            self.process_error(f"Local changes detected: {changes}")
                             self.restore_input_states()
                             self.log.error("Local repository file changes: %s", changes)
                         else:
