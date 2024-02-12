@@ -324,3 +324,16 @@ class GitClient:
                 break
         GitClient.log.debug("Lastest development is %s", devel_version)
         return devel_version
+
+    @staticmethod
+    def git_hard_reset(repo):
+        """
+        Performs a hard reset of the provided repository to the current HEAD
+        """
+        if isinstance(repo, pygit2.Repository):
+            status = repo.status()
+            for file, flag in status.items():
+                if flag == pygit2.GIT_STATUS_WT_NEW:
+                    file_path = os.path.join(repo.workdir, file)
+                    os.remove(file_path)
+            repo.reset(repo.head.peel().oid, pygit2.GIT_RESET_HARD)
