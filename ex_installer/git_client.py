@@ -31,6 +31,15 @@ import logging
 
 QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
 
+"""
+A list of files that should be in .gitignore and therefore can safely be deleted
+
+This allows proceeding without user interaction if these files are not ignored as they should be
+"""
+gitignore_files = [
+    ".DS_Store"
+]
+
 
 @staticmethod
 def get_exception(error):
@@ -124,18 +133,27 @@ class GitClient:
                 file_list = []
                 status = repo.status()
                 for file, flag in status.items():
-                    change = "Unknown"
-                    if file == ".DS_Store":
-                        GitClient.log.info(".DS_Store file found and discarded")
-                    if flag == pygit2.GIT_STATUS_WT_NEW:
-                        change = "Added"
-                    elif flag == pygit2.GIT_STATUS_WT_DELETED:
-                        change = "Deleted"
-                    elif flag == pygit2.GIT_STATUS_WT_MODIFIED:
-                        change = "Modified"
-                    file_list.append(file + " (" + change + ")")
-                GitClient.log.error("Local file changes in %s", repo)
-                GitClient.log.error(file_list)
+                    if os.path.basename(file) in gitignore_files and flag == pygit2.GIT_STATUS_WT_NEW:
+                        file_path = os.path.join(repo.workdir, file)
+                        try:
+                            os.remove(file_path)
+                        except Exception:
+                            GitClient.log.error("Unable to delete file to ignore: %s", file_path)
+                        else:
+                            GitClient.log.info("File to ignore found and discarded: %s", file_path)
+                status = repo.status()
+                if len(status) > 0:
+                    for file, flag in status.items():
+                        change = "Unknown"
+                        if flag == pygit2.GIT_STATUS_WT_NEW:
+                            change = "Added"
+                        elif flag == pygit2.GIT_STATUS_WT_DELETED:
+                            change = "Deleted"
+                        elif flag == pygit2.GIT_STATUS_WT_MODIFIED:
+                            change = "Modified"
+                        file_list.append(file + " (" + change + ")")
+                    GitClient.log.error("Local file changes in %s", repo)
+                    GitClient.log.error(file_list)
             else:
                 GitClient.log.debug("No local file changes in %s", repo)
         else:

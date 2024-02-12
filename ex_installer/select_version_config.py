@@ -169,6 +169,9 @@ class SelectVersionConfig(WindowLayout):
                     if self.repo:
                         changes = self.git.check_local_changes(self.repo)
                         if changes:
+                            # This needs to be a CTKMessagebox popup for a user prompt
+                            # Either override changes with repo.reset(repo.head.peel().oid, pygit2.GIT_RESET_HARD)
+                            # Or return to app and no changes made, cannot progress
                             self.process_error(f"Local changes detected: {changes}")
                             self.restore_input_states()
                             self.log.error("Local repository file changes: %s", changes)
