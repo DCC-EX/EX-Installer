@@ -393,11 +393,18 @@ class SelectVersionConfig(WindowLayout):
 
         Resolution means perforing a git hard reset, cancel means exiting the app
         """
-        message = f"Local changes have been detected: {changes}\n\nOverride or cancel"
-        resolver = CTkMessagebox(master=self, title="Local changes detected", icon="question",
-                                 message=message, border_width=3, cancel_button=None,
+        message = f"WARNING: The following changes have been detected in {pd[self.product]['product_name']}:\n"
+        for change in changes:
+            message += change + "\n"
+        message += ("\nYou can either override these changes or cancel and resolve these issues manually.\n\n"
+                    "(Note that overriding will delete any added files, undo any modifications,"
+                    " and restore deleted files)")
+        resolver = CTkMessagebox(master=self.parent, title="Local changes detected", icon="warning",
+                                 message=message, border_width=3, width=500, cancel_button=None,
                                  option_2="Override", option_1="Cancel", icon_size=(30, 30),
                                  font=self.common_fonts.instruction_font)
         if resolver.get() == "Override":
             self.git.git_hard_reset(self.repo)
             self.setup_local_repo("setup_local_repo")
+        else:
+            self.parent.switch_view("select_product")
