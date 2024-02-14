@@ -34,6 +34,7 @@ import webbrowser
 # Import local modules
 from . import images
 from .serial_monitor import SerialMonitor
+from .common_fonts import CommonFonts
 
 
 class WindowLayout(ctk.CTkFrame):
@@ -54,8 +55,14 @@ class WindowLayout(ctk.CTkFrame):
         self.acli = parent.acli
         self.git = parent.git
 
+        # Set up fonts
+        self.common_fonts = CommonFonts(self)
+
         # Get application version
         self.app_version = parent.app_version
+
+        # Set parent
+        self.parent = parent
 
         # Product version variables
         self.product_version_name = None
@@ -76,31 +83,14 @@ class WindowLayout(ctk.CTkFrame):
         self.widget_states = []
 
         # Define fonts
-        self.instruction_font = ctk.CTkFont(family="Helvetica",
-                                            size=14,
-                                            weight="normal")
-        self.bold_instruction_font = ctk.CTkFont(family="Helvetica",
-                                                 size=14,
-                                                 weight="bold")
-        self.large_bold_instruction_font = ctk.CTkFont(family="Helvetica",
-                                                       size=16,
-                                                       weight="bold")
-        self.small_italic_instruction_font = ctk.CTkFont(family="Helvetica",
-                                                         size=12,
-                                                         weight="normal",
-                                                         slant="italic")
-        self.title_font = ctk.CTkFont(family="Helvetica",
-                                      size=30,
-                                      weight="normal")
-        self.heading_font = ctk.CTkFont(family="Helvetica",
-                                        size=24,
-                                        weight="bold")
-        self.button_font = ctk.CTkFont(family="Helvetica",
-                                       size=13,
-                                       weight="bold")
-        self.action_button_font = ctk.CTkFont(family="Helvetica",
-                                              size=16,
-                                              weight="bold")
+        self.instruction_font = self.common_fonts.instruction_font
+        self.bold_instruction_font = self.common_fonts.bold_instruction_font
+        self.large_bold_instruction_font = self.common_fonts.large_bold_instruction_font
+        self.small_italic_instruction_font = self.common_fonts.small_italic_instruction_font
+        self.title_font = self.common_fonts.title_font
+        self.heading_font = self.common_fonts.heading_font
+        self.button_font = self.common_fonts.button_font
+        self.action_button_font = self.common_fonts.action_button_font
 
         # Define top level frames
         self.title_frame = ctk.CTkFrame(self, width=790, height=80)
@@ -252,7 +242,10 @@ class NextBack(ctk.CTkFrame):
 
         self.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 
-        button_font = ctk.CTkFont(family="Helvetica", size=14, weight="bold")
+        # Set up fonts
+        self.common_fonts = CommonFonts(self)
+
+        button_font = self.common_fonts.button_font
         button_options = {"width": 220, "height": 30, "font": button_font}
 
         self.back_arrow = Image.open(images.BACK_ARROW)
@@ -396,7 +389,10 @@ class FormattedTextbox(ctk.CTkTextbox):
         """
         super().__init__(*args, **kwargs)
 
-        default_font = ctk.CTkFont(family="Helvetica", size=14, weight="normal")
+        # Set up fonts
+        self.common_fonts = CommonFonts(self)
+
+        default_font = self.common_fonts.instruction_font
         em = default_font.measure("m")
         lmargin2 = em + default_font.measure("\u2022")
         self.tag_config("bullet", lmargin1=em, lmargin2=lmargin2, spacing1=1, spacing2=1, spacing3=1)
@@ -435,6 +431,9 @@ class CreateToolTip(object):
         self.id = None
         self.tw = None
 
+        # Set up fonts
+        self.common_fonts = CommonFonts(self)
+
     def enter_widget(self, event=None):
         """
         When hovered/entered widget, schedule it to start
@@ -470,9 +469,7 @@ class CreateToolTip(object):
         """
         Show the tooltip
         """
-        tooltip_font = ctk.CTkFont(family="Helvetica",
-                                   size=16,
-                                   weight="bold")
+        tooltip_font = self.common_fonts.bold_instruction_font
         x = y = 0
         x, y, cx, cy = self.widget.bbox("insert")
         x += self.widget.winfo_rootx() + 25

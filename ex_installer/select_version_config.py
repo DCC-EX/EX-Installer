@@ -8,6 +8,7 @@ Also will allow for selecting a directory containing existing config files
 import customtkinter as ctk
 import os
 import logging
+from CTkMessagebox import CTkMessagebox
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -154,7 +155,7 @@ class SelectVersionConfig(WindowLayout):
         - check if the product directory already exists
         - if so
             - if the product directory is already a cloned repo
-            - any locally modified files that would interfere with Git commands
+            - any locally modified files that would interfere with Git commands (prompt to resolve)
             - delete any existing configuration files
         - if not, clone repo
         - get list of versions, latest prod, and latest devel versions
@@ -169,9 +170,10 @@ class SelectVersionConfig(WindowLayout):
                     if self.repo:
                         changes = self.git.check_local_changes(self.repo)
                         if changes:
-                            self.process_error(f"Local changes detected: f{changes}")
+                            self.process_error("Local changes have been detected that require resolution")
                             self.restore_input_states()
                             self.log.error("Local repository file changes: %s", changes)
+                            self.resolve_local_changes(changes)
                         else:
                             self.setup_local_repo("get_latest")
                     else:
@@ -384,3 +386,25 @@ class SelectVersionConfig(WindowLayout):
         else:
             self.process_error("Selected configuration directory is missing the required files")
             self.log.error("Directory %s is missing required files", self.config_path.get())
+
+    def resolve_local_changes(self, changes):
+        """
+        Function to prompt the user to resolve locally detected repository changes
+
+        Resolution means perforing a git hard reset, cancel means exiting the app
+        """
+        message = f"WARNING: The following changes have been detected in {pd[self.product]['product_name']}:\n"
+        for change in changes:
+            message += change + "\n"
+        message += ("\nYou can either override these changes or cancel and resolve these issues manually.\n\n"
+                    "(Note that overriding will delete any added files, undo any modifications,"
+                    " and restore deleted files)")
+        resolver = CTkMessagebox(master=self.parent, title="Local changes detected", icon="warning",
+                                 message=message, border_width=3, width=500, cancel_button=None,
+                                 option_2="Override", option_1="Cancel", icon_size=(30, 30),
+                                 font=self.common_fonts.instruction_font)
+        if resolver.get() == "Override":
+            self.git.git_hard_reset(self.repo)
+            self.setup_local_repo("setup_local_repo")
+        else:
+            self.parent.switch_view("select_product")

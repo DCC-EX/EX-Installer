@@ -486,8 +486,8 @@ class EXCommandStation(WindowLayout):
             self.track_modes_switch.deselect()
             self.track_modes_switch.configure(state="disabled")
             self.disable_eeprom_switch.select()
-            if self.disable_prog_available:
-                self.disable_prog_switch.select()
+            self.wifi_switch.deselect()
+            self.wifi_switch.configure(state="disabled")
             self.low_mem_label.grid()
         else:
             if self.trackmanager_available:
@@ -495,6 +495,8 @@ class EXCommandStation(WindowLayout):
             self.disable_eeprom_switch.deselect()
             self.disable_prog_switch.deselect()
             self.low_mem_label.grid_remove()
+            self.wifi_switch.deselect()
+            self.wifi_switch.configure(state="enabled")
 
     def set_display(self):
         """
@@ -742,15 +744,15 @@ class EXCommandStation(WindowLayout):
                 else:
                     line = '#define WIFI_SSID "' + self.wifi_ssid_entry.get() + '"\n'
                     config_list.append(line)
-                if self.wifi_pwd_entry.get() == "":
-                    param_errors.append("WiFi password not set")
+                # if self.wifi_pwd_entry.get() == "":
+                #     param_errors.append("WiFi password not set")
+                # else:
+                invalid, issue = self.check_invalid_wifi_password()
+                if invalid:
+                    param_errors.append(issue)
                 else:
-                    invalid, issue = self.check_invalid_wifi_password()
-                    if invalid:
-                        param_errors.append(issue)
-                    else:
-                        line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
-                        config_list.append(line)
+                    line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
+                    config_list.append(line)
             if self.ethernet_switch.get() == "on":
                 param_errors.append("Can not have both Ethernet and WiFi enabled")
             else:
@@ -797,7 +799,7 @@ class EXCommandStation(WindowLayout):
         # Enable join on startup if enabled
         if self.power_on_switch.get() == "on":
             config_list.append("AUTOSTART\n")
-            config_list.append("JOIN\n")
+            config_list.append("POWERON\n")
             config_list.append("DONE\n\n")
 
         # write out trackmanager config, including roster entries if DCx
