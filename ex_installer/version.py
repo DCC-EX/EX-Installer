@@ -19,6 +19,9 @@ Version history:
             - Disable enabling WiFi on Uno/Nano
             - Change default behaviour of programming on Uno/Nano to enabled
             - Change start with power on option from JOIN to POWERON
+            - Add warning screen to flag local repo changes and allow overriding if desired
+            - Automatically discard macOS .DS_Store file if it exists
+            - Allow blank WiFi password in STA mode
 0.0.16      - Implement less restrictive matching for context highlights in Device Monitor
             - Implement device specific restrictions and recommendations:
             - Uno/Nano disable TrackManager, select disable EEPROM/PROG options by default

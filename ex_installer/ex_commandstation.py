@@ -744,15 +744,15 @@ class EXCommandStation(WindowLayout):
                 else:
                     line = '#define WIFI_SSID "' + self.wifi_ssid_entry.get() + '"\n'
                     config_list.append(line)
-                if self.wifi_pwd_entry.get() == "":
-                    param_errors.append("WiFi password not set")
+                # if self.wifi_pwd_entry.get() == "":
+                #     param_errors.append("WiFi password not set")
+                # else:
+                invalid, issue = self.check_invalid_wifi_password()
+                if invalid:
+                    param_errors.append(issue)
                 else:
-                    invalid, issue = self.check_invalid_wifi_password()
-                    if invalid:
-                        param_errors.append(issue)
-                    else:
-                        line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
-                        config_list.append(line)
+                    line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
+                    config_list.append(line)
             if self.ethernet_switch.get() == "on":
                 param_errors.append("Can not have both Ethernet and WiFi enabled")
             else:

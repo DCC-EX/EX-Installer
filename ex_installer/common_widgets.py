@@ -61,6 +61,9 @@ class WindowLayout(ctk.CTkFrame):
         # Get application version
         self.app_version = parent.app_version
 
+        # Set parent
+        self.parent = parent
+
         # Product version variables
         self.product_version_name = None
         self.product_major_version = None
