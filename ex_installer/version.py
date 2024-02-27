@@ -7,11 +7,13 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.17"
+ex_installer_version = "0.0.18"
 
 """
 Version history:
 
+0.0.18      - Update EX-Turntable configuration options to suit changes in 0.7.0
+            - Dependabot update for cryptography to 42.0.4
 0.0.17      - Move fonts to a separate common class
             - Change default font to Arial for Windows/Mac and FreeSans for Linux
             - Update various modules versions to resolve Dependapot identified vulnerabilities

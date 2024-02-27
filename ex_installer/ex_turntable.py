@@ -100,6 +100,7 @@ class EXTurntable(WindowLayout):
                 self.product_minor_version = minor
                 if patch is not None:
                     self.product_patch_version = patch
+        self.get_steppers()
 
     def setup_config_frame(self):
         """
@@ -370,7 +371,6 @@ class EXTurntable(WindowLayout):
         self.advanced_config_enabled.grid(column=0, row=5, sticky="e", **grid_options)
 
         # Set toggles
-        self.get_steppers()
         self.check_stepper(self.stepper_combo.get())
         self.set_home()
         self.set_limit()
@@ -482,6 +482,7 @@ class EXTurntable(WindowLayout):
         """
         Function to read the defined stepper definitions from standard_steppers.h
         """
+        print("Get stepper list")
         self.stepper_list = []
         match = r'^#define\s(.+?)\sAccelStepper.*$'
         definition_file = fm.get_filepath(self.ex_turntable_dir, "standard_steppers.h")
