@@ -94,32 +94,51 @@ class EXTurntable(WindowLayout):
             function_disables_track_manager()
         """
         self.product_version_name = version
+        self.get_steppers()
         if major is not None:
             self.product_major_version = major
             if minor is not None:
                 self.product_minor_version = minor
                 if patch is not None:
                     self.product_patch_version = patch
-        self.get_steppers()
 
     def setup_config_frame(self):
         """
         Setup the container frame for configuration options
 
         Default config parameters from config.example.h:
-        - #define I2C_ADDRESS 0x60
-        - #define TURNTABLE_EX_MODE TURNTABLE
-        - // #define TURNTABLE_EX_MODE TRAVERSER
-        - // #define SENSOR_TESTING
-        - #define HOME_SENSOR_ACTIVE_STATE LOW
-        - #define LIMIT_SENSOR_ACTIVE_STATE LOW
-        - #define RELAY_ACTIVE_STATE HIGH
-        - #define PHASE_SWITCHING AUTO
-        - #define PHASE_SWITCH_ANGLE 45
-        - #define STEPPER_DRIVER ULN2003_HALF_CW (READ FROM standard_steppers.h)
-        - #define DISABLE_OUTPUTS_IDLE
-        - #define STEPPER_MAX_SPEED 200
-        - #define STEPPER_ACCELERATION 25
+        - #define I2C_ADDRESS 0x60                  - General
+        - #define TURNTABLE_EX_MODE TURNTABLE       - General
+        - // #define TURNTABLE_EX_MODE TRAVERSER    - General
+        - // #define SENSOR_TESTING                 - Advanced?
+        - #define HOME_SENSOR_ACTIVE_STATE LOW      - General
+        - #define LIMIT_SENSOR_ACTIVE_STATE LOW     - General
+        - #define RELAY_ACTIVE_STATE HIGH           - General
+        - #define PHASE_SWITCHING AUTO              - General
+        - #define PHASE_SWITCH_ANGLE 45             - General
+        - #define STEPPER_DRIVER ULN2003_HALF_CW    - Stepper
+        - #define DISABLE_OUTPUTS_IDLE              - Stepper
+        - #define STEPPER_MAX_SPEED 200             - Stepper
+        - #define STEPPER_ACCELERATION 25           - Stepper
+
+        New in 0.6.0:
+        - #define STEPPER_GEARING_FACTOR 1          - Stepper
+
+        New in 0.7.0:
+        - // #define INVERT_DIRECTION               - Stepper
+        - // #define INVERT_STEP                    - Stepper
+        - // #define INVERT_ENABLE                  - Stepper
+        - // #define ROTATE_FORWARD_ONLY            - Stepper
+        - // #define ROTATE_REVERSE_ONLY            - Stepper
+
+        Advanced:
+        - #define LED_FAST 100                      - Advanced
+        - #define LED_SLOW 500                      - Advanced
+        - // #define DEBUG                          - Advanced
+        - // #define SANITY_STEPS 10000             - Advanced
+        - // #define HOME_SENSITIVITY 300           - Advanced
+        - // #define FULL_STEP_COUNT 4096           - Advanced
+        - // #define DEBOUNCE_DELAY 10              - Advanced
         """
         grid_options = {"padx": 5, "pady": 5}
         self.config_frame.grid_columnconfigure(0, weight=1)
@@ -164,11 +183,38 @@ class EXTurntable(WindowLayout):
                      "until it stops.")
         advanced_tip = ("Enable this option to be able to directly edit the configuration file on the next screen.")
 
+        # Setup tabview for config options
+        self.config_tabview = ctk.CTkTabview(self.config_frame, border_width=2,
+                                             segmented_button_fg_color="#00A3B9",
+                                             segmented_button_unselected_color="#00A3B9",
+                                             segmented_button_selected_color="#00353D",
+                                             segmented_button_selected_hover_color="#017E8F",
+                                             text_color="white")
+
+        tab_list = [
+            "General",
+            "Stepper Options",
+            "Advanced"
+        ]
+        for tab in tab_list:
+            self.config_tabview.add(tab)
+            self.config_tabview.tab(tab).grid_columnconfigure(0, weight=1)
+            self.config_tabview.tab(tab).grid_rowconfigure(0, weight=1)
+
+        # Tab frames
+        tab_frame_options = {"column": 0, "row": 0, "sticky": "nsew"}
+        self.general_tab_frame = ctk.CTkFrame(self.config_tabview.tab("General"), border_width=0)
+        self.general_tab_frame.grid(**tab_frame_options)
+        self.stepper_tab_frame = ctk.CTkFrame(self.config_tabview.tab("Stepper Options"), border_width=0)
+        self.stepper_tab_frame.grid(**tab_frame_options)
+        self.advanced_tab_frame = ctk.CTkFrame(self.config_tabview.tab("Advanced"), border_width=0)
+        self.advanced_tab_frame.grid(**tab_frame_options)
+
         # Create subframes for grouping
-        self.main_options_frame = ctk.CTkFrame(self.config_frame, width=760)   # I2C, operating mode
-        self.stepper_frame = ctk.CTkFrame(self.config_frame, width=760)    # Stepper driver, disable idle, speed/accel
-        self.phase_frame = ctk.CTkFrame(self.config_frame, width=760)      # Auto, angle, relay active
-        self.sensor_frame = ctk.CTkFrame(self.config_frame, width=760)     # Testing, home/limit
+        self.main_options_frame = ctk.CTkFrame(self.general_tab_frame, width=760)   # I2C, operating mode
+        self.stepper_frame = ctk.CTkFrame(self.general_tab_frame, width=760)    # Stepper driver, disable idle, speed/accel
+        self.phase_frame = ctk.CTkFrame(self.general_tab_frame, width=760)      # Auto, angle, relay active
+        self.sensor_frame = ctk.CTkFrame(self.general_tab_frame, width=760)     # Testing, home/limit
 
         # Instruction widgets
         self.instruction_label = ctk.CTkLabel(self.config_frame, text=instructions, width=780, wraplength=760,
@@ -369,6 +415,7 @@ class EXTurntable(WindowLayout):
         self.phase_frame.grid(column=0, row=3, **frame_grid_options)
         self.sensor_frame.grid(column=0, row=4, **frame_grid_options)
         self.advanced_config_enabled.grid(column=0, row=5, sticky="e", **grid_options)
+        self.config_tabview.grid(column=0, row=1, sticky="nsew", **grid_options)
 
         # Set toggles
         self.check_stepper(self.stepper_combo.get())
@@ -482,7 +529,6 @@ class EXTurntable(WindowLayout):
         """
         Function to read the defined stepper definitions from standard_steppers.h
         """
-        print("Get stepper list")
         self.stepper_list = []
         match = r'^#define\s(.+?)\sAccelStepper.*$'
         definition_file = fm.get_filepath(self.ex_turntable_dir, "standard_steppers.h")
