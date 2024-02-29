@@ -101,6 +101,12 @@ class EXTurntable(WindowLayout):
                 self.product_minor_version = minor
                 if patch is not None:
                     self.product_patch_version = patch
+        if self.product_major_version == 0 and self.product_minor_version < 6:
+            self.gearing_label.grid_remove()
+            self.gearing_entry.grid_remove()
+        else:
+            self.gearing_label.grid()
+            self.gearing_entry.grid()
 
     def setup_config_frame(self):
         """
@@ -110,7 +116,7 @@ class EXTurntable(WindowLayout):
         - #define I2C_ADDRESS 0x60                  - General
         - #define TURNTABLE_EX_MODE TURNTABLE       - General
         - // #define TURNTABLE_EX_MODE TRAVERSER    - General
-        - // #define SENSOR_TESTING                 - Advanced?
+        - // #define SENSOR_TESTING                 - General
         - #define HOME_SENSOR_ACTIVE_STATE LOW      - General
         - #define LIMIT_SENSOR_ACTIVE_STATE LOW     - General
         - #define RELAY_ACTIVE_STATE HIGH           - General
@@ -141,17 +147,14 @@ class EXTurntable(WindowLayout):
         - // #define DEBOUNCE_DELAY 10              - Advanced
         """
         grid_options = {"padx": 5, "pady": 5}
-        self.config_frame.grid_columnconfigure(0, weight=1)
-        self.config_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5), weight=1)
         toggle_options = {"text": None, "fg_color": "#00A3B9", "progress_color": "#00A3B9",
                           "width": 30, "bg_color": "#D9D9D9"}
         toggle_label_options = {"width": 80, "bg_color": "#D9D9D9"}
         subframe_options = {"border_width": 0}
 
         # Instructions
-        instructions = ("EX-Turntable requires a litte more DIY knowledge when it comes to working with stepper " +
-                        "drivers and motors and the home and limit sensors. Please ensure you read the " +
-                        "documentation prior to installing (Click this text to open it).")
+        instructions = ("You must select the appropriate options on the General and Stepper Options tab before " +
+                        "you can continue. Please also ensure you read the documentation prior to installing.")
 
         # Tooltip text
         i2c_tip = ("You need to specify an available, valid I\u00B2C address for EX-Turntable. Valid values are " +
@@ -182,6 +185,18 @@ class EXTurntable(WindowLayout):
         accel_tip = ("This defines the rate at which the stepper speed increases to the top speed, and decreases " +
                      "until it stops.")
         advanced_tip = ("Enable this option to be able to directly edit the configuration file on the next screen.")
+        gear_factor_tip = ("For step counts larger than 32767 you must set an appropriate gearing factor. Click this " +
+                           "tip to open the EX-Turntable documentation.")
+        invert_direction_tip = ("Enable this to invert the direction pin for two wire stepper drivers. This does not " +
+                                "to ULN2003.")
+        invert_step_tip = ("Enable this to invert the step pin for two wire stepper drivers. This does not " +
+                           "to ULN2003.")
+        invert_enable_tip = ("Enable this to invert the enable pin for two wire stepper drivers. This does not " +
+                             "to ULN2003. Enable this if you previously used the A4988_INV stepper option.")
+        forward_only_tip = ("Enable this to force the stepper to rotate in the forward direction only. This can be " +
+                            "useful to work around stepper or gearbox slop.")
+        reverse_only_tip = ("Enable this to force the stepper to rotate in the reverse direction only. This can be " +
+                            "useful to work around stepper or gearbox slop.")
 
         # Setup tabview for config options
         self.config_tabview = ctk.CTkTabview(self.config_frame, border_width=2,
@@ -211,10 +226,10 @@ class EXTurntable(WindowLayout):
         self.advanced_tab_frame.grid(**tab_frame_options)
 
         # Create subframes for grouping
-        self.main_options_frame = ctk.CTkFrame(self.general_tab_frame, width=760)   # I2C, operating mode
-        self.stepper_frame = ctk.CTkFrame(self.general_tab_frame, width=760)    # Stepper driver, disable idle, speed/accel
-        self.phase_frame = ctk.CTkFrame(self.general_tab_frame, width=760)      # Auto, angle, relay active
-        self.sensor_frame = ctk.CTkFrame(self.general_tab_frame, width=760)     # Testing, home/limit
+        self.main_options_frame = ctk.CTkFrame(self.general_tab_frame, width=760, border_width=0)
+        self.stepper_frame = ctk.CTkFrame(self.stepper_tab_frame, width=760, border_width=0)
+        self.phase_frame = ctk.CTkFrame(self.general_tab_frame, width=760, border_width=0)
+        self.sensor_frame = ctk.CTkFrame(self.general_tab_frame, width=760, border_width=0)
 
         # Instruction widgets
         self.instruction_label = ctk.CTkLabel(self.config_frame, text=instructions, width=780, wraplength=760,
@@ -272,34 +287,6 @@ class EXTurntable(WindowLayout):
         self.turntable_label.grid(column=1, row=0, sticky="nse", padx=(5, 0), pady=5)
         self.mode_switch.grid(column=2, row=0, sticky="nsew", padx=0, pady=5)
         self.traverser_label.grid(column=3, row=0, sticky="nsw", padx=(0, 5), pady=5)
-
-        # Create stepper selection widgets
-        self.stepper_label = ctk.CTkLabel(self.stepper_frame, text="Select the stepper driver:",
-                                          font=self.instruction_font)
-        CreateToolTip(self.stepper_label, stepper_tip,
-                      "https://dcc-ex.com/ex-turntable/purchasing.html#supported-stepper-drivers-and-motors")
-        self.stepper_combo = ctk.CTkComboBox(self.stepper_frame, values=["Select stepper driver"],
-                                             width=200, command=self.check_stepper)
-
-        # Create disable stepper widget
-        self.disable_idle_switch = ctk.CTkSwitch(self.stepper_frame, text="Disable stepper when idle",
-                                                 onvalue="on", offvalue="off", font=self.instruction_font)
-        self.disable_idle_switch.select()
-        CreateToolTip(self.disable_idle_switch, idle_tip)
-
-        # Create stepper tuning widgets
-        self.speed_label = ctk.CTkLabel(self.stepper_frame, text="Set the stepper top speed",
-                                        font=self.instruction_font)
-        CreateToolTip(self.speed_label, speed_tip)
-        self.speed = ctk.StringVar(self, value="200")
-        self.speed_entry = ctk.CTkEntry(self.stepper_frame, textvariable=self.speed, font=self.instruction_font,
-                                        width=60)
-        self.accel_label = ctk.CTkLabel(self.stepper_frame, text="Set acceleration rate",
-                                        font=self.instruction_font)
-        CreateToolTip(self.accel_label, accel_tip)
-        self.accel = ctk.StringVar(self, value="25")
-        self.accel_entry = ctk.CTkEntry(self.stepper_frame, textvariable=self.accel, font=self.instruction_font,
-                                        width=40)
 
         # Create phase switch widgets
         self.auto_switch = ctk.CTkSwitch(self.phase_frame, text="Automatic phase switch at angle:",
@@ -363,14 +350,14 @@ class EXTurntable(WindowLayout):
         self.limit_switch.grid(column=2, row=0, sticky="nsew", padx=0, pady=5)
         self.limit_high_label.grid(column=3, row=0, sticky="nsw", padx=(0, 5), pady=5)
 
-        # Create test and stepper disable idle widgets
+        # Create sensor test widget
         self.sensor_test_switch = ctk.CTkSwitch(self.sensor_frame, text="Enable sensor testing mode",
                                                 onvalue="on", offvalue="off", font=self.instruction_font)
         CreateToolTip(self.sensor_test_switch, sensor_test_tip,
                       "https://dcc-ex.com/ex-turntable/traverser.html#considerations-turntable-vs-traverser")
 
-        # Advanced config widget
-        self.advanced_config_enabled = ctk.CTkSwitch(self.config_frame, text="Advanced Config",
+        # Edit config widget
+        self.advanced_config_enabled = ctk.CTkSwitch(self.config_frame, text="Edit Config",
                                                      onvalue="on", offvalue="off",
                                                      font=self.instruction_font,
                                                      command=self.set_advanced_config)
@@ -382,6 +369,58 @@ class EXTurntable(WindowLayout):
         self.i2c_address_frame.grid(column=0, row=0, padx=(5, 0), pady=5)
         self.mode_frame.grid(column=1, row=0, padx=(0, 5), pady=5)
 
+        # Create stepper selection widgets
+        self.stepper_label = ctk.CTkLabel(self.stepper_frame, text="Select the stepper driver:",
+                                          font=self.instruction_font)
+        CreateToolTip(self.stepper_label, stepper_tip,
+                      "https://dcc-ex.com/ex-turntable/purchasing.html#supported-stepper-drivers-and-motors")
+        self.stepper_combo = ctk.CTkComboBox(self.stepper_frame, values=["Select stepper driver"],
+                                             width=200, command=self.check_stepper)
+
+        # Create disable stepper widget
+        self.disable_idle_switch = ctk.CTkSwitch(self.stepper_frame, text="Disable stepper when idle",
+                                                 onvalue="on", offvalue="off", font=self.instruction_font)
+        self.disable_idle_switch.select()
+        CreateToolTip(self.disable_idle_switch, idle_tip)
+
+        # Create stepper tuning widgets
+        self.speed_label = ctk.CTkLabel(self.stepper_frame, text="Set the stepper top speed",
+                                        font=self.instruction_font)
+        CreateToolTip(self.speed_label, speed_tip)
+        self.speed = ctk.StringVar(self, value="200")
+        self.speed_entry = ctk.CTkEntry(self.stepper_frame, textvariable=self.speed, font=self.instruction_font,
+                                        width=60)
+        self.accel_label = ctk.CTkLabel(self.stepper_frame, text="Set acceleration rate",
+                                        font=self.instruction_font)
+        CreateToolTip(self.accel_label, accel_tip)
+        self.accel = ctk.StringVar(self, value="25")
+        self.accel_entry = ctk.CTkEntry(self.stepper_frame, textvariable=self.accel, font=self.instruction_font,
+                                        width=40)
+        self.gearing_label = ctk.CTkLabel(self.stepper_frame, text="Set the gearing factor",
+                                          font=self.instruction_font)
+        CreateToolTip(self.gearing_label, gear_factor_tip,
+                      "https://dcc-ex.com/ex-turntable/configure.html#stepper-gearing-factor")
+        self.gearing = ctk.StringVar(self, value="1")
+        self.gearing_entry = ctk.CTkEntry(self.stepper_frame, textvariable=self.gearing, font=self.instruction_font,
+                                          width=40)
+
+        # Create other stepper widgets
+        self.invert_dir_switch = ctk.CTkSwitch(self.stepper_tab_frame, text="Invert direction pin",
+                                               onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.invert_dir_switch, invert_direction_tip)
+        self.invert_step_switch = ctk.CTkSwitch(self.stepper_tab_frame, text="Invert step pin",
+                                                onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.invert_step_switch, invert_step_tip)
+        self.invert_enable_switch = ctk.CTkSwitch(self.stepper_tab_frame, text="Invert enable pin",
+                                                  onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.invert_enable_switch, invert_enable_tip)
+        self.forward_only_switch = ctk.CTkSwitch(self.stepper_tab_frame, text="Force forward rotation only",
+                                                 onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.forward_only_switch, forward_only_tip)
+        self.reverse_only_switch = ctk.CTkSwitch(self.stepper_tab_frame, text="Force reverse rotation only",
+                                                 onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.reverse_only_switch, reverse_only_tip)
+
         # Layout stepper frame
         self.stepper_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.stepper_frame.grid_rowconfigure((0, 1), weight=1)
@@ -392,6 +431,13 @@ class EXTurntable(WindowLayout):
         self.speed_entry.grid(column=1, row=1, sticky="w", **grid_options)
         self.accel_label.grid(column=2, row=1, sticky="e", **grid_options)
         self.accel_entry.grid(column=3, row=1, sticky="w", **grid_options)
+        self.gearing_label.grid(column=0, row=2, sticky="e", **grid_options)
+        self.gearing_entry.grid(column=1, row=2, sticky="w", **grid_options)
+        self.invert_dir_switch.grid(column=0, row=3, **grid_options)
+        self.invert_step_switch.grid(column=0, row=4, **grid_options)
+        self.invert_enable_switch.grid(column=0, row=5, **grid_options)
+        self.forward_only_switch.grid(column=0, row=6, **grid_options)
+        self.reverse_only_switch.grid(column=0, row=7, **grid_options)
 
         # Layout phase frame
         self.phase_frame.grid_columnconfigure((0, 1, 2), weight=1)
@@ -409,6 +455,8 @@ class EXTurntable(WindowLayout):
 
         # Layout main config frame
         frame_grid_options = {"sticky": "ew", "padx": 30, "pady": 5}
+        self.config_frame.grid_columnconfigure(0, weight=1)
+        self.config_frame.grid_rowconfigure(1, weight=1)
         self.instruction_label.grid(column=0, row=0, **grid_options)
         self.main_options_frame.grid(column=0, row=1, **frame_grid_options)
         self.stepper_frame.grid(column=0, row=2, **frame_grid_options)
