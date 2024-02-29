@@ -241,6 +241,13 @@ class CompileUpload(WindowLayout):
             self.backup_popup.focus()
             self.backup_popup.lift(self)
 
+            # Ensure pop up is within the confines of the app window to start
+            main_window = self.winfo_toplevel()
+            backup_offset_x = main_window.winfo_x() + 75
+            backup_offset_y = main_window.winfo_y() + 200
+            self.backup_popup.geometry(f"+{backup_offset_x}+{backup_offset_y}")
+            self.backup_popup.update()
+
             # Set icon and title
             if sys.platform.startswith("win"):
                 self.backup_popup.after(250, lambda icon=images.DCC_EX_ICON_ICO: self.backup_popup.iconbitmap(icon))
