@@ -197,6 +197,8 @@ class EXTurntable(WindowLayout):
                             "useful to work around stepper or gearbox slop.")
         reverse_only_tip = ("Enable this to force the stepper to rotate in the reverse direction only. This can be " +
                             "useful to work around stepper or gearbox slop.")
+        advanced_tip = ("Refer to the EX-Turntable documentation for information on advanced options. Click this tip " +
+                        "to open the relevant documentation.")
 
         # Setup tabview for config options
         self.config_tabview = ctk.CTkTabview(self.config_frame, border_width=2,
@@ -452,6 +454,71 @@ class EXTurntable(WindowLayout):
         self.home_sensor_frame.grid(column=0, row=0, **grid_options)
         self.limit_sensor_frame.grid(column=1, row=0, **grid_options)
         self.sensor_test_switch.grid(column=0, row=1, columnspan=2, **grid_options)
+
+        # Create advanced widgets
+        self.led_fast = ctk.StringVar(self, value=100)
+        self.led_fast_switch = ctk.CTkSwitch(self.advanced_tab_frame, text="Override fast LED blink rate",
+                                             onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.led_fast_switch, text=advanced_tip,
+                      url="https://dcc-ex.com/ex-turntable/configure.html#advanced-configuration-options")
+        self.led_fast_entry = ctk.CTkEntry(self.advanced_tab_frame, textvariable=self.led_fast,
+                                           font=self.instruction_font, width=60)
+        self.led_slow = ctk.StringVar(self, value=500)
+        self.led_slow_switch = ctk.CTkSwitch(self.advanced_tab_frame, text="Override slow LED blink rate",
+                                             onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.led_slow_switch, text=advanced_tip,
+                      url="https://dcc-ex.com/ex-turntable/configure.html#advanced-configuration-options")
+        self.led_slow_entry = ctk.CTkEntry(self.advanced_tab_frame, textvariable=self.led_slow,
+                                           font=self.instruction_font, width=60)
+        self.sanity_steps = ctk.StringVar(self, value=10000)
+        self.sanity_steps_switch = ctk.CTkSwitch(self.advanced_tab_frame, text="Override sanity step count",
+                                                 onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.sanity_steps_switch, text=advanced_tip,
+                      url="https://dcc-ex.com/ex-turntable/configure.html#advanced-configuration-options")
+        self.sanity_steps_entry = ctk.CTkEntry(self.advanced_tab_frame, textvariable=self.sanity_steps,
+                                               font=self.instruction_font, width=60)
+        self.home_sensitivity = ctk.StringVar(self, value=300)
+        self.home_sensitivity_switch = ctk.CTkSwitch(self.advanced_tab_frame, text="Override homing sensitivity",
+                                                     onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.home_sensitivity_switch, text=advanced_tip,
+                      url="https://dcc-ex.com/ex-turntable/configure.html#advanced-configuration-options")
+        self.home_sensitivity_entry = ctk.CTkEntry(self.advanced_tab_frame, textvariable=self.home_sensitivity,
+                                                   font=self.instruction_font, width=60)
+        self.full_step_count = ctk.StringVar(self, value=4096)
+        self.full_step_count_switch = ctk.CTkSwitch(self.advanced_tab_frame, text="Override full step count",
+                                                    onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.full_step_count_switch, text=advanced_tip,
+                      url="https://dcc-ex.com/ex-turntable/configure.html#advanced-configuration-options")
+        self.full_step_count_entry = ctk.CTkEntry(self.advanced_tab_frame, textvariable=self.full_step_count,
+                                                  font=self.instruction_font, width=60)
+        self.debounce_delay = ctk.StringVar(self, value=10)
+        self.debounce_delay_switch = ctk.CTkSwitch(self.advanced_tab_frame, text="Override debounce delay",
+                                                   onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.debounce_delay_switch, text=advanced_tip,
+                      url="https://dcc-ex.com/ex-turntable/configure.html#advanced-configuration-options")
+        self.debounce_delay_entry = ctk.CTkEntry(self.advanced_tab_frame, textvariable=self.debounce_delay,
+                                                 font=self.instruction_font, width=60)
+        self.debug_switch = ctk.CTkSwitch(self.advanced_tab_frame, text="Enable debug output",
+                                          onvalue="on", offvalue="off", font=self.instruction_font)
+        CreateToolTip(self.debug_switch, text=advanced_tip,
+                      url="https://dcc-ex.com/ex-turntable/configure.html#advanced-configuration-options")
+
+        # Layout advanced tab frame
+        self.advanced_tab_frame.grid_columnconfigure((0, 1), weight=1)
+        self.advanced_tab_frame.grid_rowconfigure((0, 1, 2, 3, 4, 5, 6), weight=1)
+        self.led_fast_switch.grid(column=0, row=0, sticky="w", **grid_options)
+        self.led_fast_entry.grid(column=1, row=0, sticky="w", **grid_options)
+        self.led_slow_switch.grid(column=0, row=1, sticky="w", **grid_options)
+        self.led_slow_entry.grid(column=1, row=1, sticky="w", **grid_options)
+        self.sanity_steps_switch.grid(column=0, row=2, sticky="w", **grid_options)
+        self.sanity_steps_entry.grid(column=1, row=2, sticky="w", **grid_options)
+        self.home_sensitivity_switch.grid(column=0, row=3, sticky="w", **grid_options)
+        self.home_sensitivity_entry.grid(column=1, row=3, sticky="w", **grid_options)
+        self.full_step_count_switch.grid(column=0, row=4, sticky="w", **grid_options)
+        self.full_step_count_entry.grid(column=1, row=4, sticky="w", **grid_options)
+        self.debounce_delay_switch.grid(column=0, row=5, sticky="w", **grid_options)
+        self.debounce_delay_entry.grid(column=1, row=5, sticky="w", **grid_options)
+        self.debug_switch.grid(column=0, row=6, sticky="w", **grid_options)
 
         # Layout main config frame
         frame_grid_options = {"sticky": "ew", "padx": 30, "pady": 5}
