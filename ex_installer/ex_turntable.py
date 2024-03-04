@@ -240,17 +240,17 @@ class EXTurntable(WindowLayout):
 
         # Create I2C widgets
         self.i2c_address = ctk.StringVar(self, value=60)
-        self.i2c_address_frame = ctk.CTkFrame(self.main_options_frame)
+        self.i2c_address_frame = ctk.CTkFrame(self.main_options_frame, border_width=0)
         self.i2c_address_label = ctk.CTkLabel(self.i2c_address_frame, text="Set I\u00B2C address:",
                                               font=self.instruction_font)
         CreateToolTip(self.i2c_address_label, i2c_tip, "https://dcc-ex.com/ex-turntable/configure.html#i2c-address")
-        self.set_i2c_frame = ctk.CTkFrame(self.i2c_address_frame, border_width=2)
+        self.set_i2c_frame = ctk.CTkFrame(self.i2c_address_frame, border_width=2, border_color="#00A3B9")
         self.i2c_address_minus = ctk.CTkButton(self.set_i2c_frame, text="-", width=30,
                                                command=self.decrement_address)
-        self.i2c_entry_frame = ctk.CTkFrame(self.set_i2c_frame, border_width=2, border_color="#00A3B9")
-        self.i2c_0x_label = ctk.CTkLabel(self.set_i2c_frame, text="0x", font=self.instruction_font,
+        self.i2c_entry_frame = ctk.CTkFrame(self.set_i2c_frame, border_width=0)
+        self.i2c_0x_label = ctk.CTkLabel(self.i2c_entry_frame, text="0x", font=self.instruction_font,
                                          width=20, padx=0, pady=0)
-        self.i2c_address_entry = ctk.CTkEntry(self.set_i2c_frame, textvariable=self.i2c_address,
+        self.i2c_address_entry = ctk.CTkEntry(self.i2c_entry_frame, textvariable=self.i2c_address,
                                               width=30, border_width=0, justify="left",
                                               font=self.instruction_font)
         self.i2c_address_plus = ctk.CTkButton(self.set_i2c_frame, text="+", width=30,
@@ -260,7 +260,7 @@ class EXTurntable(WindowLayout):
         self.i2c_address_entry.bind("<FocusOut>", self.validate_i2c_address)
 
         # Layout I2C address frame
-        self.i2c_address_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        self.i2c_address_frame.grid_columnconfigure((0, 1), weight=1)
         self.i2c_address_frame.grid_rowconfigure(0, weight=1)
         self.i2c_entry_frame.grid_columnconfigure((0, 1), weight=1)
         self.i2c_entry_frame.grid_rowconfigure(0, weight=1)
@@ -268,11 +268,11 @@ class EXTurntable(WindowLayout):
         self.set_i2c_frame.grid_rowconfigure(0, weight=1)
         self.set_i2c_frame.grid(column=1, row=0, **grid_options)
         self.i2c_address_label.grid(column=0, row=0, **grid_options)
-        self.i2c_address_minus.grid(column=1, row=0, padx=(5, 0))
-        self.i2c_0x_label.grid(column=0, row=0, sticky="e")
-        self.i2c_address_entry.grid(column=1, row=0, padx=0)
-        self.i2c_entry_frame.grid(column=2, row=0, padx=0)
-        self.i2c_address_plus.grid(column=3, row=0, sticky="w", padx=(0, 5))
+        self.i2c_address_minus.grid(column=1, row=0, padx=(2, 0), pady=2)
+        self.i2c_0x_label.grid(column=0, row=0, sticky="e", pady=2)
+        self.i2c_address_entry.grid(column=1, row=0, padx=0, pady=2)
+        self.i2c_entry_frame.grid(column=2, row=0, padx=0, pady=2)
+        self.i2c_address_plus.grid(column=3, row=0, sticky="w", padx=(0, 2), pady=2)
 
         # Create mode widgets
         self.mode_frame = ctk.CTkFrame(self.main_options_frame, **subframe_options)
@@ -371,8 +371,29 @@ class EXTurntable(WindowLayout):
         # Layout main options frame
         self.main_options_frame.grid_columnconfigure((0, 1), weight=1)
         self.main_options_frame.grid_rowconfigure(0, weight=1)
-        self.i2c_address_frame.grid(column=0, row=0, padx=(5, 0), pady=5)
-        self.mode_frame.grid(column=1, row=0, padx=(0, 5), pady=5)
+        self.i2c_address_frame.grid(column=0, row=0, **grid_options)
+        self.mode_frame.grid(column=1, row=0, **grid_options)
+
+        # Layout phase frame
+        self.phase_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.phase_frame.grid_rowconfigure(0, weight=1)
+        self.auto_switch.grid(column=0, row=0, sticky="e", padx=(5, 1), pady=5)
+        self.phase_angle_entry.grid(column=1, row=0, sticky="w", padx=(1, 5), pady=5)
+        self.relay_frame.grid(column=2, row=0, **grid_options)
+
+        # Layout sensor frame
+        self.sensor_frame.grid_columnconfigure(0, weight=1)
+        self.sensor_frame.grid_rowconfigure(0, weight=1)
+        self.home_sensor_frame.grid(column=0, row=0, **grid_options)
+        self.limit_sensor_frame.grid(column=1, row=0, **grid_options)
+        self.sensor_test_switch.grid(column=0, row=1, columnspan=2, **grid_options)
+
+        # Layout general tab frame
+        self.general_tab_frame.grid_columnconfigure((0, 1), weight=1)
+        self.general_tab_frame.grid_rowconfigure((0, 1, 2), weight=1)
+        self.main_options_frame.grid(column=0, row=0)
+        self.phase_frame.grid(column=0, row=1)
+        self.sensor_frame.grid(column=0, row=2)
 
         # Create stepper frames for grouping
         self.stepper_frame = ctk.CTkFrame(self.stepper_tab_frame, width=760, border_width=0)
@@ -462,20 +483,6 @@ class EXTurntable(WindowLayout):
         self.invert_step_switch.grid(column=1, row=1, **grid_options)
         self.invert_enable_switch.grid(column=2, row=1, **grid_options)
 
-        # Layout phase frame
-        self.phase_frame.grid_columnconfigure((0, 1, 2), weight=1)
-        self.phase_frame.grid_rowconfigure(0, weight=1)
-        self.auto_switch.grid(column=0, row=0, sticky="e", padx=(5, 1), pady=5)
-        self.phase_angle_entry.grid(column=1, row=0, sticky="w", padx=(1, 5), pady=5)
-        self.relay_frame.grid(column=2, row=0, **grid_options)
-
-        # Layout sensor frame
-        self.sensor_frame.grid_columnconfigure(0, weight=1)
-        self.sensor_frame.grid_rowconfigure(0, weight=1)
-        self.home_sensor_frame.grid(column=0, row=0, **grid_options)
-        self.limit_sensor_frame.grid(column=1, row=0, **grid_options)
-        self.sensor_test_switch.grid(column=0, row=1, columnspan=2, **grid_options)
-
         # Create advanced widgets
         adv_switch_width = 220
         self.led_fast = ctk.StringVar(self, value=100)
@@ -554,14 +561,11 @@ class EXTurntable(WindowLayout):
         self.config_frame.grid_columnconfigure(0, weight=1)
         self.config_frame.grid_rowconfigure(1, weight=1)
         self.instruction_label.grid(column=0, row=0, **grid_options)
-        self.main_options_frame.grid(column=0, row=1, **frame_grid_options)
         self.stepper_tab_frame.grid_columnconfigure(0, weight=1)
         self.stepper_tab_frame.grid_rowconfigure((0, 1, 2), weight=1)
         self.stepper_frame.grid(column=0, row=0, **frame_grid_options)
         self.stepper_speed_frame.grid(column=0, row=1, **frame_grid_options)
         self.stepper_switch_frame.grid(column=0, row=2, **frame_grid_options)
-        self.phase_frame.grid(column=0, row=3, **frame_grid_options)
-        self.sensor_frame.grid(column=0, row=4, **frame_grid_options)
         self.advanced_config_enabled.grid(column=0, row=5, sticky="e", **grid_options)
         self.config_tabview.grid(column=0, row=1, sticky="nsew", **grid_options)
 
