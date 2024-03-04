@@ -2,6 +2,23 @@
 Module for a Git client using the pygit2 module
 
 This model enables cloning and selecting versions from GitHub repositories using threads and queues
+
+© 2023, Peter Cole. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
@@ -13,6 +30,15 @@ import re
 import logging
 
 QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
+
+"""
+A list of files that should be in .gitignore and therefore can safely be deleted
+
+This allows proceeding without user interaction if these files are not ignored as they should be
+"""
+gitignore_files = [
+    ".DS_Store"
+]
 
 
 @staticmethod
@@ -97,6 +123,8 @@ class GitClient:
         """
         Function to check for local changes to files in the provided repo
 
+        If file ".DS_Store" is added/modified, this is forcefully discarded as it should be in .gitignore
+
         Returns False (no changes) or a list of changed files
         """
         file_list = None
@@ -105,16 +133,27 @@ class GitClient:
                 file_list = []
                 status = repo.status()
                 for file, flag in status.items():
-                    change = "Unknown"
-                    if flag == pygit2.GIT_STATUS_WT_NEW:
-                        change = "Added"
-                    elif flag == pygit2.GIT_STATUS_WT_DELETED:
-                        change = "Deleted"
-                    elif flag == pygit2.GIT_STATUS_WT_MODIFIED:
-                        change = "Modified"
-                    file_list.append(file + " (" + change + ")")
-                GitClient.log.error("Local file changes in %s", repo)
-                GitClient.log.error(file_list)
+                    if os.path.basename(file) in gitignore_files and flag == pygit2.GIT_STATUS_WT_NEW:
+                        file_path = os.path.join(repo.workdir, file)
+                        try:
+                            os.remove(file_path)
+                        except Exception:
+                            GitClient.log.error("Unable to delete file to ignore: %s", file_path)
+                        else:
+                            GitClient.log.info("File to ignore found and discarded: %s", file_path)
+                status = repo.status()
+                if len(status) > 0:
+                    for file, flag in status.items():
+                        change = "Unknown"
+                        if flag == pygit2.GIT_STATUS_WT_NEW:
+                            change = "Added"
+                        elif flag == pygit2.GIT_STATUS_WT_DELETED:
+                            change = "Deleted"
+                        elif flag == pygit2.GIT_STATUS_WT_MODIFIED:
+                            change = "Modified"
+                        file_list.append(file + " (" + change + ")")
+                    GitClient.log.error("Local file changes in %s", repo)
+                    GitClient.log.error(file_list)
             else:
                 GitClient.log.debug("No local file changes in %s", repo)
         else:
@@ -285,3 +324,16 @@ class GitClient:
                 break
         GitClient.log.debug("Lastest development is %s", devel_version)
         return devel_version
+
+    @staticmethod
+    def git_hard_reset(repo):
+        """
+        Performs a hard reset of the provided repository to the current HEAD
+        """
+        if isinstance(repo, pygit2.Repository):
+            status = repo.status()
+            for file, flag in status.items():
+                if flag == pygit2.GIT_STATUS_WT_NEW:
+                    file_path = os.path.join(repo.workdir, file)
+                    os.remove(file_path)
+            repo.reset(repo.head.peel().oid, pygit2.GIT_RESET_HARD)

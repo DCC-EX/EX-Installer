@@ -1,13 +1,31 @@
 """
 Module for the Select Device page view
+
+© 2023, Peter Cole. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
 import customtkinter as ctk
 import logging
+import serial.tools.list_ports
 
 # Import local modules
-from .common_widgets import WindowLayout
+from .common_widgets import WindowLayout, CreateToolTip
 from . import images
 
 
@@ -51,6 +69,7 @@ class SelectDevice(WindowLayout):
         self.next_back.set_back_command(lambda view="manage_arduino_cli": parent.switch_view(view))
         self.next_back.set_next_text("Select product to install")
         self.next_back.set_next_command(lambda view="select_product": parent.switch_view(view))
+        self.next_back.hide_monitor_button()
 
         # Set up and configure container frame
         self.select_device_frame = ctk.CTkFrame(self.main_frame, height=360)
@@ -79,11 +98,18 @@ class SelectDevice(WindowLayout):
 
         # Create detected device label and grid
         grid_options = {"padx": 5, "pady": 5}
-        self.no_device_label = ctk.CTkLabel(self.select_device_frame, text="No devices found",
+        self.no_device_label = ctk.CTkLabel(self.select_device_frame, text="Scanning for devices",
                                             font=self.bold_instruction_font)
         self.device_list_label = ctk.CTkLabel(self.device_list_frame, text="Select your device",
                                               font=self.instruction_font)
         self.device_list_label.grid(column=0, row=0, columnspan=2, **grid_options)
+
+        # Tooltips
+        no_device_tip = ("The Arduino CLI was unable to detect any valid devices connected to your computer. " +
+                         "This could be due to it not being connected properly, a faulty device or USB cable, " +
+                         "or not having the correct drivers installed for Windows. Refer to our documentation " +
+                         "for help by clicking this window.")
+        CreateToolTip(self.no_device_label, no_device_tip, "https://dcc-ex.com/support/index.html")
 
         # Layout window
         self.instruction_label.grid(column=0, row=0)
@@ -92,6 +118,7 @@ class SelectDevice(WindowLayout):
         self.list_device_button.grid(column=0, row=2)
 
         self.set_state()
+        self.list_devices("list_devices")
 
     def set_state(self):
         self.next_back.hide_log_button()
@@ -113,6 +140,14 @@ class SelectDevice(WindowLayout):
         """
         Use the Arduino CLI to list attached devices
         """
+        multi_device_tip = ("The Arduino CLI has recognised that there are multiple options that match " +
+                            "the device you have plugged in. Please select the correct device from the list " +
+                            "provided.")
+        unknown_device_tip = ("The Arduino CLI has detected a device but is unable to determine the correct type. " +
+                              "This commonly occurs with clone devices using generic USB to serial converters, but " +
+                              "will also occur with ESP32 and STM32 Nucleo devices as they do not use genuine " +
+                              "Arduino device drivers. We have displayed as much information as possible from the " +
+                              "operating system to help you select the correct port your device is attached to.")
         if event == "list_devices":
             self.log.debug("List devices button clicked")
             self.acli.detected_devices.clear()
@@ -147,6 +182,7 @@ class SelectDevice(WindowLayout):
                         self.log.debug(self.acli.detected_devices)
                     for index, item in enumerate(self.acli.detected_devices):
                         text = None
+                        tip = None
                         row = index + 1
                         self.device_list_frame.grid_rowconfigure(row, weight=1)
                         self.log.debug("Process %s at index %s", item, index)
@@ -155,22 +191,28 @@ class SelectDevice(WindowLayout):
                             for matched_board in self.acli.detected_devices[index]["matching_boards"]:
                                 matched_boards.append(matched_board["name"])
                             multi_combo = ctk.CTkComboBox(self.device_list_frame,
-                                                          values="Select the correct device", width=300,
+                                                          values="Select the correct device", width=250,
                                                           command=lambda name, i=index: self.update_board(name, i))
                             multi_combo.grid(column=1, row=row, sticky="e", **grid_options)
                             multi_combo.configure(values=matched_boards)
                             text = "Multiple matches detected"
                             text += " on " + self.acli.detected_devices[index]["port"]
+                            tip = multi_device_tip
                             self.log.debug("Multiple matched devices on %s", self.acli.detected_devices[index]["port"])
                             self.log.debug(self.acli.detected_devices[index]["matching_boards"])
                         elif self.acli.detected_devices[index]["matching_boards"][0]["name"] == "Unknown":
                             unknown_combo = ctk.CTkComboBox(self.device_list_frame,
-                                                            values=["Select the correct device"], width=300,
+                                                            values=["Select the correct device"], width=250,
                                                             command=lambda name, i=index: self.update_board(name, i))
                             unknown_combo.grid(column=1, row=row, sticky="e", **grid_options)
                             unknown_combo.configure(values=supported_boards)
-                            text = "Unknown or clone detected"
-                            text += " on " + self.acli.detected_devices[index]["port"]
+                            port_description = self.get_port_description(self.acli.detected_devices[index]["port"])
+                            if port_description:
+                                text = f"Unknown/clone detected as {port_description}"
+                            else:
+                                text = ("Unknown or clone device detected on " +
+                                        self.acli.detected_devices[index]['port'])
+                            tip = unknown_device_tip
                             self.log.debug("Unknown or clone device on %s", self.acli.detected_devices[index]["port"])
                         else:
                             text = self.acli.detected_devices[index]["matching_boards"][0]["name"]
@@ -180,12 +222,16 @@ class SelectDevice(WindowLayout):
                         radio_button = ctk.CTkRadioButton(self.device_list_frame, text=text,
                                                           variable=self.selected_device, value=index,
                                                           command=self.select_device)
+                        if tip is not None:
+                            CreateToolTip(radio_button, tip)
                         radio_button.grid(column=0, row=row, sticky="w", **grid_options)
+                else:
+                    self.no_device_label.configure(text="No devices found")
                 self.set_state()
                 self.process_stop()
                 self.restore_input_states()
             elif self.process_status == "error":
-                self.process_error("Error scanning for devices")
+                self.process_error(self.process_topic)
                 self.restore_input_states()
 
     def update_board(self, name, index):
@@ -207,5 +253,23 @@ class SelectDevice(WindowLayout):
             self.log.debug("Selected %s on port %s",
                            self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["name"],
                            self.acli.detected_devices[self.acli.selected_device]["port"])
+            self.next_back.show_monitor_button()
         else:
             self.next_back.disable_next()
+            self.next_back.hide_monitor_button()
+
+    def get_port_description(self, unknown_port):
+        """
+        Function to obtain USB/serial port descriptions using pyserial for ports the CLI doesn't identify
+        """
+        description = False
+        port_list = serial.tools.list_ports.comports()
+        if isinstance(port_list, list):
+            for port in port_list:
+                if port.device == unknown_port:
+                    if port.product is not None:
+                        description = f" {port.product} ({port.device})"
+                    else:
+                        description = port.description
+                    break
+        return description

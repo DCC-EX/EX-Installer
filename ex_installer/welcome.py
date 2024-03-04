@@ -31,6 +31,7 @@ class Welcome(WindowLayout):
         self.next_back.set_next_text("Manage Arduino CLI")
         self.next_back.set_next_command(lambda view="manage_arduino_cli": parent.switch_view(view))
         self.next_back.hide_log_button()
+        self.next_back.hide_monitor_button()
 
         # Create and configure welcome container
         self.welcome_frame = ctk.CTkFrame(self.main_frame, height=360)
@@ -43,16 +44,11 @@ class Welcome(WindowLayout):
         self.version_label = ctk.CTkLabel(self.welcome_frame, text=(f"Version {self.app_version}"),
                                           font=self.instruction_font)
 
-        # Debug switch
-        self.debug_switch = ctk.CTkSwitch(self.welcome_frame, text="Enable debug logging",
-                                          onvalue="on", offvalue="off", command=self.set_debug)
-
         # Layout frame
         grid_options = {"padx": 5, "pady": 5}
 
         self.welcome_textbox.grid(column=0, row=0, **grid_options)
         self.version_label.grid(column=0, row=20, sticky="s", **grid_options)
-        self.debug_switch.grid(column=0, row=20, sticky="se", **grid_options)
 
         self.set_text()
 
@@ -84,12 +80,3 @@ class Welcome(WindowLayout):
             "left of each page will allow you to go back and change your selections.)\n\n"
         )
         self.welcome_textbox.configure(state="disabled")
-
-    def set_debug(self):
-        """
-        Function to enable or disable debug logging
-        """
-        if self.debug_switch.get() == "on":
-            self.log.parent.setLevel(logging.DEBUG)
-        elif self.debug_switch.get() == "off":
-            self.log.parent.setLevel(logging.WARNING)

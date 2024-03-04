@@ -1,5 +1,22 @@
 """
 Module for managing the Arduino CLI page view
+
+© 2023, Peter Cole. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
@@ -7,8 +24,9 @@ import customtkinter as ctk
 import logging
 
 # Import local modules
-from .common_widgets import WindowLayout
+from .common_widgets import WindowLayout, CreateToolTip
 from . import images
+from .product_details import product_details as pd
 
 
 class ManageArduinoCLI(WindowLayout):
@@ -25,8 +43,8 @@ class ManageArduinoCLI(WindowLayout):
                                 "Note that enabling additional platforms is likely to add several minutes to the " +
                                 "installation process. Maybe grab a cup of tea or a coffee!")
     refresh_instruction_text = ("While the Arduino CLI is installed, it is recommended to refresh it periodically " +
-                                "(eg. weekly) to ensure support for the various devices is kept up to date. To refresh " +
-                                "the CLI, simply click the refresh button.\n\n"
+                                "(eg. weekly) to ensure support for the various devices is kept up to date. To " +
+                                "refresh the CLI, simply click the refresh button.\n\n"
                                 "Note that enabling any of the additional platforms is likely to add " +
                                 "several minutes to the refresh process. Maybe grab a cup of tea or a coffee!")
 
@@ -58,6 +76,9 @@ class ManageArduinoCLI(WindowLayout):
             "Arduino AVR": "arduino:avr"
         }
 
+        # Set up list for library installs
+        self.library_list = []
+
         # Set title and logo
         self.set_title_logo(images.EX_INSTALLER_LOGO)
         self.set_title_text("Manage the Arduino CLI")
@@ -66,9 +87,9 @@ class ManageArduinoCLI(WindowLayout):
         self.next_back.show_back()
         self.next_back.set_back_text("Welcome")
         self.next_back.set_back_command(lambda view="welcome": parent.switch_view(view))
-
         self.next_back.set_next_text("Select your device")
         self.next_back.set_next_command(lambda view="select_device": parent.switch_view(view))
+        self.next_back.hide_monitor_button()
 
         # Create, grid, and configure container frame
         self.manage_cli_frame = ctk.CTkFrame(self.main_frame, height=360)
@@ -102,11 +123,21 @@ class ManageArduinoCLI(WindowLayout):
                                                   text="Enable extra platforms")
         self.extra_platforms_label.grid(column=0, row=0, sticky="ew", **grid_options)
         switch_options = {"onvalue": "on", "offvalue": "off"}
+
+        # Tooltip
+        extra_platforms_tip = ("If you are using common Arduino AVR devices (eg. Mega2560, Uno, or Nano), then you " +
+                               "can disregard these options as support is already included with the Arduino CLI.")
+        CreateToolTip(self.extra_platforms_label, extra_platforms_tip)
+
         for index, platform in enumerate(self.acli.extra_platforms):
+            platform_tip = (f"Support for {platform} devices is not included with the Arduino CLI by default. " +
+                            "In order to be able to load any of our software on to these devices, you must " +
+                            "enable this option.")
             self.extra_platforms_frame.grid_rowconfigure(index+1, weight=1)
             switch_var = ctk.StringVar(value="off")
             switch = ctk.CTkSwitch(self.extra_platforms_frame, variable=switch_var, text=platform, **switch_options)
             switch.configure(command=lambda object=switch: self.update_package_list(object))
+            CreateToolTip(switch, platform_tip)
             switch.grid(column=0, row=index+1, sticky="w", **grid_options)
 
         # Layout frame
@@ -120,6 +151,7 @@ class ManageArduinoCLI(WindowLayout):
 
     def set_state(self):
         self.next_back.hide_log_button()
+        self.get_library_list()
         if self.acli.is_installed(self.acli.cli_file_path()):
             self.cli_state_label.configure(text=self.installed_text,
                                            text_color="#00353D",
@@ -137,6 +169,16 @@ class ManageArduinoCLI(WindowLayout):
             self.manage_cli_button.configure(text="Install Arduino CLI",
                                              command=lambda event="install_cli": self.manage_cli(event))
             self.next_back.disable_next()
+
+    def get_library_list(self):
+        """
+        Get list of library dependencies from product details
+        """
+        self.library_list = []
+        for product in pd:
+            if "arduino_libraries" in pd[product]:
+                for library in pd[product]["arduino_libraries"]:
+                    self.library_list.append(library)
 
     def update_package_list(self, switch):
         """
@@ -202,10 +244,12 @@ class ManageArduinoCLI(WindowLayout):
                 self.process_start("extract_cli", "Installing the Arduino CLI", "Manage_CLI")
                 self.acli.install_cli(download_file, self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error("Error downloading the Arduino CLI")
+                self.process_error(self.process_topic)
+                self.restore_input_states()
         elif event == "refresh_cli" or self.process_phase == "extract_cli":
             if event == "refresh_cli":
                 self.disable_input_states(self)
+                self.get_library_list()
             if self.process_status == "success" or event == "refresh_cli":
                 self.process_start("config_cli", "Configuring the Arduino CLI", "Manage_CLI")
                 for widget in self.extra_platforms_frame.winfo_children():
@@ -216,13 +260,15 @@ class ManageArduinoCLI(WindowLayout):
                                 )
                 self.acli.initialise_config(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error("Error installing the Arduino CLI")
+                self.process_error(self.process_topic)
+                self.restore_input_states()
         elif self.process_phase == "config_cli":
             if self.process_status == "success":
                 self.process_start("update_index", "Updating core index", "Manage_CLI")
                 self.acli.update_index(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error("Error configuring the Arduino CLI")
+                self.process_error(self.process_topic)
+                self.restore_input_states()
         elif self.process_phase == "update_index" or self.process_phase == "install_packages":
             if self.process_status == "success":
                 if self.package_dict:
@@ -231,20 +277,36 @@ class ManageArduinoCLI(WindowLayout):
                     self.acli.install_package(self.acli.cli_file_path(), self.package_dict[package], self.queue)
                     del self.package_dict[package]
                 else:
+                    self.process_stop()
+                    self.manage_cli("install_libraries")
+            elif self.process_status == "error":
+                self.process_error(self.process_topic)
+                self.restore_input_states()
+        elif event == "install_libraries" or self.process_phase == "install_libraries":
+            if self.process_status == "success" or event == "install_libraries":
+                if len(self.library_list) > 0:
+                    library = self.library_list[0]
+                    del self.library_list[0]
+                    self.process_start("install_libraries", "Install Arduino library " + library, "Manage_CLI")
+                    self.acli.install_library(self.acli.cli_file_path(), library, self.queue)
+                else:
                     self.process_start("upgrade_platforms", "Upgrading Arduino platforms", "Manage_CLI")
                     self.acli.upgrade_platforms(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error("Error updating core index")
+                self.process_error(self.process_topic)
+                self.restore_input_states()
         elif self.process_phase == "upgrade_platforms":
             if self.process_status == "success":
                 self.process_start("refresh_list", "Refreshing Arduino CLI board list", "Manage_CLI")
                 self.acli.list_boards(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
-                self.process_error("Error upgrading platforms")
+                self.process_error(self.process_topic)
+                self.restore_input_states()
         elif self.process_phase == "refresh_list":
             if self.process_status == "success":
                 self.process_stop()
                 self.restore_input_states()
                 self.set_state()
             elif self.process_status == "error":
-                self.process_error("Error refreshing board list")
+                self.process_error(self.process_topic)
+                self.restore_input_states()

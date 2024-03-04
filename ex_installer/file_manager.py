@@ -2,6 +2,23 @@
 Module for file management
 
 Downloading, extracting
+
+© 2023, Peter Cole. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 import platform
@@ -235,9 +252,9 @@ class FileManager:
         - a valid Python regular expression with grouping, where a match is made on one group only (group 1)
         - a file name
 
-        This is a valid example of a pattern: r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
-        This is an invalid example of a pattern: r"^config\.h$"
-        This would be valid, but better to just provide filename: r"^(config\.h)$"
+        This is a valid example of a pattern: r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"  # noqa: W605
+        This is an invalid example of a pattern: r"^config\.h$"  # noqa: W605
+        This would be valid, but better to just provide filename: r"^(config\.h)$"  # noqa: W605
         """
         if os.path.exists(dir):
             config_files = []
@@ -292,6 +309,20 @@ class FileManager:
             return str(error)
 
     @staticmethod
+    def read_config_file(file_path):
+        """Function to read and return file contents
+        Pass the full path to the file
+        Returns the text from the file path if successful, otherwise the exception error message
+        """
+        try:
+            file = open(file_path, "r", encoding="utf-8")
+            lines = file.read()
+            file.close()
+            return lines
+        except Exception as error:
+            return str(error)
+
+    @staticmethod
     def dir_is_empty(dir):
         """
         Check if directory is empty
@@ -322,3 +353,34 @@ class FileManager:
             return failed_files
         else:
             return None
+
+    @staticmethod
+    def delete_config_files(dir, file_list):
+        """
+        Delete the specified list of files from sepcified directory
+
+        Returns None if successful, otherwise a list of files that failed to copy
+        """
+        failed_files = []
+        for file_name in file_list:
+            file = os.path.join(dir, file_name)
+            try:
+                os.remove(file)
+            except Exception:
+                failed_files.append(file_name)
+        if len(failed_files) > 0:
+            return failed_files
+        else:
+            return None
+
+    @staticmethod
+    def is_valid_dir(dir):
+        """
+        Simply checks directory exists and that it is a directory
+
+        Returns True or False
+        """
+        if os.path.exists(dir) and os.path.isdir(dir):
+            return True
+        else:
+            return False

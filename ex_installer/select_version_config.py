@@ -8,6 +8,7 @@ Also will allow for selecting a directory containing existing config files
 import customtkinter as ctk
 import os
 import logging
+from CTkMessagebox import CTkMessagebox
 
 # Import local modules
 from .common_widgets import WindowLayout
@@ -61,6 +62,7 @@ class SelectVersionConfig(WindowLayout):
         self.next_back.set_next_command(None)
         self.next_back.disable_next()
         self.next_back.hide_log_button()
+        self.next_back.hide_monitor_button()
 
         # Set up and grid container frame
         self.version_frame = ctk.CTkFrame(self.main_frame, height=360)
@@ -153,23 +155,25 @@ class SelectVersionConfig(WindowLayout):
         - check if the product directory already exists
         - if so
             - if the product directory is already a cloned repo
-            - any locally modified files that would interfere with Git commands
-            - any existing configuration files
+            - any locally modified files that would interfere with Git commands (prompt to resolve)
+            - delete any existing configuration files
         - if not, clone repo
         - get list of versions, latest prod, and latest devel versions
         """
         if event == "setup_local_repo":
             self.log.debug("Setting up local repository")
             self.disable_input_states(self)
+            self.delete_config_files()
             if os.path.exists(self.product_dir) and os.path.isdir(self.product_dir):
                 if self.git.dir_is_git_repo(self.product_dir):
                     self.repo = self.git.get_repo(self.product_dir)
                     if self.repo:
                         changes = self.git.check_local_changes(self.repo)
                         if changes:
-                            self.process_error(f"Local changes detected: f{changes}")
+                            self.process_error("Local changes have been detected that require resolution")
                             self.restore_input_states()
                             self.log.error("Local repository file changes: %s", changes)
+                            self.resolve_local_changes(changes)
                         else:
                             self.setup_local_repo("get_latest")
                     else:
@@ -244,20 +248,17 @@ class SelectVersionConfig(WindowLayout):
         """
         Function to checkout the selected version according to the radio buttons
         """
-        if self.select_version.get() == 0:
+        if self.select_version.get() == 0 and self.latest_prod:
             self.repo.checkout(refname=self.latest_prod[1])
-            self.next_back.enable_next()
             self.log.debug("Latest prod selected: %s", self.latest_prod[1])
             self.set_next_config()
-        elif self.select_version.get() == 1:
+        elif self.select_version.get() == 1 and self.latest_devel:
             self.repo.checkout(refname=self.latest_devel[1])
-            self.next_back.enable_next()
             self.log.debug("Latest devel selected: %s", self.latest_devel[1])
             self.set_next_config()
         elif self.select_version.get() == 2:
             if self.select_version_combo.get() != "Select a version":
                 self.repo.checkout(refname=self.version_list[self.select_version_combo.get()]["ref"])
-                self.next_back.enable_next()
                 self.log.debug("Version selected: %s", self.version_list[self.select_version_combo.get()]["ref"])
                 self.set_next_config()
             else:
@@ -276,34 +277,43 @@ class SelectVersionConfig(WindowLayout):
         Function to select what configuration to do next
         """
         if self.config_option.get() == 0:
+            self.master.use_existing = False
             set_version = None
             if self.select_version.get() == 0:
                 set_version = self.latest_prod[0]
+                self.next_back.enable_next()
             elif self.select_version.get() == 1:
                 set_version = self.latest_devel[0]
+                self.next_back.enable_next()
             elif self.select_version.get() == 2:
                 if self.select_version_combo.get() != "Select a version":
                     set_version = self.select_version_combo.get()
+                    self.next_back.enable_next()
             if self.set_version:
                 self.next_back.set_next_command(lambda next_product=self.product,
                                                 set_version=set_version: self.master.switch_view(next_product,
                                                                                                  None,
                                                                                                  set_version))
-                self.next_back.enable_next()
             else:
                 self.next_back.disable_next()
             self.next_back.set_next_text(f"Configure {pd[self.product]['product_name']}")
         elif self.config_option.get() == 1:
+            self.master.use_existing = True
             self.next_back.set_next_command(self.copy_config_files)
-            self.next_back.set_next_text("Compile and upload")
+            self.next_back.set_next_text("Advanced Config")
             self.validate_config_dir()
 
     def browse_configdir(self):
         """
-        Opens a directory browser dialogue to select the folder containing config files
+        Opens a file browser dialogue to allow user to select a config file to use
+
+        Uses directory of this file to set the config directory
+
+        This is a workaround for "askdirectory()" not showing files, which is confusing for users
         """
-        directory = ctk.filedialog.askdirectory()
-        if directory:
+        select_file = ctk.filedialog.askopenfilename()
+        if select_file:
+            directory = os.path.dirname(select_file)
             self.config_path.set(directory)
             self.config_option.set(1)
             self.set_next_config()
@@ -317,38 +327,84 @@ class SelectVersionConfig(WindowLayout):
         - Contains at least the specified minimum config files
         """
         if self.config_path.get():
-            config_files = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
-            if config_files:
-                self.next_back.enable_next()
-            else:
-                file_names = ", ".join(pd[self.product]["minimum_config_files"])
-                self.process_error(("Selected configuration directory is missing the required files: " +
-                                   f"{file_names}"))
+            if os.path.realpath(self.config_path.get()) == os.path.realpath(self.product_dir):
+                self.process_error("You cannot use EX-Installer's own generated files as these will be overwritten")
                 self.next_back.disable_next()
-                self.log.error("Config dir %s missing minimum config files %s", self.config_path.get(),
-                               config_files)
+                self.log.error(f"EX-Installer repository folder location chosen: {self.product_dir}")
+            else:
+                config_files = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
+                if config_files:
+                    self.next_back.enable_next()
+                else:
+                    file_names = ", ".join(pd[self.product]["minimum_config_files"])
+                    self.process_error(("Selected configuration directory is missing the required files: " +
+                                       f"{file_names}"))
+                    self.next_back.disable_next()
+                    self.log.error("Config dir %s missing minimum config files %s", self.config_path.get(),
+                                   config_files)
         else:
             self.next_back.disable_next()
 
+    def delete_config_files(self):
+        """
+        Function to delete config files from product directory
+          needed on subsequent passes thru the logic
+        """
+        file_list = []
+        min_list = fm.get_config_files(self.product_dir, pd[self.product]["minimum_config_files"])
+        if min_list:
+            file_list += min_list
+        other_list = None
+        if "other_config_files" in pd[self.product]:
+            other_list = fm.get_config_files(self.product_dir, pd[self.product]["other_config_files"])
+        if other_list:
+            file_list += other_list
+        self.log.debug("Deleting files: %s", file_list)
+        error_list = fm.delete_config_files(self.product_dir, file_list)
+        if error_list:
+            file_list = ", ".join(error_list)
+            self.process_error(f"Failed to delete one or more files: {file_list}")
+            self.log.error("Failed to delete: %s", file_list)
+
     def copy_config_files(self):
         """
-        Function to either create config files or copy from specified directory
+        Function to copy config files from selected directory to product directory
+          also switches view to advanced_config if copy is successful
         """
-        if self.config_option.get() == 0:
-            self.master.switch_view("compile_upload", self.product)
-        elif self.config_option.get() == 1:
-            copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
-            if copy_list:
-                extra_list = fm.get_config_files(self.config_path.get(), pd[self.product]["other_config_files"])
-                if extra_list:
-                    copy_list += extra_list
-                file_copy = fm.copy_config_files(self.config_path.get(), self.product_dir, copy_list)
-                if file_copy:
-                    file_list = ", ".join(file_copy)
-                    self.process_error(f"Failed to copy one or more files: {file_list}")
-                    self.log.error("Failed to copy: %s", file_list)
-                else:
-                    self.master.switch_view("compile_upload", self.product)
+        copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
+        if copy_list:
+            extra_list = fm.get_config_files(self.config_path.get(), pd[self.product]["other_config_files"])
+            if extra_list:
+                copy_list += extra_list
+            file_copy = fm.copy_config_files(self.config_path.get(), self.product_dir, copy_list)
+            if file_copy:
+                file_list = ", ".join(file_copy)
+                self.process_error(f"Failed to copy one or more files: {file_list}")
+                self.log.error("Failed to copy: %s", file_list)
             else:
-                self.process_error("Selected configuration directory is missing the required files")
-                self.log.error("Directory %s is missing required files", self.config_path.get())
+                self.master.switch_view("advanced_config", self.product)
+        else:
+            self.process_error("Selected configuration directory is missing the required files")
+            self.log.error("Directory %s is missing required files", self.config_path.get())
+
+    def resolve_local_changes(self, changes):
+        """
+        Function to prompt the user to resolve locally detected repository changes
+
+        Resolution means perforing a git hard reset, cancel means exiting the app
+        """
+        message = f"WARNING: The following changes have been detected in {pd[self.product]['product_name']}:\n"
+        for change in changes:
+            message += change + "\n"
+        message += ("\nYou can either override these changes or cancel and resolve these issues manually.\n\n"
+                    "(Note that overriding will delete any added files, undo any modifications,"
+                    " and restore deleted files)")
+        resolver = CTkMessagebox(master=self.parent, title="Local changes detected", icon="warning",
+                                 message=message, border_width=3, width=500, cancel_button=None,
+                                 option_2="Override", option_1="Cancel", icon_size=(30, 30),
+                                 font=self.common_fonts.instruction_font)
+        if resolver.get() == "Override":
+            self.git.git_hard_reset(self.repo)
+            self.setup_local_repo("setup_local_repo")
+        else:
+            self.parent.switch_view("select_product")

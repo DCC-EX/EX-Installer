@@ -2,6 +2,23 @@
 Module to define widgets used across the application
 
 Every view should include this module and base the layout on WindowLayout
+
+© 2023, Peter Cole. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
@@ -12,9 +29,12 @@ import logging
 import platform
 import os
 import subprocess
+import webbrowser
 
 # Import local modules
 from . import images
+from .serial_monitor import SerialMonitor
+from .common_fonts import CommonFonts
 
 
 class WindowLayout(ctk.CTkFrame):
@@ -35,8 +55,14 @@ class WindowLayout(ctk.CTkFrame):
         self.acli = parent.acli
         self.git = parent.git
 
+        # Set up fonts
+        self.common_fonts = CommonFonts(self)
+
         # Get application version
         self.app_version = parent.app_version
+
+        # Set parent
+        self.parent = parent
 
         # Product version variables
         self.product_version_name = None
@@ -57,24 +83,14 @@ class WindowLayout(ctk.CTkFrame):
         self.widget_states = []
 
         # Define fonts
-        self.instruction_font = ctk.CTkFont(family="Helvetica",
-                                            size=14,
-                                            weight="normal")
-        self.bold_instruction_font = ctk.CTkFont(family="Helvetica",
-                                                 size=14,
-                                                 weight="bold")
-        self.title_font = ctk.CTkFont(family="Helvetica",
-                                      size=30,
-                                      weight="normal")
-        self.heading_font = ctk.CTkFont(family="Helvetica",
-                                        size=24,
-                                        weight="bold")
-        self.button_font = ctk.CTkFont(family="Helvetica",
-                                       size=13,
-                                       weight="bold")
-        self.action_button_font = ctk.CTkFont(family="Helvetica",
-                                              size=16,
-                                              weight="bold")
+        self.instruction_font = self.common_fonts.instruction_font
+        self.bold_instruction_font = self.common_fonts.bold_instruction_font
+        self.large_bold_instruction_font = self.common_fonts.large_bold_instruction_font
+        self.small_italic_instruction_font = self.common_fonts.small_italic_instruction_font
+        self.title_font = self.common_fonts.title_font
+        self.heading_font = self.common_fonts.heading_font
+        self.button_font = self.common_fonts.button_font
+        self.action_button_font = self.common_fonts.action_button_font
 
         # Define top level frames
         self.title_frame = ctk.CTkFrame(self, width=790, height=80)
@@ -166,7 +182,7 @@ class WindowLayout(ctk.CTkFrame):
         Stops the progress bar and resets status text
         """
         self.progress_bar.stop()
-        self.status_label.configure(text="Idle")
+        self.status_label.configure(text="Idle", text_color="#00353D")
         self.process_phase = None
 
     def process_error(self, message):
@@ -224,9 +240,12 @@ class NextBack(ctk.CTkFrame):
         # Set up logger
         self.log = logging.getLogger(__name__)
 
-        self.grid_columnconfigure((0, 1, 2), weight=1)
+        self.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
 
-        button_font = ctk.CTkFont(family="Helvetica", size=14, weight="bold")
+        # Set up fonts
+        self.common_fonts = CommonFonts(self)
+
+        button_font = self.common_fonts.button_font
         button_options = {"width": 220, "height": 30, "font": button_font}
 
         self.back_arrow = Image.open(images.BACK_ARROW)
@@ -247,8 +266,13 @@ class NextBack(ctk.CTkFrame):
                                         command=self.show_log)
 
         self.back_button.grid(column=0, row=0, padx=3, pady=3, sticky="w")
-        self.log_button.grid(column=1, row=0)
-        self.next_button.grid(column=2, row=0, padx=3, pady=3, sticky="e")
+        self.log_button.grid(column=2, row=0)
+        self.next_button.grid(column=4, row=0, padx=3, pady=3, sticky="e")
+
+        self.monitor_window = None
+        self.monitor_button = ctk.CTkButton(self, text="View device monitor", command=self.monitor,
+                                            width=150, height=30, font=button_font)
+        self.monitor_button.grid(column=2, row=0)
 
     def set_back_text(self, text):
         """Update back button text"""
@@ -314,6 +338,29 @@ class NextBack(ctk.CTkFrame):
         else:
             subprocess.call(("xdg-open", log_file))
 
+    def hide_monitor_button(self):
+        """
+        Function to hide the monitor button
+        """
+        self.monitor_button.grid_remove()
+
+    def show_monitor_button(self):
+        """
+        Function to show the monitor button
+        """
+        self.monitor_button.grid()
+
+    def monitor(self):
+        """
+        Function to open the serial monitor window
+        """
+        if self.monitor_window is None or not self.monitor_window.winfo_exists():
+            self.monitor_window = SerialMonitor(self)
+            self.monitor_window.focus()
+            self.monitor_window.lift(self)
+        else:
+            self.monitor_window.focus()
+
 
 class FormattedTextbox(ctk.CTkTextbox):
     """
@@ -342,7 +389,10 @@ class FormattedTextbox(ctk.CTkTextbox):
         """
         super().__init__(*args, **kwargs)
 
-        default_font = ctk.CTkFont(family="Helvetica", size=14, weight="normal")
+        # Set up fonts
+        self.common_fonts = CommonFonts(self)
+
+        default_font = self.common_fonts.instruction_font
         em = default_font.measure("m")
         lmargin2 = em + default_font.measure("\u2022")
         self.tag_config("bullet", lmargin1=em, lmargin2=lmargin2, spacing1=1, spacing2=1, spacing3=1)
@@ -352,3 +402,107 @@ class FormattedTextbox(ctk.CTkTextbox):
         Function to insert a bullet point
         """
         self.insert(index, f"\u2022 {text}", "bullet")
+
+
+class CreateToolTip(object):
+    """
+    Create a tooltip for a given widget with an optional URL
+
+    To use, simply include this class and call it as such:
+
+    from .common_widgets import CreateToolTip
+
+    self.widget = <CustomTkinter widget creation>
+    CreateTooltip(self.widget, "Tool tip contextual help text"[, URL])
+    """
+    def __init__(self, widget, text='widget info', url=None):
+        """
+        Instantiate object
+        """
+        self.wait_time = 500     # milliseconds
+        self.hide_time = self.wait_time
+        self.wraplength = 300   # pixels
+        self.widget = widget
+        self.text = text
+        self.url = url
+        self.widget.bind("<Enter>", self.enter_widget)
+        self.widget.bind("<Leave>", self.leave_widget)
+        self.widget.bind("<ButtonPress>", self.leave_widget)
+        self.id = None
+        self.tw = None
+
+        # Set up fonts
+        self.common_fonts = CommonFonts(self)
+
+    def enter_widget(self, event=None):
+        """
+        When hovered/entered widget, schedule it to start
+        """
+        self.schedule_tooltip()
+
+    def leave_widget(self, event=None):
+        """
+        When leaving the widget, schedule the hide
+        """
+        self.unschedule_tooltip()
+        if hasattr(self, "toplevel"):
+            if self.toplevel is not None:
+                self.toplevel.after(self.hide_time, self.hide_tooltip)
+
+    def schedule_tooltip(self):
+        """
+        Schedule the tip to appear
+        """
+        self.unschedule_tooltip()
+        self.id = self.widget.after(self.wait_time, self.show_tooltip)
+
+    def unschedule_tooltip(self):
+        """
+        Cancel the schedule
+        """
+        id = self.id
+        self.id = None
+        if id:
+            self.widget.after_cancel(id)
+
+    def show_tooltip(self, event=None):
+        """
+        Show the tooltip
+        """
+        tooltip_font = self.common_fonts.bold_instruction_font
+        x = y = 0
+        x, y, cx, cy = self.widget.bbox("insert")
+        x += self.widget.winfo_rootx() + 25
+        y += self.widget.winfo_rooty() + 20
+        # creates a toplevel window
+        self.toplevel = ctk.CTkToplevel(self.widget)
+        # Leaves only the label and removes the app window
+        self.toplevel.wm_overrideredirect(True)
+        self.toplevel.wm_geometry("+%d+%d" % (x, y))
+        self.frame = ctk.CTkFrame(self.toplevel, border_color="#00A3B9", border_width=5, fg_color="#00353D",
+                                  corner_radius=0)
+        self.toplevel.grid_columnconfigure(0, weight=1)
+        self.toplevel.grid_rowconfigure(0, weight=1)
+        self.frame.grid(column=0, row=0)
+        self.frame.grid_columnconfigure(0, weight=1)
+        self.frame.grid_rowconfigure(0, weight=1)
+        self.label = ctk.CTkLabel(self.frame, text=self.text, justify='left', font=tooltip_font,
+                                  wraplength=self.wraplength, text_color="white")
+        if self.url is not None:
+            self.label.bind("<Button-1>", lambda x: self.open_url(self.url))
+        self.label.grid(column=0, row=0, sticky="nsew", padx=15, pady=15)
+
+    def hide_tooltip(self):
+        """
+        Hides the tooltip
+        """
+        toplevel = self.toplevel
+        self.toplevel = None
+        if toplevel:
+            toplevel.destroy()
+
+    def open_url(self, url):
+        """
+        Open the provided URL using the webbrowser module
+        """
+        webbrowser.open_new(url)

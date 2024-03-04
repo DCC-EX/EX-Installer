@@ -1,5 +1,22 @@
 """
 Module for the Select Product page view
+
+© 2023, Peter Cole. All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
@@ -35,6 +52,7 @@ class SelectProduct(WindowLayout):
         self.next_back.set_back_text("Select Device")
         self.next_back.set_back_command(lambda view="select_device": parent.switch_view(view))
         self.next_back.hide_next()
+        self.next_back.hide_monitor_button()
 
         # Set up and configure the container frame
         self.select_product_frame = ctk.CTkFrame(self.main_frame, height=360)
@@ -68,20 +86,23 @@ class SelectProduct(WindowLayout):
                           "border_color": "#00A3B9",
                           "border_width": 2,
                           "compound": "top",
-                          "text_color": "#00353D"}
+                          "text_color": "#00353D",
+                          "height": 80}
         self.ex_commandstation_button = ctk.CTkButton(self.select_product_frame,
                                                       text=None, width=500,
                                                       image=self.ex_commandstation_image, **button_options,
                                                       command=lambda product="ex_commandstation":
                                                       self.check_product_device(product))
         self.ex_ioexpander_button = ctk.CTkButton(self.select_product_frame,
-                                                  text="(coming soon)",
+                                                  text=None,
                                                   image=self.ex_ioexpander_image, **button_options,
-                                                  state="disabled")
+                                                  command=lambda product="ex_ioexpander":
+                                                  self.check_product_device(product))
         self.ex_turntable_button = ctk.CTkButton(self.select_product_frame,
-                                                 text="(coming soon)",
+                                                 text=None,
                                                  image=self.ex_turntable_image, **button_options,
-                                                 state="disabled")
+                                                 command=lambda product="ex_turntable":
+                                                 self.check_product_device(product))
         self.ex_dccinspector_button = ctk.CTkButton(self.select_product_frame,
                                                     text="(coming soon)",
                                                     image=self.ex_dccinspector_image, **button_options,
