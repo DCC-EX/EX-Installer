@@ -244,7 +244,7 @@ class EXTurntable(WindowLayout):
         self.i2c_address_label = ctk.CTkLabel(self.i2c_address_frame, text="Set I\u00B2C address:",
                                               font=self.instruction_font)
         CreateToolTip(self.i2c_address_label, i2c_tip, "https://dcc-ex.com/ex-turntable/configure.html#i2c-address")
-        self.set_i2c_frame = ctk.CTkFrame(self.i2c_address_frame, border_width=2, border_color="#00A3B9")
+        self.set_i2c_frame = ctk.CTkFrame(self.i2c_address_frame, border_width=2)
         self.i2c_address_minus = ctk.CTkButton(self.set_i2c_frame, text="-", width=30,
                                                command=self.decrement_address)
         self.i2c_entry_frame = ctk.CTkFrame(self.set_i2c_frame, border_width=0)
@@ -267,31 +267,35 @@ class EXTurntable(WindowLayout):
         self.set_i2c_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.set_i2c_frame.grid_rowconfigure(0, weight=1)
         self.set_i2c_frame.grid(column=1, row=0, **grid_options)
-        self.i2c_address_label.grid(column=0, row=0, **grid_options)
-        self.i2c_address_minus.grid(column=1, row=0, padx=(2, 0), pady=2)
         self.i2c_0x_label.grid(column=0, row=0, sticky="e", pady=2)
         self.i2c_address_entry.grid(column=1, row=0, padx=0, pady=2)
-        self.i2c_entry_frame.grid(column=2, row=0, padx=0, pady=2)
-        self.i2c_address_plus.grid(column=3, row=0, sticky="w", padx=(0, 2), pady=2)
+        self.i2c_address_label.grid(column=0, row=0, **grid_options)
+        self.i2c_address_minus.grid(column=1, row=0, padx=(4, 0), pady=2)
+        self.i2c_entry_frame.grid(column=2, row=0, pady=2)
+        self.i2c_address_plus.grid(column=3, row=0, sticky="w", padx=(0, 4), pady=2)
 
         # Create mode widgets
         self.mode_frame = ctk.CTkFrame(self.main_options_frame, **subframe_options)
-        self.mode_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        self.mode_frame.grid_columnconfigure((0, 1), weight=1)
         self.mode_frame.grid_rowconfigure(0, weight=1)
         self.mode_label = ctk.CTkLabel(self.mode_frame, text="Select the operating mode:",
                                        font=self.instruction_font)
         CreateToolTip(self.mode_label, mode_tip,
                       "https://dcc-ex.com/ex-turntable/traverser.html")
-        self.turntable_label = ctk.CTkLabel(self.mode_frame, text="Turntable", **toggle_label_options)
-        self.mode_switch = ctk.CTkSwitch(self.mode_frame, onvalue="TRAVERSER", offvalue="TURNTABLE",
+        self.mode_switch_frame = ctk.CTkFrame(self.mode_frame, border_width=2)
+        self.mode_switch_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.mode_switch_frame.grid_rowconfigure(0, weight=1)
+        self.turntable_label = ctk.CTkLabel(self.mode_switch_frame, text="Turntable", **toggle_label_options)
+        self.mode_switch = ctk.CTkSwitch(self.mode_switch_frame, onvalue="TRAVERSER", offvalue="TURNTABLE",
                                          command=self.set_mode, **toggle_options)
-        self.traverser_label = ctk.CTkLabel(self.mode_frame, text="Traverser", **toggle_label_options)
+        self.traverser_label = ctk.CTkLabel(self.mode_switch_frame, text="Traverser", **toggle_label_options)
 
         # Layout mode frame
         self.mode_label.grid(column=0, row=0, sticky="e", **grid_options)
-        self.turntable_label.grid(column=1, row=0, sticky="nse", padx=(5, 0), pady=5)
-        self.mode_switch.grid(column=2, row=0, sticky="nsew", padx=0, pady=5)
-        self.traverser_label.grid(column=3, row=0, sticky="nsw", padx=(0, 5), pady=5)
+        self.mode_switch_frame.grid(column=1, row=0, **grid_options)
+        self.turntable_label.grid(column=0, row=0, sticky="nse", padx=(5, 0), pady=5)
+        self.mode_switch.grid(column=1, row=0, sticky="nsew", padx=0, pady=5)
+        self.traverser_label.grid(column=2, row=0, sticky="nsw", padx=(0, 5), pady=5)
 
         # Create phase switch widgets
         self.auto_switch = ctk.CTkSwitch(self.phase_frame, text="Automatic phase switch at angle:",
@@ -306,29 +310,33 @@ class EXTurntable(WindowLayout):
 
         # Create relay widgets
         self.relay_frame = ctk.CTkFrame(self.phase_frame, **subframe_options)
-        self.relay_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        self.relay_frame.grid_columnconfigure((0, 1), weight=1)
         self.relay_frame.grid_rowconfigure(0, weight=1)
         self.relay_label = ctk.CTkLabel(self.relay_frame, text="Relay type:",
                                         font=self.instruction_font)
         CreateToolTip(self.relay_label, relay_tip)
-        self.relay_low_label = ctk.CTkLabel(self.relay_frame, text="Active Low", **toggle_label_options)
-        self.relay_switch = ctk.CTkSwitch(self.relay_frame, onvalue="HIGH", offvalue="LOW",
+        self.relay_switch_frame = ctk.CTkFrame(self.relay_frame, border_width=2)
+        self.relay_switch_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.relay_switch_frame.grid_rowconfigure(0, weight=1)
+        self.relay_low_label = ctk.CTkLabel(self.relay_switch_frame, text="Active Low", **toggle_label_options)
+        self.relay_switch = ctk.CTkSwitch(self.relay_switch_frame, onvalue="HIGH", offvalue="LOW",
                                           command=self.set_relay, **toggle_options)
         self.relay_switch.select()
-        self.relay_high_label = ctk.CTkLabel(self.relay_frame, text="Active High", **toggle_label_options)
+        self.relay_high_label = ctk.CTkLabel(self.relay_switch_frame, text="Active High", **toggle_label_options)
 
         # Layout relay frame
         self.relay_label.grid(column=0, row=0, sticky="e", padx=(5, 1), pady=5)
-        self.relay_low_label.grid(column=1, row=0, sticky="nse", padx=(5, 0), pady=5)
-        self.relay_switch.grid(column=2, row=0, sticky="nsew", padx=0, pady=5)
-        self.relay_high_label.grid(column=3, row=0, sticky="nsw", padx=(0, 5), pady=5)
+        self.relay_switch_frame.grid(column=1, row=0, **grid_options)
+        self.relay_low_label.grid(column=0, row=0, sticky="nse", padx=(5, 0), pady=5)
+        self.relay_switch.grid(column=1, row=0, sticky="nsew", padx=0, pady=5)
+        self.relay_high_label.grid(column=2, row=0, sticky="nsw", padx=(0, 5), pady=5)
 
         # Create sensor widgets
         self.home_sensor_frame = ctk.CTkFrame(self.sensor_frame, **subframe_options)
         self.limit_sensor_frame = ctk.CTkFrame(self.sensor_frame, **subframe_options)
-        self.home_sensor_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        self.home_sensor_frame.grid_columnconfigure((0, 1), weight=1)
         self.home_sensor_frame.grid_rowconfigure(0, weight=1)
-        self.limit_sensor_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
+        self.limit_sensor_frame.grid_columnconfigure((0, 1), weight=1)
         self.limit_sensor_frame.grid_rowconfigure(0, weight=1)
         self.home_label = ctk.CTkLabel(self.home_sensor_frame, text="Home sensor type:",
                                        font=self.instruction_font)
@@ -336,24 +344,32 @@ class EXTurntable(WindowLayout):
         self.limit_label = ctk.CTkLabel(self.limit_sensor_frame, text="Limit sensor type:",
                                         font=self.instruction_font)
         CreateToolTip(self.limit_label, limit_tip)
-        self.home_low_label = ctk.CTkLabel(self.home_sensor_frame, text="Active Low", **toggle_label_options)
-        self.home_switch = ctk.CTkSwitch(self.home_sensor_frame, onvalue="HIGH", offvalue="LOW",
+        self.home_switch_frame = ctk.CTkFrame(self.home_sensor_frame, border_width=2)
+        self.home_switch_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.home_switch_frame.grid_rowconfigure(0, weight=1)
+        self.home_low_label = ctk.CTkLabel(self.home_switch_frame, text="Active Low", **toggle_label_options)
+        self.home_switch = ctk.CTkSwitch(self.home_switch_frame, onvalue="HIGH", offvalue="LOW",
                                          command=self.set_home, **toggle_options)
-        self.home_high_label = ctk.CTkLabel(self.home_sensor_frame, text="Active High", **toggle_label_options)
-        self.limit_low_label = ctk.CTkLabel(self.limit_sensor_frame, text="Active Low", **toggle_label_options)
-        self.limit_switch = ctk.CTkSwitch(self.limit_sensor_frame, onvalue="HIGH", offvalue="LOW",
+        self.home_high_label = ctk.CTkLabel(self.home_switch_frame, text="Active High", **toggle_label_options)
+        self.limit_switch_frame = ctk.CTkFrame(self.limit_sensor_frame, border_width=2)
+        self.limit_switch_frame.grid_columnconfigure((0, 1, 2), weight=1)
+        self.limit_switch_frame.grid_rowconfigure(0, weight=1)
+        self.limit_low_label = ctk.CTkLabel(self.limit_switch_frame, text="Active Low", **toggle_label_options)
+        self.limit_switch = ctk.CTkSwitch(self.limit_switch_frame, onvalue="HIGH", offvalue="LOW",
                                           command=self.set_limit, **toggle_options)
-        self.limit_high_label = ctk.CTkLabel(self.limit_sensor_frame, text="Active High", **toggle_label_options)
+        self.limit_high_label = ctk.CTkLabel(self.limit_switch_frame, text="Active High", **toggle_label_options)
 
         # Layout sensor frames
         self.home_label.grid(column=0, row=0, sticky="e", **grid_options)
-        self.home_low_label.grid(column=1, row=0, sticky="nse", padx=(5, 0), pady=5)
-        self.home_switch.grid(column=2, row=0, sticky="nsew", padx=0, pady=5)
-        self.home_high_label.grid(column=3, row=0, sticky="nww", padx=(0, 5), pady=5)
+        self.home_switch_frame.grid(column=1, row=0, **grid_options)
+        self.home_low_label.grid(column=0, row=0, sticky="nse", padx=(5, 0), pady=5)
+        self.home_switch.grid(column=1, row=0, sticky="nsew", padx=0, pady=5)
+        self.home_high_label.grid(column=2, row=0, sticky="nww", padx=(0, 5), pady=5)
         self.limit_label.grid(column=0, row=0, sticky="e", **grid_options)
-        self.limit_low_label.grid(column=1, row=0, sticky="nse", padx=(5, 0), pady=5)
-        self.limit_switch.grid(column=2, row=0, sticky="nsew", padx=0, pady=5)
-        self.limit_high_label.grid(column=3, row=0, sticky="nsw", padx=(0, 5), pady=5)
+        self.limit_switch_frame.grid(column=1, row=0, **grid_options)
+        self.limit_low_label.grid(column=0, row=0, sticky="nse", padx=(5, 0), pady=5)
+        self.limit_switch.grid(column=1, row=0, sticky="nsew", padx=0, pady=5)
+        self.limit_high_label.grid(column=2, row=0, sticky="nsw", padx=(0, 5), pady=5)
 
         # Create sensor test widget
         self.sensor_test_switch = ctk.CTkSwitch(self.sensor_frame, text="Enable sensor testing mode",
