@@ -17,10 +17,12 @@ import os
 import sys
 import serial
 import re
+from datetime import datetime
 
 # Import local modules
 from . import images
 from .common_fonts import CommonFonts
+from .file_manager import FileManager as fm
 
 # Define valid monitor highlights
 monitor_highlights = {
@@ -155,12 +157,15 @@ class SerialMonitor(ctk.CTkToplevel):
         self.command_entry.bind("<Return>", self.send_command)
         self.command_button = ctk.CTkButton(self.command_frame, text="Send", font=button_font, width=80,
                                             command=self.send_command)
+        self.save_log_button = ctk.CTkButton(self.command_frame, text="Save Logs", font=button_font, width=80,
+                                             command=self.save_logs)
         self.close_button = ctk.CTkButton(self.command_frame, text="Close", font=button_font, width=80,
                                           command=self.close_monitor)
         self.command_label.grid(column=0, row=0, sticky="w", **grid_options)
         self.command_entry.grid(column=1, row=0, sticky="ew", **grid_options)
         self.command_button.grid(column=2, row=0, sticky="e", pady=5)
-        self.close_button.grid(column=3, row=0, sticky="e", **grid_options)
+        self.save_log_button.grid(column=3, row=0, sticky="e", padx=(5, 0), pady=5)
+        self.close_button.grid(column=4, row=0, sticky="e", **grid_options)
 
         # Create monitor frame widgets and layout frame
         self.output_textbox = ctk.CTkTextbox(self.monitor_frame, border_width=3, border_spacing=5,
@@ -292,6 +297,15 @@ class SerialMonitor(ctk.CTkToplevel):
         self.output_textbox.insert("insert", command_text + "\n")
         self.output_textbox.configure(state="disabled")
         self.output_textbox.see("end")
+
+    def save_logs(self):
+        """
+        Function to prompt for a location to save the current device monitor output to
+        """
+        log_name = datetime.now().strftime("device-logs-%Y%m%d-%H%M%S.log")
+        log_dir = fm.get_install_dir("logs")
+        log_file = os.path.join(log_dir, log_name)
+        print(self.output_textbox.get("1.0", ctk.END))
 
     def exception_handler(self, exc_type, exc_value, exc_traceback):
         """
