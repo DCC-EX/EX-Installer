@@ -744,9 +744,6 @@ class EXCommandStation(WindowLayout):
                 else:
                     line = '#define WIFI_SSID "' + self.wifi_ssid_entry.get() + '"\n'
                     config_list.append(line)
-                # if self.wifi_pwd_entry.get() == "":
-                #     param_errors.append("WiFi password not set")
-                # else:
                 invalid, issue = self.check_invalid_wifi_password()
                 if invalid:
                     param_errors.append(issue)

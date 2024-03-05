@@ -35,16 +35,6 @@ class EXTurntable(WindowLayout):
     Class for the EX-Turntable view
     """
 
-    advanced_config_options = [
-        "#define LED_FAST 100\n",
-        "#define LED_SLOW 500\n",
-        "// #define DEBUG\n",
-        "// #define SANITY_STEPS 10000\n",
-        "// #define HOME_SENSITIVITY 300\n",
-        "// #define FULL_STEP_COUNT 4096\n",
-        "// #define DEBOUNCE_DELAY 10\n"
-    ]
-
     def __init__(self, parent, *args, **kwargs):
         """
         Initialise view
@@ -101,12 +91,26 @@ class EXTurntable(WindowLayout):
                 self.product_minor_version = minor
                 if patch is not None:
                     self.product_patch_version = patch
+        # Disable pre 0.6.0 features
         if self.product_major_version == 0 and self.product_minor_version < 6:
-            self.gearing_label.grid_remove()
-            self.gearing_entry.grid_remove()
+            self.gearing_label.configure(state="disabled", font=self.italic_instruction_font)
+            self.gearing_entry.configure(state="disabled", font=self.italic_instruction_font)
         else:
-            self.gearing_label.grid()
-            self.gearing_entry.grid()
+            self.gearing_label.configure(state="normal", font=self.instruction_font)
+            self.gearing_entry.configure(state="normal", font=self.instruction_font)
+        # Disable pre 0.7.0 features
+        if self.product_major_version == 0 and self.product_minor_version < 7:
+            self.invert_dir_switch.configure(state="disabled")
+            self.invert_step_switch.configure(state="disabled")
+            self.invert_enable_switch.configure(state="disabled")
+            self.forward_only_switch.configure(state="disabled")
+            self.reverse_only_switch.configure(state="disabled")
+        else:
+            self.invert_dir_switch.configure(state="normal")
+            self.invert_step_switch.configure(state="normal")
+            self.invert_enable_switch.configure(state="normal")
+            self.forward_only_switch.configure(state="normal")
+            self.reverse_only_switch.configure(state="normal")
 
     def setup_config_frame(self):
         """
@@ -722,7 +726,7 @@ class EXTurntable(WindowLayout):
         Sets next screen to be config editing rather than compile/upload
         """
         if self.advanced_config_enabled.get() == "on":
-            self.next_back.set_next_text("Advanced config")
+            self.next_back.set_next_text("Edit config")
         else:
             self.next_back.set_next_text("Compile and load")
 
@@ -742,6 +746,8 @@ class EXTurntable(WindowLayout):
         config_list.append(f"#define TURNTABLE_EX_MODE {self.mode_switch.get()}\n")
         if self.sensor_test_switch.get() == "on":
             config_list.append("#define SENSOR_TESTING\n")
+        else:
+            config_list.append("// #define SENSOR_TESTING\n")
         config_list.append(f"#define HOME_SENSOR_ACTIVE_STATE {self.home_switch.get()}\n")
         config_list.append(f"#define LIMIT_SENSOR_ACTIVE_STATE {self.limit_switch.get()}\n")
         config_list.append(f"#define RELAY_ACTIVE_STATE {self.relay_switch.get()}\n")
@@ -781,6 +787,99 @@ class EXTurntable(WindowLayout):
                 param_errors.append("Acceleration must be between 1 and 1000")
             else:
                 config_list.append(f"#define STEPPER_ACCELERATION {self.accel.get()}\n")
+        if self.gearing_entry.cget("state") == "normal":
+            try:
+                int(self.gearing.get())
+            except Exception:
+                param_errors.append("You must provide a numeric gearing factor")
+            else:
+                if (int(self.gearing.get()) < 1 or int(self.gearing.get()) > 10):
+                    param_errors.append("Gearing factor must be between 1 and 10")
+                else:
+                    config_list.append(f"#define STEPPER_GEARING_FACTOR {self.gearing.get()}\n")
+        if self.invert_dir_switch.cget("state") == "normal":
+            if self.invert_dir_switch.get() == "on":
+                config_list.append("#define INVERT_DIRECTION\n")
+            else:
+                config_list.append("// #define INVERT_DIRECTION\n")
+        if self.invert_step_switch.cget("state") == "normal":
+            if self.invert_step_switch.get() == "on":
+                config_list.append("#define INVERT_STEP\n")
+            else:
+                config_list.append("// #define INVERT_STEP\n")
+        if self.invert_enable_switch.cget("state") == "normal":
+            if self.invert_enable_switch.get() == "on":
+                config_list.append("#define INVERT_ENABLE\n")
+            else:
+                config_list.append("// #define INVERT_ENABLE\n")
+        if self.forward_only_switch.cget("state") == "normal":
+            if self.forward_only_switch.get() == "on":
+                config_list.append("#define ROTATE_FORWARD_ONLY\n")
+            else:
+                config_list.append("// #define ROTATE_FORWARD_ONLY\n")
+        if self.reverse_only_switch.cget("state") == "normal":
+            if self.reverse_only_switch.get() == "on":
+                config_list.append("#define ROTATE_REVERSE_ONLY\n")
+            else:
+                config_list.append("// #define ROTATE_REVERSE_ONLY\n")
+        if self.led_fast_switch.get() == "on":
+            try:
+                int(self.led_fast.get())
+            except Exception:
+                param_errors.append("Fast LED delay must be numeric")
+            else:
+                config_list.append(f"#define LED_FAST {self.led_fast.get()}\n")
+        else:
+            config_list.append("#define LED_FAST 100\n")
+        if self.led_slow_switch.get() == "on":
+            try:
+                int(self.led_slow.get())
+            except Exception:
+                param_errors.append("Slow LED delay must be numeric")
+            else:
+                config_list.append(f"#define LED_SLOW {self.led_slow.get()}\n")
+        else:
+            config_list.append("#define LED_SLOW 500\n")
+        if self.debug_switch.get() == "on":
+            config_list.append("#define DEBUG\n")
+        else:
+            config_list.append("// #define DEBUG\n")
+        if self.sanity_steps_switch.get() == "on":
+            try:
+                int(self.sanity_steps.get())
+            except Exception:
+                param_errors.append("Sanity step count must be numeric")
+            else:
+                config_list.append(f"#define SANITY_STEPS {self.sanity_steps.get()}\n")
+        else:
+            config_list.append("// #define SANITY_STEPS 10000\n")
+        if self.home_sensitivity_switch.get() == "on":
+            try:
+                int(self.home_sensitivity.get())
+            except Exception:
+                param_errors.append("Home sensitivity step count must be numeric")
+            else:
+                config_list.append(f"#define HOME_SENSITIVITY {self.home_sensitivity.get()}\n")
+        else:
+            config_list.append("// #define HOME_SENSITIVITY 300\n")
+        if self.full_step_count_switch.get() == "on":
+            try:
+                int(self.full_step_count.get())
+            except Exception:
+                param_errors.append("Full step count must be numeric")
+            else:
+                config_list.append(f"#define FULL_STEP_COUNT {self.full_step_count.get()}\n")
+        else:
+            config_list.append("// #define FULL_STEP_COUNT 4096\n")
+        if self.debounce_delay_switch.get() == "on":
+            try:
+                int(self.debounce_delay.get())
+            except Exception:
+                param_errors.append("Debounce delay must be numeric")
+            else:
+                config_list.append(f"#define DEBOUNCE_DELAY {self.debounce_delay.get()}\n")
+        else:
+            config_list.append("// #define DEBOUNCE_DELAY 10\n")
         if len(param_errors) > 0:
             message = ", ".join(param_errors)
             self.process_error(message)
@@ -790,7 +889,6 @@ class EXTurntable(WindowLayout):
                               f"v{self.app_version} for {self.product_name} " +
                               f"{self.product_version_name}\n\n")]
             file_contents += config_list
-            file_contents += self.advanced_config_options
             config_file_path = fm.get_filepath(self.ex_turntable_dir, "config.h")
             write_config = fm.write_config_file(config_file_path, file_contents)
             if write_config != config_file_path:

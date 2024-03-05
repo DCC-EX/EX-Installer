@@ -85,6 +85,7 @@ class WindowLayout(ctk.CTkFrame):
         # Define fonts
         self.instruction_font = self.common_fonts.instruction_font
         self.bold_instruction_font = self.common_fonts.bold_instruction_font
+        self.italic_instruction_font = self.common_fonts.italic_instruction_font
         self.large_bold_instruction_font = self.common_fonts.large_bold_instruction_font
         self.small_italic_instruction_font = self.common_fonts.small_italic_instruction_font
         self.title_font = self.common_fonts.title_font
