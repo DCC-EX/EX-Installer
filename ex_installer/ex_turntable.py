@@ -95,15 +95,21 @@ class EXTurntable(WindowLayout):
         if self.product_major_version == 0 and self.product_minor_version < 6:
             self.gearing_label.configure(state="disabled", font=self.italic_instruction_font)
             self.gearing_entry.configure(state="disabled", font=self.italic_instruction_font)
+            self.gearing.set(1)
         else:
             self.gearing_label.configure(state="normal", font=self.instruction_font)
             self.gearing_entry.configure(state="normal", font=self.instruction_font)
         # Disable pre 0.7.0 features
         if self.product_major_version == 0 and self.product_minor_version < 7:
+            self.invert_dir_switch.deselect()
             self.invert_dir_switch.configure(state="disabled")
+            self.invert_step_switch.deselect()
             self.invert_step_switch.configure(state="disabled")
+            self.invert_enable_switch.deselect()
             self.invert_enable_switch.configure(state="disabled")
+            self.forward_only_switch.deselect()
             self.forward_only_switch.configure(state="disabled")
+            self.reverse_only_switch.deselect()
             self.reverse_only_switch.configure(state="disabled")
         else:
             self.invert_dir_switch.configure(state="normal")
@@ -196,7 +202,8 @@ class EXTurntable(WindowLayout):
         invert_step_tip = ("Enable this to invert the step pin for two wire stepper drivers. This does not " +
                            "to ULN2003 (from version 0.7.0).")
         invert_enable_tip = ("Enable this to invert the enable pin for two wire stepper drivers. This does not " +
-                             "to ULN2003. Enable this if you previously used the A4988_INV stepper option (from version 0.7.0).")
+                             "to ULN2003. Enable this if you previously used the A4988_INV stepper option " +
+                             "(from version 0.7.0).")
         forward_only_tip = ("Enable this to force the stepper to rotate in the forward direction only. This can be " +
                             "useful to work around stepper or gearbox slop (from version 0.7.0).")
         reverse_only_tip = ("Enable this to force the stepper to rotate in the reverse direction only. This can be " +
@@ -470,11 +477,11 @@ class EXTurntable(WindowLayout):
         CreateToolTip(self.invert_enable_switch, invert_enable_tip)
         self.forward_only_switch = ctk.CTkSwitch(self.stepper_switch_frame, text="Force forward rotation only",
                                                  onvalue="on", offvalue="off", font=self.instruction_font,
-                                                 width=stepper_switch_width)
+                                                 width=stepper_switch_width, command=self.set_forward_only)
         CreateToolTip(self.forward_only_switch, forward_only_tip)
         self.reverse_only_switch = ctk.CTkSwitch(self.stepper_switch_frame, text="Force reverse rotation only",
                                                  onvalue="on", offvalue="off", font=self.instruction_font,
-                                                 width=stepper_switch_width)
+                                                 width=stepper_switch_width, command=self.set_reverse_only)
         CreateToolTip(self.reverse_only_switch, reverse_only_tip)
 
         # Layout stepper frame
@@ -714,7 +721,7 @@ class EXTurntable(WindowLayout):
 
     def check_stepper(self, value):
         """
-        Function ensure a motor driver has been selected
+        Function to ensure a motor driver has been selected
         """
         if value == "Select stepper driver":
             self.next_back.disable_next()
@@ -729,6 +736,20 @@ class EXTurntable(WindowLayout):
             self.next_back.set_next_text("Edit config")
         else:
             self.next_back.set_next_text("Compile and load")
+
+    def set_forward_only(self):
+        """
+        Ensures reverse only switch is deselected if forward only is set
+        """
+        if self.reverse_only_switch.get() == "on":
+            self.reverse_only_switch.deselect()
+
+    def set_reverse_only(self):
+        """
+        Ensures forward only switch is deselected if reverse only is set
+        """
+        if self.forward_only_switch.get() == "on":
+            self.forward_only_switch.deselect()
 
     def generate_config(self):
         """

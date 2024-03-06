@@ -344,7 +344,7 @@ class CompileUpload(WindowLayout):
                 self.backup_button.grid()
         else:
             if self.backup_path.get() == "":
-                message = "You must specific a valid folder to backup to"
+                message = "You must specify a valid folder to backup to"
             else:
                 message = f"{self.backup_path.get()} is not a valid directory"
             self.status_text.configure(text=message,

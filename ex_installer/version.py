@@ -16,6 +16,7 @@ Version history:
             - Dependabot update for cryptography to 42.0.4
             - Add link to DCC-EX News articles about EX-Installer to the Info menu
             - Ensure the config backup popup is always launched within the app window geometry
+            - Add a save log button to device monitor to save the device logs to a text file
 0.0.17      - Move fonts to a separate common class
             - Change default font to Arial for Windows/Mac and FreeSans for Linux
             - Update various modules versions to resolve Dependapot identified vulnerabilities
