@@ -645,6 +645,8 @@ class EXTurntable(WindowLayout):
     def set_mode(self):
         """
         Highlight the chosen option for the mode toggle switch
+
+        In traverser mode, ensure forward/reverse only options are deselected and disabled
         """
         if self.mode_switch.get() == "TURNTABLE":
             self.turntable_label.configure(font=self.bold_instruction_font)
@@ -653,6 +655,8 @@ class EXTurntable(WindowLayout):
             self.limit_switch.configure(fg_color="#939BA2", progress_color="#939BA2")
             self.limit_high_label.configure(font=self.small_italic_instruction_font, text_color="white")
             self.limit_low_label.configure(font=self.small_italic_instruction_font, text_color="white")
+            self.forward_only_switch.configure(state="normal")
+            self.reverse_only_switch.configure(state="normal")
         else:
             self.turntable_label.configure(font=self.small_italic_instruction_font)
             self.traverser_label.configure(font=self.bold_instruction_font)
@@ -660,6 +664,10 @@ class EXTurntable(WindowLayout):
             self.limit_switch.configure(fg_color="#00A3B9", progress_color="#00A3B9")
             self.limit_high_label.configure(text_color="#00353D")
             self.limit_low_label.configure(text_color="#00353D")
+            self.forward_only_switch.deselect()
+            self.forward_only_switch.configure(state="disabled")
+            self.reverse_only_switch.deselect()
+            self.reverse_only_switch.configure(state="disabled")
             self.set_limit()
 
     def set_home(self):
@@ -835,12 +843,18 @@ class EXTurntable(WindowLayout):
                 config_list.append("// #define INVERT_ENABLE\n")
         if self.forward_only_switch.cget("state") == "normal":
             if self.forward_only_switch.get() == "on":
-                config_list.append("#define ROTATE_FORWARD_ONLY\n")
+                if self.mode_switch.get() == "TRAVERSER":
+                    param_errors.append("Traverser mode is incompatible with forward only rotation")
+                else:
+                    config_list.append("#define ROTATE_FORWARD_ONLY\n")
             else:
                 config_list.append("// #define ROTATE_FORWARD_ONLY\n")
         if self.reverse_only_switch.cget("state") == "normal":
             if self.reverse_only_switch.get() == "on":
-                config_list.append("#define ROTATE_REVERSE_ONLY\n")
+                if self.mode_switch.get() == "TRAVERSER":
+                    param_errors.append("Traverser mode is incompatible with reverse only rotation")
+                else:
+                    config_list.append("#define ROTATE_REVERSE_ONLY\n")
             else:
                 config_list.append("// #define ROTATE_REVERSE_ONLY\n")
         if self.led_fast_switch.get() == "on":
