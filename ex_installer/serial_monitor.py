@@ -17,10 +17,12 @@ import os
 import sys
 import serial
 import re
+from datetime import datetime
 
 # Import local modules
 from . import images
 from .common_fonts import CommonFonts
+from .file_manager import FileManager as fm
 
 # Define valid monitor highlights
 monitor_highlights = {
@@ -129,8 +131,10 @@ class SerialMonitor(ctk.CTkToplevel):
         self.window_frame.grid(column=0, row=0, sticky="nsew")
 
         # Define fonts for use
-        button_font = self.common_fonts.button_font
-        instruction_font = self.common_fonts.instruction_font
+        self.button_font = self.common_fonts.button_font
+        self.instruction_font = self.common_fonts.instruction_font
+        self.bold_instruction_font = self.common_fonts.bold_instruction_font
+        self.action_button_font = self.common_fonts.action_button_font
 
         self.command_frame = ctk.CTkFrame(self.window_frame, width=790, height=40)
         self.monitor_frame = ctk.CTkFrame(self.window_frame, width=790, height=420)
@@ -148,19 +152,22 @@ class SerialMonitor(ctk.CTkToplevel):
         # Create command frame widgets and layout frame
         self.command_history = []
         grid_options = {"padx": 5, "pady": 5}
-        self.command_label = ctk.CTkLabel(self.command_frame, text="Enter command:", font=instruction_font)
+        self.command_label = ctk.CTkLabel(self.command_frame, text="Enter command:", font=self.instruction_font)
         self.command = ctk.StringVar(self)
         self.command_entry = ctk.CTkComboBox(self.command_frame, variable=self.command, values=self.command_history,
                                              command=self.send_command)
         self.command_entry.bind("<Return>", self.send_command)
-        self.command_button = ctk.CTkButton(self.command_frame, text="Send", font=button_font, width=80,
+        self.command_button = ctk.CTkButton(self.command_frame, text="Send", font=self.button_font, width=80,
                                             command=self.send_command)
-        self.close_button = ctk.CTkButton(self.command_frame, text="Close", font=button_font, width=80,
+        self.save_log_button = ctk.CTkButton(self.command_frame, text="Save Log", font=self.button_font, width=80,
+                                             command=self.show_save_log_popup)
+        self.close_button = ctk.CTkButton(self.command_frame, text="Close", font=self.button_font, width=80,
                                           command=self.close_monitor)
         self.command_label.grid(column=0, row=0, sticky="w", **grid_options)
         self.command_entry.grid(column=1, row=0, sticky="ew", **grid_options)
         self.command_button.grid(column=2, row=0, sticky="e", pady=5)
-        self.close_button.grid(column=3, row=0, sticky="e", **grid_options)
+        self.save_log_button.grid(column=3, row=0, sticky="e", padx=(5, 0), pady=5)
+        self.close_button.grid(column=4, row=0, sticky="e", **grid_options)
 
         # Create monitor frame widgets and layout frame
         self.output_textbox = ctk.CTkTextbox(self.monitor_frame, border_width=3, border_spacing=5,
@@ -190,7 +197,7 @@ class SerialMonitor(ctk.CTkToplevel):
                                        foreground="white")
 
         # Create device frame widgets and layout
-        self.device_label = ctk.CTkLabel(self.device_frame, text=None, font=instruction_font)
+        self.device_label = ctk.CTkLabel(self.device_frame, text=None, font=self.instruction_font)
         self.device_label.grid(column=0, row=0, sticky="ew", padx=5, pady=5)
 
         # Start serial monitor process
@@ -292,6 +299,103 @@ class SerialMonitor(ctk.CTkToplevel):
         self.output_textbox.insert("insert", command_text + "\n")
         self.output_textbox.configure(state="disabled")
         self.output_textbox.see("end")
+
+    def show_save_log_popup(self):
+        """
+        Function to show the message box to select the folder to save device log
+        """
+        if hasattr(self, "log_popup") and self.log_popup is not None and self.log_popup.winfo_exists():
+            self.log_popup.focus()
+        else:
+            self.log_popup = ctk.CTkToplevel(self)
+            self.log_popup.focus()
+            self.log_popup.lift(self)
+
+            # Ensure pop up is within the confines of the app window to start
+            main_window = self.winfo_toplevel()
+            log_offset_x = main_window.winfo_x() + 75
+            log_offset_y = main_window.winfo_y() + 200
+            self.log_popup.geometry(f"+{log_offset_x}+{log_offset_y}")
+            self.log_popup.update()
+
+            # Set icon and title
+            if sys.platform.startswith("win"):
+                self.log_popup.after(250, lambda icon=images.DCC_EX_ICON_ICO: self.log_popup.iconbitmap(icon))
+            self.log_popup.title("Save device log")
+            self.log_popup.withdraw()
+            self.log_popup.after(250, self.log_popup.deiconify)
+            self.log_popup.grid_columnconfigure(0, weight=1)
+            self.log_popup.grid_rowconfigure(0, weight=1)
+            self.window_frame = ctk.CTkFrame(self.log_popup, fg_color="grey95")
+            self.window_frame.grid_columnconfigure((0, 1, 2), weight=1)
+            self.window_frame.grid_rowconfigure((0, 1), weight=1)
+            self.window_frame.grid(column=0, row=0, sticky="nsew")
+            self.folder_label = ctk.CTkLabel(self.window_frame, text="Select the folder to save the log:",
+                                             font=self.instruction_font)
+            self.status_frame = ctk.CTkFrame(self.window_frame, border_width=2)
+            self.status_label = ctk.CTkLabel(self.status_frame, text="Status:",
+                                             font=self.instruction_font)
+            self.status_text = ctk.CTkLabel(self.status_frame, text="Enter or select destination",
+                                            font=self.bold_instruction_font)
+            self.log_path = ctk.StringVar(value=None)
+            self.log_path_entry = ctk.CTkEntry(self.window_frame, textvariable=self.log_path,
+                                               width=300)
+            self.browse_button = ctk.CTkButton(self.window_frame, text="Browse",
+                                               width=80, command=self.browse_log_dir)
+            self.save_button = ctk.CTkButton(self.window_frame, width=200, height=50,
+                                             text="Save and open log", font=self.action_button_font,
+                                             command=self.save_log_file)
+            self.folder_label.grid(column=0, row=0, padx=(10, 1), pady=(10, 5))
+            self.log_path_entry.grid(column=1, row=0, padx=1, pady=(10, 5))
+            self.browse_button.grid(column=2, row=0, padx=(1, 10), pady=(10, 5))
+            self.save_button.grid(column=0, row=1, columnspan=3, padx=10, pady=5)
+            self.status_frame.grid_columnconfigure((0, 1), weight=1)
+            self.status_frame.grid_rowconfigure(0, weight=1)
+            self.status_frame.grid(column=0, row=2, columnspan=3, sticky="nsew", padx=10, pady=(5, 10))
+            self.status_label.grid(column=0, row=0, padx=5, pady=5)
+            self.status_text.grid(column=1, row=0, padx=5, pady=5)
+
+    def browse_log_dir(self):
+        """
+        Opens a directory browser dialogue to select the folder to save the device log to
+        """
+        directory = ctk.filedialog.askdirectory()
+        if directory:
+            self.log_path.set(directory)
+            self.log.debug("Save device log to %s", directory)
+            self.log_popup.focus()
+
+    def save_log_file(self):
+        """
+        Function to save the device log file to the chosen location, and open it
+        """
+        if fm.is_valid_dir(self.log_path.get()):
+            log_name = datetime.now().strftime("device-logs-%Y%m%d-%H%M%S.log")
+            log_file = os.path.join(self.log_path.get(), log_name)
+            file_contents = self.output_textbox.get("1.0", ctk.END)
+            try:
+                with open(log_file, "w", encoding="utf-8") as f:
+                    f.writelines(file_contents)
+                f.close()
+            except Exception as error:
+                message = "Unable to save device log"
+                self.status_text.configure(text=message, text_color="red")
+                self.log.error("Failed to save device log: %s", error)
+            else:
+                self.log_popup.destroy()
+                self.focus()
+                if platform.system() == "Darwin":
+                    subprocess.call(("open", log_file))
+                elif platform.system() == "Windows":
+                    os.startfile(log_file)
+                else:
+                    subprocess.call(("xdg-open", log_file))
+        else:
+            if self.log_path.get() == "":
+                message = "You must specify a valid folder to save to"
+            else:
+                message = f"{self.log_path.get()} is not a valid directory"
+            self.status_text.configure(text=message, text_color="red")
 
     def exception_handler(self, exc_type, exc_value, exc_traceback):
         """

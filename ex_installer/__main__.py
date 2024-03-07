@@ -108,6 +108,6 @@ if __name__ == "__main__":
         debug = True
     else:
         debug = False
-    
+
     # Start the app
     main(debug)

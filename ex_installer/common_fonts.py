@@ -47,6 +47,11 @@ class CommonFonts(ctk.CTkFont):
                                                  size=14,
                                                  weight="bold")
 
+        self.italic_instruction_font = ctk.CTkFont(family=self.default_font,
+                                                   size=14,
+                                                   weight="normal",
+                                                   slant="italic")
+
         self.large_bold_instruction_font = ctk.CTkFont(family=self.default_font,
                                                        size=16,
                                                        weight="bold")

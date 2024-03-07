@@ -373,7 +373,9 @@ class SelectVersionConfig(WindowLayout):
         """
         copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
         if copy_list:
-            extra_list = fm.get_config_files(self.config_path.get(), pd[self.product]["other_config_files"])
+            extra_list = None
+            if "other_config_files" in pd[self.product]:
+                extra_list = fm.get_config_files(self.config_path.get(), pd[self.product]["other_config_files"])
             if extra_list:
                 copy_list += extra_list
             file_copy = fm.copy_config_files(self.config_path.get(), self.product_dir, copy_list)
