@@ -15,7 +15,7 @@ frozenlist==1.3.3
 idna==3.4
 multidict==6.0.4
 pefile==2023.2.7
-Pillow==10.2.0
+Pillow==10.3.0
 pycparser==2.21
 pygit2==1.12.1
 pyinstaller==5.13.1
