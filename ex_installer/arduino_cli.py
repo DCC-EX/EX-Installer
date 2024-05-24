@@ -218,7 +218,8 @@ class ArduinoCLI:
         "Arduino Nano": "arduino:avr:nano",
         "ESP32 Dev Kit": "esp32:esp32:esp32",
         "STMicroelectronics Nucleo F411RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
-        "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
+        "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE",
+        "EX-CSB1 Express": "esp32:esp32:esp32"
     }
 
     def __init__(self, selected_device=None):
