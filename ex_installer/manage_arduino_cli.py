@@ -269,7 +269,14 @@ class ManageArduinoCLI(WindowLayout):
             elif self.process_status == "error":
                 self.process_error(self.process_topic)
                 self.restore_input_states()
-        elif self.process_phase == "update_index" or self.process_phase == "install_packages":
+        elif self.process_phase == "update_index":
+            if self.process_status == "success":
+                self.process_start("upgrade_platforms", "Upgrading Arduino platforms", "Manage_CLI")
+                self.acli.upgrade_platforms(self.acli.cli_file_path(), self.queue)
+            elif self.process_status == "error":
+                self.process_error(self.process_topic)
+                self.restore_input_states()
+        elif self.process_phase == "upgrade_platforms" or self.process_phase == "install_packages":
             if self.process_status == "success":
                 if self.package_dict:
                     package = next(iter(self.package_dict))
@@ -290,15 +297,9 @@ class ManageArduinoCLI(WindowLayout):
                     self.process_start("install_libraries", "Install Arduino library " + library, "Manage_CLI")
                     self.acli.install_library(self.acli.cli_file_path(), library, self.queue)
                 else:
-                    self.process_start("upgrade_platforms", "Upgrading Arduino platforms", "Manage_CLI")
-                    self.acli.upgrade_platforms(self.acli.cli_file_path(), self.queue)
-            elif self.process_status == "error":
-                self.process_error(self.process_topic)
-                self.restore_input_states()
-        elif self.process_phase == "upgrade_platforms":
-            if self.process_status == "success":
-                self.process_start("refresh_list", "Refreshing Arduino CLI board list", "Manage_CLI")
-                self.acli.list_boards(self.acli.cli_file_path(), self.queue)
+                    self.process_stop()
+                    self.process_start("refresh_list", "Refreshing Arduino CLI board list", "Manage_CLI")
+                    self.acli.list_boards(self.acli.cli_file_path(), self.queue)
             elif self.process_status == "error":
                 self.process_error(self.process_topic)
                 self.restore_input_states()
