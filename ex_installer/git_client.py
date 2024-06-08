@@ -241,9 +241,9 @@ class GitClient:
         Gets the ref for the named branch
         """
         branch = repo.lookup_branch(name)
-        refname = repo.lookup_reference(branch.name)
-        GitClient.log.debug("Branch %s ref is %s", name, refname)
-        return refname
+        reference = repo.lookup_reference(branch.name)
+        GitClient.log.debug("Branch %s ref is %s", name, reference)
+        return reference
 
     @staticmethod
     def get_repo_versions(repo):
