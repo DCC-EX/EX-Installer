@@ -187,7 +187,10 @@ class ManageArduinoCLI(WindowLayout):
         if switch.cget("variable").get() == "on":
             if not switch.cget("text") in self.package_dict:
                 self.package_dict[switch.cget("text")] = self.acli.extra_platforms[switch.cget("text")]["platform_id"]
-                self.log.debug("Enable package %s", self.acli.extra_platforms[switch.cget("text")]["platform_id"])
+                self.log.debug("Enable package and install %s", self.acli.extra_platforms[switch.cget("text")]["platform_id"])
+                # We unconditionally install here to get the right esp32:esp32 version for sure
+                self.acli.install_package(self.acli.cli_file_path(),
+                                          self.acli.extra_platforms[switch.cget("text")]["platform_id"], self.queue)
         elif switch.cget("variable").get() == "off":
             if switch.cget("text") in self.package_dict:
                 del self.package_dict[switch.cget("text")]
@@ -220,8 +223,10 @@ class ManageArduinoCLI(WindowLayout):
                 if type(self.process_data) is list:
                     for child in self.extra_platforms_frame.winfo_children():
                         if isinstance(child, ctk.CTkSwitch):
+                            # remove with "@" appended version before compare
+                            platformid = (self.acli.extra_platforms[child.cget("text")]["platform_id"]).split('@', 2)[0]
                             for platform in self.process_data:
-                                if self.acli.extra_platforms[child.cget("text")]["platform_id"] == platform["id"]:
+                                if platformid == platform["id"]:
                                     child.cget("variable").set("on")
                                     self.update_package_list(child)
                 self.restore_input_states()
