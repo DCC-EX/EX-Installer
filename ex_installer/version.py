@@ -12,8 +12,10 @@ ex_installer_version = "0.0.19"
 """
 Version history:
 
-0.0.19      - Version updates, requests==2.32.0, aiohttp==3.9.4, idna==3.7, Pillow==10.3.0
+0.0.19      - Version updates, requests==2.32.2, aiohttp==3.9.4, idna==3.7, Pillow==10.3.0
             - Adjust Arduino platform installation process
+            - Product and supported device configuration information moved to EX-Installer-Configs repo
+            - Updated to retrieve product and supported device configuration information for this repo in JSON format
 0.0.18      - Update EX-Turntable configuration options to suit changes in 0.7.0
             - Dependabot update for cryptography to 42.0.4
             - Add link to DCC-EX News articles about EX-Installer to the Info menu
