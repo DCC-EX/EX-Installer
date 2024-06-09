@@ -202,7 +202,7 @@ class ArduinoCLI:
     # Dictionary for additional board/platform support for the Arduino CLI
     extra_platforms = {
         "Espressif ESP32": {
-            "platform_id": "esp32:esp32",
+            "platform_id": "esp32:esp32@2.0.17",
             "url": "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
         },
         "STMicroelectronics Nucleo/STM32": {
@@ -402,7 +402,7 @@ class ArduinoCLI:
         Install packages for the listed Arduino platforms
         """
         params = ["core", "install", package, "--format", "jsonmini"]
-        acli = ThreadedArduinoCLI(file_path, params, queue)
+        acli = ThreadedArduinoCLI(file_path, params, queue, 600)
         acli.start()
 
     def upgrade_platforms(self, file_path, queue):
