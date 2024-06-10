@@ -476,12 +476,14 @@ class EXCommandStation(WindowLayout):
         """
         device = self.acli.selected_device
         device_fqbn = self.acli.detected_devices[device]["matching_boards"][0]["fqbn"]
+        # EEPROM disabled on ESP32 and Nucleo
         if device_fqbn.startswith("esp32") or device_fqbn.startswith("STMicroelectronics:stm32"):
             self.disable_eeprom_switch.select()
             self.disable_eeprom_switch.configure(state="disabled")
         else:
             self.disable_eeprom_switch.deselect()
             self.disable_eeprom_switch.configure(state="normal")
+        # Track Manager not supported on Uno/Nano, EEPROM default off and WiFi disabled
         if device_fqbn.startswith("arduino:avr:nano") or device_fqbn == "arduino:avr:uno":
             self.track_modes_switch.deselect()
             self.track_modes_switch.configure(state="disabled")
@@ -495,6 +497,14 @@ class EXCommandStation(WindowLayout):
             self.disable_eeprom_switch.deselect()
             self.disable_prog_switch.deselect()
             self.low_mem_label.grid_remove()
+            self.wifi_switch.deselect()
+            self.wifi_switch.configure(state="enabled")
+        # Enable WiFi by default for ESP32 and disable control
+        if device_fqbn.startswith("esp32") and not (device_fqbn.startswith("arduino:avr:nano") or
+                                                    device_fqbn == "arduino:avr:uno"):
+            self.wifi_switch.select()
+            self.wifi_switch.configure(state="disabled")
+        elif not (device_fqbn.startswith("arduino:avr:nano") or device_fqbn == "arduino:avr:uno"):
             self.wifi_switch.deselect()
             self.wifi_switch.configure(state="enabled")
 
