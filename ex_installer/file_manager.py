@@ -149,6 +149,9 @@ class FileManager:
     # Set up logger
     log = logging.getLogger(__name__)
 
+    # User preferences file name
+    user_preference_file = "ex-installer-preferences.ini"
+
     def __init__(self):
         super().__init__()
 
@@ -384,3 +387,25 @@ class FileManager:
             return True
         else:
             return False
+
+    @staticmethod
+    def save_user_preferences(preference_list):
+        """
+        Method to save user preferences to the user preference file
+
+        Call this method with a list of key/value pairs, which will save these
+        """
+        if isinstance(preference_list, list):
+            for preference in preference_list:
+                if isinstance(preference, dict):
+                    print(f"Save {preference.key} {preference.value}")
+
+    @staticmethod
+    def get_user_preferences():
+        """
+        Method to retrieve key/value pairs of user preferences
+
+        Reads the user preference file and returns a list of key/value pairs
+        """
+        preferences = []
+        return preferences
