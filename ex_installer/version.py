@@ -19,6 +19,9 @@ Version history:
             - Ensure the details pane on the Load screen auto scrolls to the bottom
             - Optimise myAutomation.h for Track Manager and/or auto track power on to use single sequence
             - Add user preferences file to store user settings, starting with screen scaling only
+            - Update EX-CommandStation defaults for ESP32 to force enable WiFi and prevent disabling
+            - Add 132 x 64 OLED
+            - Add support for new DCC-EX EX-CSB1
 0.0.18      - Update EX-Turntable configuration options to suit changes in 0.7.0
             - Dependabot update for cryptography to 42.0.4
             - Add link to DCC-EX News articles about EX-Installer to the Info menu

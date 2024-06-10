@@ -221,6 +221,11 @@ class ArduinoCLI:
         "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
     }
 
+    # Dictionary of DCC-EX specific devices, used to preselect or exclude motor definitions
+    dccex_devices = {
+        "DCC-EX EX-CSB1": "EXCSB1"
+    }
+
     def __init__(self, selected_device=None):
         """
         Initialise the Arduino CLI instance
@@ -229,6 +234,7 @@ class ArduinoCLI:
         """
         self.selected_device = selected_device
         self.detected_devices = []
+        self.dccex_device = None
 
         # Set up logger
         self.log = logging.getLogger(__name__)
