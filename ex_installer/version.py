@@ -16,6 +16,7 @@ Version history:
             - Adjust Arduino platform installation process
             - Enable fake Arduino to be selected for demo purposes using -F|--fake command line argument
             - Fix debug command line argument to update menu selection
+            - Ensure the details pane on the Load screen auto scrolls to the bottom
 0.0.18      - Update EX-Turntable configuration options to suit changes in 0.7.0
             - Dependabot update for cryptography to 42.0.4
             - Add link to DCC-EX News articles about EX-Installer to the Info menu
