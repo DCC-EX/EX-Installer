@@ -236,6 +236,8 @@ class CompileUpload(WindowLayout):
         self.details_textbox.configure(state="normal")
         self.details_textbox.delete("0.0", "end")
         self.details_textbox.insert("0.0", text)
+        self.details_textbox.see("end")
+        self.details_textbox.update_idletasks()
         self.details_textbox.configure(state="disabled")
 
     def show_backup_popup(self):
