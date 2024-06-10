@@ -307,9 +307,16 @@ class EXInstaller(ctk.CTk):
         scale = self.scaling_option.get() / 100
         ctk.set_widget_scaling(scale)
         ctk.set_window_scaling(scale)
+        self.save_preference("scaling", self.scaling_option.get())
 
     def enable_fake_device(self):
         """
         If specified, enable a fake Arduino device
         """
         self.fake = True
+
+    def save_preference(self, key, value):
+        """
+        Method to save the specified key/value pair to the user preference file
+        """
+        print(f"Save {key} {value}")
