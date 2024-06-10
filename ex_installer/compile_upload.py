@@ -165,10 +165,18 @@ class CompileUpload(WindowLayout):
         elif self.process_phase == "compiling":
             if self.process_status == "success":
                 self.set_details(self.process_data)
-                self.process_start("uploading",
-                                   f"Loading {pd[self.product]['product_name']} on to your {device}",
-                                   "Upload_Software")
-                self.acli.upload_sketch(self.acli.cli_file_path(), fqbn, port, self.install_dir, self.queue)
+                if self.parent.fake is True:
+                    self.process_phase = "uploading"
+                    self.process_status = "success"
+                    self.process_start("uploading",
+                                       f"Loading {pd[self.product]['product_name']} on to your {device}",
+                                       "Upload_Software")
+                    self.upload_software("Upload_Software")
+                else:
+                    self.process_start("uploading",
+                                       f"Loading {pd[self.product]['product_name']} on to your {device}",
+                                       "Upload_Software")
+                    self.acli.upload_sketch(self.acli.cli_file_path(), fqbn, port, self.install_dir, self.queue)
             elif self.process_status == "error":
                 self.set_details(self.process_data)
                 self.process_error(self.process_topic)

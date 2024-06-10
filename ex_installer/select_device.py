@@ -23,6 +23,7 @@ along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 import customtkinter as ctk
 import logging
 import serial.tools.list_ports
+import platform
 
 # Import local modules
 from .common_widgets import WindowLayout, CreateToolTip
@@ -159,6 +160,20 @@ class SelectDevice(WindowLayout):
             self.acli.list_boards(self.acli.cli_file_path(), self.queue)
         elif self.process_phase == "refresh_list":
             if self.process_status == "success":
+                # If no boards found, but fake enabled, add a dummy discovered port
+                if len(self.process_data) == 0 and self.parent.fake is True:
+                    if platform.system() == "Windows":
+                        fake_port = "COM10"
+                    else:
+                        fake_port = "/dev/ttyUSB10"
+                    # Example detected device data:
+                    # [{'port':
+                    # {'address': 'COM5', 'label': 'COM5', 'protocol': 'serial', 'protocol_label': 'Serial Port (USB)',
+                    #  'properties': {'pid': '0xEA60', 'serialNumber': '0001', 'vid': '0x10C4'},
+                    #  'hardware_id': '0001'}}]
+                    fake_data = [{'port': {'address': fake_port, 'label': fake_port, 'protocol': 'serial',
+                                  'protocol_label': 'Serial Port (USB)'}}]
+                    self.process_data = fake_data
                 if isinstance(self.process_data, list) and len(self.process_data) > 0:
                     supported_boards = []
                     for board in self.acli.supported_devices:

@@ -75,6 +75,12 @@ class EXInstaller(ctk.CTk):
         self.log.debug("Start view")
         self.report_callback_exception = self.exception_handler
 
+        # Set debug checkbox based on parameters
+        if self.log.getEffectiveLevel() == logging.DEBUG:
+            self.debug = True
+        else:
+            self.debug = False
+
         # Hide window while GUI is built initially, show after 250ms
         self.withdraw()
         self.after(250, self.deiconify)
@@ -113,6 +119,7 @@ class EXInstaller(ctk.CTk):
         self.view = None
         self.use_existing = False  # needed for backing up to select_version_config
         self.advanced_config = False  # needed for backing up
+        self.fake = False  # set fake Arduino USB device to false by default
 
         # Create basic menu for Info -> About
         self.menubar = Menu(self)
@@ -121,13 +128,15 @@ class EXInstaller(ctk.CTk):
         self.info_menu.add_command(label="DCC-EX Website", command=self.website)
         self.info_menu.add_command(label="EX-Installer Instructions", command=self.instructions)
         self.info_menu.add_command(label="EX-Installer News", command=self.news)
-        self.enable_debug = ctk.StringVar(self, value="off")
+        if self.debug is True:
+            self.enable_debug = ctk.StringVar(self, value="on")
+        else:
+            self.enable_debug = ctk.StringVar(self, value="off")
         self.info_menu.add_checkbutton(label="Enable debug logging", command=self.toggle_debug,
                                        variable=self.enable_debug, onvalue="on", offvalue="off")
         self.menubar.add_cascade(label="Info", menu=self.info_menu)
         # Create Tools menu and options
         self.tools_menu = Menu(self.menubar, tearoff=0)
-        # self.tools_menu.add_command(label="WiFi Flasher", command=lambda parent=self: WiFiFlasher(parent))
         self.menubar.add_cascade(label="Tools", menu=self.tools_menu)
         # Submenu for screen scaling
         self.scaling_option = ctk.IntVar(self, value=100)
@@ -298,3 +307,9 @@ class EXInstaller(ctk.CTk):
         scale = self.scaling_option.get() / 100
         ctk.set_widget_scaling(scale)
         ctk.set_window_scaling(scale)
+
+    def enable_fake_device(self):
+        """
+        If specified, enable a fake Arduino device
+        """
+        self.fake = True
