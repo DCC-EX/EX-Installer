@@ -792,12 +792,15 @@ class EXCommandStation(WindowLayout):
         """
         param_errors = []
         config_list = []
+        roster_lines = []
+
+        # Single AUTOSTART if either option enabled
+        if self.power_on_switch.get() == "on" or self.track_modes_enabled.get() == "on":
+            config_list.append("AUTOSTART\n")
 
         # Enable join on startup if enabled
         if self.power_on_switch.get() == "on":
-            config_list.append("AUTOSTART\n")
             config_list.append("POWERON\n")
-            config_list.append("DONE\n\n")
 
         # write out trackmanager config, including roster entries if DCx
         if self.track_modes_enabled.get() == "on":
@@ -816,19 +819,22 @@ class EXCommandStation(WindowLayout):
                 if int(self.track_b_id.get()) < 1 or int(self.track_b_id.get()) > 10293:
                     param_errors.append("Track B loco/cab ID must be from 1 to 10293")
             if (self.track_a_combo.get().startswith("DC")):
-                line = (f"AUTOSTART SETLOCO({self.track_a_id.get()}) SET_TRACK(A," + self.track_a_combo.get() + ") " +
-                        "DONE\n")
-                line += f"ROSTER({self.track_a_id.get()},\"DC TRACK A\",\"/* /\")\n"
+                line = (f"SETLOCO({self.track_a_id.get()}) SET_TRACK(A," + self.track_a_combo.get() + ")\n")
+                roster_lines.append(f"ROSTER({self.track_a_id.get()},\"DC TRACK A\",\"/* /\")\n")
             else:
-                line = "AUTOSTART SET_TRACK(A," + self.track_a_combo.get() + ") DONE\n"
+                line = "SET_TRACK(A," + self.track_a_combo.get() + ")\n"
             config_list.append(line)
             if (self.track_b_combo.get().startswith("DC")):
-                line = (f"AUTOSTART SETLOCO({self.track_b_id.get()}) SET_TRACK(B," + self.track_b_combo.get() + ") " +
-                        "DONE\n")
-                line += f"ROSTER({self.track_b_id.get()},\"DC TRACK B\",\"/* /\")\n"
+                line = (f"SETLOCO({self.track_b_id.get()}) SET_TRACK(B," + self.track_b_combo.get() + ")\n")
+                roster_lines.append(f"ROSTER({self.track_b_id.get()},\"DC TRACK B\",\"/* /\")\n")
             else:
-                line = "AUTOSTART SET_TRACK(B," + self.track_b_combo.get() + ") DONE\n"
+                line = "SET_TRACK(B," + self.track_b_combo.get() + ")\n"
             config_list.append(line)
+        # Single AUTOSTART if either option enabled
+        if self.power_on_switch.get() == "on" or self.track_modes_enabled.get() == "on":
+            config_list.append("DONE\n\n")
+        if self.track_modes_enabled.get() == "on" and len(roster_lines) > 0:
+            config_list += roster_lines
 
         if len(param_errors) > 0:
             self.log.error("Missing parameters: %s", param_errors)
