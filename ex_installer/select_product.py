@@ -118,7 +118,7 @@ class SelectProduct(WindowLayout):
         self.ex_commandstation_button.grid(column=0, row=1, columnspan=2, padx=10, pady=10)
         self.ex_ioexpander_button.grid(column=0, row=2, **grid_options)
         self.ex_turntable_button.grid(column=1, row=2, **grid_options)
-        
+
         # Disable these for the moment as it's misleading that they're "coming soon"
         # self.ex_dccinspector_button.grid(column=0, row=3, **grid_options)
         # self.ex_fastclock_button.grid(column=1, row=3, **grid_options)
