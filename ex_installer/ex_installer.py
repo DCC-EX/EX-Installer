@@ -49,6 +49,7 @@ from .advanced_config import AdvancedConfig
 from .compile_upload import CompileUpload
 from ex_installer.version import ex_installer_version
 from .common_fonts import CommonFonts
+from .file_manager import FileManager as fm
 
 # Set theme and appearance, and deactive screen scaling
 ctk.set_default_color_theme(theme.DCC_EX_THEME)
@@ -63,6 +64,9 @@ class EXInstaller(ctk.CTk):
     # Create Arduino CLI and GitHub instances for the entire application
     acli = ArduinoCLI()
     git = GitClient()
+
+    # Create user preferences dictionary for application
+    preferences = fm.get_user_preferences()
 
     # Set application version
     app_version = ex_installer_version
@@ -149,6 +153,9 @@ class EXInstaller(ctk.CTk):
         self.scaling_menu.add_radiobutton(label="200%", var=self.scaling_option, value=200, command=self.set_scaling)
         self.tools_menu.add_cascade(label="Scaling", menu=self.scaling_menu)
         self.configure(menu=self.menubar)
+        if "scaling" in self.preferences:
+            self.scaling_option.set(self.preferences["scaling"])
+            self.set_scaling()
 
     def exception_handler(self, exc_type, exc_value, exc_traceback):
         """
@@ -319,4 +326,5 @@ class EXInstaller(ctk.CTk):
         """
         Method to save the specified key/value pair to the user preference file
         """
-        print(f"Save {key} {value}")
+        self.preferences[key] = value
+        fm.save_user_preferences(self.preferences)
