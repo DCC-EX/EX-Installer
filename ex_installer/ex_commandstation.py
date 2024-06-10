@@ -46,7 +46,8 @@ class EXCommandStation(WindowLayout):
         "LCD 16 columns x 2 rows": "#define LCD_DRIVER 0x27,16,2\n",
         "LCD 20 columns x 4 rows": "#define LCD_DRIVER 0x27,20,4\n",
         "OLED 128 x 32": "#define OLED_DRIVER 128,32\n",
-        "OLED 128 x 64": "#define OLED_DRIVER 128,64\n"
+        "OLED 128 x 64": "#define OLED_DRIVER 128,64\n",
+        "OLED 132 x 64": "#define OLED_DRIVER 132,64\n"
     }
 
     # List of default config options to include in config.h
@@ -155,6 +156,7 @@ class EXCommandStation(WindowLayout):
         self.set_track_modes()
         self.current_override()
         self.check_selected_device()
+        self.get_motor_drivers()
 
     def setup_config_frame(self):
         """
@@ -502,10 +504,12 @@ class EXCommandStation(WindowLayout):
         # Enable WiFi by default for ESP32 and disable control
         if device_fqbn.startswith("esp32") and not (device_fqbn.startswith("arduino:avr:nano") or
                                                     device_fqbn == "arduino:avr:uno"):
-            self.wifi_switch.select()
+            if self.wifi_switch.get() == "off":
+                self.wifi_switch.toggle()
             self.wifi_switch.configure(state="disabled")
         elif not (device_fqbn.startswith("arduino:avr:nano") or device_fqbn == "arduino:avr:uno"):
-            self.wifi_switch.deselect()
+            if self.wifi_switch.get() == "on":
+                self.wifi_switch.toggle()
             self.wifi_switch.configure(state="enabled")
 
     def set_display(self):
@@ -645,7 +649,6 @@ class EXCommandStation(WindowLayout):
         self.set_wifi()
         self.set_track_modes()
         self.set_advanced_config()
-        self.get_motor_drivers()
         self.check_motor_driver(self.motor_driver_combo.get())
         self.next_back.set_next_text("Compile and load")
         self.next_back.set_next_command(self.create_config_files)
@@ -662,11 +665,35 @@ class EXCommandStation(WindowLayout):
         definition_file = fm.get_filepath(self.ex_commandstation_dir, "MotorDrivers.h")
         def_list = fm.get_list_from_file(definition_file, match)
         if def_list:
-            self.motordriver_list += def_list
-            self.log.debug("Found motor driver list %s", def_list)
+            if self.acli.dccex_device is not None:
+                driver_list = self.restrict_dccex_motor_drivers(def_list)
+            else:
+                driver_list = self.remove_all_dccex_motor_drivers(def_list)
+            self.motordriver_list += driver_list
+            self.log.debug("Found motor driver list %s", driver_list)
         else:
             self.log.error("Could not get list of motor drivers")
         self.motor_driver_combo.configure(values=self.motordriver_list)
+
+    def remove_all_dccex_motor_drivers(self, driver_list):
+        """
+        Method to remove all DCC-EX specific motor driver definitions from the provided list
+
+        This provides an appropriate driver list for generic Arduino devices
+        """
+        restricted_list = []
+        for device in self.acli.dccex_devices:
+            restricted_list = [driver for driver in driver_list if not driver.startswith(self.acli.dccex_devices[device] + "_")]
+        return restricted_list
+
+    def restrict_dccex_motor_drivers(self, driver_list):
+        """
+        Method to remove generic motor driver definitions from the provided list
+
+        Utilises the class attribute dccex_device to limit the available selections
+        """
+        restricted_list = [driver for driver in driver_list if driver.startswith(self.acli.dccex_device + "_")]
+        return restricted_list
 
     def check_motor_driver(self, value):
         """
