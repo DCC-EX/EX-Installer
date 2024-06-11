@@ -269,6 +269,21 @@ html[data-theme='dark'] .sd-card {
 
 /* *************************************** */
 
+html[data-theme='dark'] dt.py {
+  background-color: #191919 !important;
+  color: #007dce !important;
+}
+
+html[data-theme='dark'] .sig-prename {
+  color: #525252 !important;
+}
+
+html[data-theme='dark'] .sig-name {
+  color: #ffffff !important;
+}
+
+/* *************************************** */
+
 .dcclink a {
   background-color: #00a3b9ff;
   box-shadow: 0 2px 0 #00353dff;

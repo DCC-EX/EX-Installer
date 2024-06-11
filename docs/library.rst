@@ -53,7 +53,7 @@ Select Product (select_product.py)
 
 ----
 
-Serail Monitor (serial_monitor.py)
+Serial Monitor (serial_monitor.py)
 ----------------------------------
 
 .. autoclass:: ex_installer.serial_monitor.SerialMonitor
