@@ -24,6 +24,7 @@ Version history:
             - Add 132 x 64 OLED
             - Add support for new DCC-EX EX-CSB1 - restricts motor driver selection
             - Fix bug where a blank myAutomation.h file cannot be disabled after being enabled
+            - Add ability to install the very latest devel branch by selecting v9.9.9-Devel
 0.0.18      - Update EX-Turntable configuration options to suit changes in 0.7.0
             - Dependabot update for cryptography to 42.0.4
             - Add link to DCC-EX News articles about EX-Installer to the Info menu

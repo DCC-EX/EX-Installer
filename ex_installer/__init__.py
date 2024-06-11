@@ -1,6 +1,7 @@
 """
 Initialisation module
 
+© 2024, Peter Cole.
 © 2023, Peter Cole.
 All rights reserved.
 
