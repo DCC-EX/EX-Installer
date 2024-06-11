@@ -375,12 +375,12 @@ class FormattedTextbox(ctk.CTkTextbox):
 
     For a number of bullet list items:
     bullet_list = [
-        "Item 1",
-        "Item 2",
-        "Item 3
+    "Item 1",
+    "Item 2",
+    "Item 3
     ]
     for item in bullet_list:
-        textbox.insert_bullet("insert", item)
+    -   textbox.insert_bullet("insert", item)
     """
     def __init__(self, *args, **kwargs):
         """
