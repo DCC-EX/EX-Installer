@@ -1,7 +1,9 @@
 """
 Module for managing the Arduino CLI page view
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 
@@ -187,7 +189,8 @@ class ManageArduinoCLI(WindowLayout):
         if switch.cget("variable").get() == "on":
             if not switch.cget("text") in self.package_dict:
                 self.package_dict[switch.cget("text")] = self.acli.extra_platforms[switch.cget("text")]["platform_id"]
-                self.log.debug("Enable package and install %s", self.acli.extra_platforms[switch.cget("text")]["platform_id"])
+                self.log.debug("Enable package and install %s",
+                               self.acli.extra_platforms[switch.cget("text")]["platform_id"])
                 # We unconditionally install here to get the right esp32:esp32 version for sure
                 self.acli.install_package(self.acli.cli_file_path(),
                                           self.acli.extra_platforms[switch.cget("text")]["platform_id"], self.queue)

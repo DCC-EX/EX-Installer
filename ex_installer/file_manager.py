@@ -3,7 +3,9 @@ Module for file management
 
 Downloading, extracting
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 

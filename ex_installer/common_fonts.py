@@ -3,7 +3,8 @@ Module to define widgets used across the application
 
 Every view should include this module and base the layout on WindowLayout
 
-© 2024, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 
