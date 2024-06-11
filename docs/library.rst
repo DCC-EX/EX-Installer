@@ -21,10 +21,53 @@ ex_installer
     :members:
     :undoc-members:
 
+manage_arduino_cli
+------------------
+
+.. autoclass:: ex_installer.manage_arduino_cli.ManageArduinoCLI
+    :members:
+    :undoc-members:
+
 ----
 
-EXCommandStation
-----------------
+select_device
+-------------
+
+.. autoclass:: ex_installer.select_device.SelectDevice
+    :members:
+    :undoc-members:
+
+----
+
+select_product
+--------------
+
+.. autoclass:: ex_installer.select_product.SelectProduct
+    :members:
+    :undoc-members:
+
+----
+
+select_version_config
+---------------------
+
+.. autoclass:: ex_installer.select_version_config.SelectVersionConfig
+    :members:
+    :undoc-members:
+
+----
+
+serial_monitor
+--------------
+
+.. autoclass:: ex_installer.serial_monitor.SerialMonitor
+    :members:
+    :undoc-members:
+
+----
+
+ex_commandstation
+-----------------
 
 .. autoclass:: ex_installer.ex_commandstation.EXCommandStation
     :members:
@@ -129,46 +172,3 @@ git_client
     :undoc-members:
 
 ----
-
-manage_arduino_cli
-------------------
-
-.. autoclass:: ex_installer.manage_arduino_cli.ManageArduinoCLI
-    :members:
-    :undoc-members:
-
-----
-
-select_device
--------------
-
-.. autoclass:: ex_installer.select_device.SelectDevice
-    :members:
-    :undoc-members:
-
-----
-
-select_product
--------------
-
-.. autoclass:: ex_installer.select_product.SelectProduct
-    :members:
-    :undoc-members:
-
-----
-
-select_version_config
----------------------
-
-.. autoclass:: ex_installer.select_version_config.SelectVersionConfig
-    :members:
-    :undoc-members:
-
-----
-
-serial_monitor
---------------
-
-.. autoclass:: ex_installer.serial_monitor.SerialMonitor
-    :members:
-    :undoc-members:

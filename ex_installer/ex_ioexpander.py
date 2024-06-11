@@ -78,9 +78,9 @@ class EXIOExpander(WindowLayout):
 
         Eg.
         if self.product_major_version >=4 and self.product_minor_version >= 2:
-            function_enables_track_manager()
+        -    function_enables_track_manager()
         else:
-            function_disables_track_manager()
+        -    function_disables_track_manager()
         """
         self.product_version_name = version
         if major is not None:
