@@ -658,7 +658,11 @@ class EXCommandStation(WindowLayout):
 
     def get_motor_drivers(self):
         """
-        Function to read the defined motor driver definition from MotorDrivers.h
+        Method to read the defined motor driver definition from MotorDrivers.h and populate the pulldown options.
+
+        If a DCC-EX specific Arduino device is selected, this list will be limited to matching motor driver
+        definitions only, otherwise all DCC-EX specific definitions will be removed, presenting only generic
+        driver options to select.
         """
         self.motordriver_list = []
         match = r'^.+?\s(.+?)\sF\(".+?"\).*$'
@@ -677,22 +681,30 @@ class EXCommandStation(WindowLayout):
 
     def remove_all_dccex_motor_drivers(self, driver_list):
         """
-        Method to remove all DCC-EX specific motor driver definitions from the provided list
+        Method to remove all DCC-EX specific motor driver definitions from the provided list.
 
-        This provides an appropriate driver list for generic Arduino devices
+        This provides an appropriate driver list for generic Arduino devices. Any driver definition starting with
+        a device name in the dccex_devices dictionary will be removed from the available list when selecting a
+        generic Arduino device.
         """
         restricted_list = []
-        for device in self.acli.dccex_devices:
-            restricted_list = [driver for driver in driver_list if not driver.startswith(self.acli.dccex_devices[device] + "_")]
+        for driver in driver_list:
+            add_driver = driver
+            for device in self.acli.dccex_devices:
+                if self.acli.dccex_devices[device].split("_")[0] == driver.split("_")[0]:
+                    add_driver = None
+            if add_driver is not None:
+                restricted_list.append(add_driver)
         return restricted_list
 
     def restrict_dccex_motor_drivers(self, driver_list):
         """
-        Method to remove generic motor driver definitions from the provided list
+        Method to remove generic motor driver definitions from the provided list.
 
-        Utilises the class attribute dccex_device to limit the available selections
+        Utilises the class attribute dccex_device to limit the available selections. Only driver definitions
+        starting with the device name of a selected DCC-EX specific Arduino device will be available to select.
         """
-        restricted_list = [driver for driver in driver_list if driver.startswith(self.acli.dccex_device + "_")]
+        restricted_list = [driver for driver in driver_list if driver.split("_")[0] == self.acli.dccex_device]
         return restricted_list
 
     def check_motor_driver(self, value):
