@@ -154,9 +154,11 @@ class SelectVersionConfig(WindowLayout):
         Process:
         - check if the product directory already exists
         - if so
+
             - if the product directory is already a cloned repo
             - any locally modified files that would interfere with Git commands (prompt to resolve)
             - delete any existing configuration files
+            
         - if not, clone repo
         - get list of versions, latest prod, and latest devel versions
         """
