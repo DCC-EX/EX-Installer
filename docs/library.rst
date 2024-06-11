@@ -1,5 +1,5 @@
-Library
-=======
+Code Library
+============
 
 .. _reference_db_database:
 
@@ -93,23 +93,6 @@ ex_turntable
 
 ----
 
-file_manager
-------------
-
-.. autoclass:: ex_installer.file_manager.ThreadedDownloader
-    :members:
-    :undoc-members:
-
-.. autoclass:: ex_installer.file_manager.ThreadedExtractor
-    :members:
-    :undoc-members:
-
-.. autoclass:: ex_installer.file_manager.FileManager
-    :members:
-    :undoc-members:
-
-----
-
 advanced_config
 ---------------
 
@@ -130,8 +113,28 @@ arduino_cli
 
 ----
 
+Utility
+-------
+
+file_manager
+^^^^^^^^^^^^
+
+.. autoclass:: ex_installer.file_manager.ThreadedDownloader
+    :members:
+    :undoc-members:
+
+.. autoclass:: ex_installer.file_manager.ThreadedExtractor
+    :members:
+    :undoc-members:
+
+.. autoclass:: ex_installer.file_manager.FileManager
+    :members:
+    :undoc-members:
+
+----
+
 common_fonts
-------------
+^^^^^^^^^^^^
 
 .. autoclass:: ex_installer.common_fonts.CommonFonts
     :members:
@@ -140,7 +143,7 @@ common_fonts
 ----
 
 common_widgets
---------------
+^^^^^^^^^^^^^^
 
 .. autoclass:: ex_installer.common_widgets.WindowLayout
     :members:
