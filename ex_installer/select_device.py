@@ -166,11 +166,6 @@ class SelectDevice(WindowLayout):
                         fake_port = "COM10"
                     else:
                         fake_port = "/dev/ttyUSB10"
-                    # Example detected device data:
-                    # [{'port':
-                    # {'address': 'COM5', 'label': 'COM5', 'protocol': 'serial', 'protocol_label': 'Serial Port (USB)',
-                    #  'properties': {'pid': '0xEA60', 'serialNumber': '0001', 'vid': '0x10C4'},
-                    #  'hardware_id': '0001'}}]
                     fake_data = [{'port': {'address': fake_port, 'label': fake_port, 'protocol': 'serial',
                                   'protocol_label': 'Serial Port (USB)'}}]
                     self.process_data = fake_data
@@ -251,6 +246,13 @@ class SelectDevice(WindowLayout):
 
     def update_board(self, name, index):
         if name != "Select the correct device":
+            if name.startswith("DCC-EX"):
+                if name in self.acli.dccex_devices:
+                    self.acli.dccex_device = self.acli.dccex_devices[name]
+                else:
+                    self.acli.dccex_device = None
+            else:
+                self.acli.dccex_device = None
             self.acli.detected_devices[index]["matching_boards"][0]["name"] = name
             self.acli.detected_devices[index]["matching_boards"][0]["fqbn"] = self.acli.supported_devices[name]
             self.selected_device.set(index)
