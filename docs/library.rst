@@ -5,8 +5,8 @@ Code Library
 
 ----
 
-welcome
--------
+Welcome (welcome.py)
+--------------------
 
 .. autoclass:: ex_installer.welcome.Welcome
     :members:
@@ -15,16 +15,16 @@ welcome
 
 ----
 
-ex_installer
-------------
+EX-Installer (ex_installer.py)
+------------------------------
 
 .. autoclass:: ex_installer.ex_installer.EXInstaller
     :members:
     :undoc-members:
     :private-members:
 
-manage_arduino_cli
-------------------
+Manage Arduino CLI (manage_arduino_cli.py)
+------------------------------------------
 
 .. autoclass:: ex_installer.manage_arduino_cli.ManageArduinoCLI
     :members:
@@ -33,8 +33,8 @@ manage_arduino_cli
 
 ----
 
-select_device
--------------
+Select Device (select_device.py)
+--------------------------------
 
 .. autoclass:: ex_installer.select_device.SelectDevice
     :members:
@@ -43,8 +43,8 @@ select_device
 
 ----
 
-select_product
---------------
+Select Product (select_product.py)
+----------------------------------
 
 .. autoclass:: ex_installer.select_product.SelectProduct
     :members:
@@ -53,8 +53,8 @@ select_product
 
 ----
 
-serial_monitor
---------------
+Serail Monitor (serial_monitor.py)
+----------------------------------
 
 .. autoclass:: ex_installer.serial_monitor.SerialMonitor
     :members:
@@ -63,11 +63,11 @@ serial_monitor
 
 ----
 
-EX CommandStation
+EX-CommandStation
 -----------------
 
-ex_commandstation
-^^^^^^^^^^^^^^^^^
+ex_commandstation.py
+^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: ex_installer.ex_commandstation.EXCommandStation
     :members:
@@ -76,8 +76,8 @@ ex_commandstation
 
 ----
 
-select_version_config
-^^^^^^^^^^^^^^^^^^^^^
+Select Version (select_version_config.py)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: ex_installer.select_version_config.SelectVersionConfig
     :members:
@@ -86,8 +86,8 @@ select_version_config
 
 ----
 
-advanced_config
-^^^^^^^^^^^^^^^
+Advanced Config (advanced_config.py)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: ex_installer.advanced_config.AdvancedConfig
     :members:
@@ -97,8 +97,8 @@ advanced_config
 -----
 
 
-ex_ioexpander
--------------
+EX-IOExpander (ex_ioexpander.py)
+--------------------------------
 
 .. autoclass:: ex_installer.ex_ioexpander.EXIOExpander
     :members:
@@ -107,8 +107,8 @@ ex_ioexpander
 
 ----
 
-ex_turntable
-------------
+EX-Turntable (ex_turntable.py)
+------------------------------
 
 .. autoclass:: ex_installer.ex_turntable.EXTurntable
     :members:
@@ -117,8 +117,8 @@ ex_turntable
 
 ----
 
-arduino_cli
------------
+Arduino CLI (arduino_cli.py)
+----------------------------
 
 .. autoclass:: ex_installer.arduino_cli.ThreadedArduinoCLI
     :members:
@@ -135,8 +135,8 @@ arduino_cli
 Utility/Common
 --------------
 
-file_manager
-^^^^^^^^^^^^
+file_manager.py
+^^^^^^^^^^^^^^^
 
 .. autoclass:: ex_installer.file_manager.ThreadedDownloader
     :members:
@@ -155,8 +155,8 @@ file_manager
 
 ----
 
-common_fonts
-^^^^^^^^^^^^
+common_fonts.py
+^^^^^^^^^^^^^^^
 
 .. autoclass:: ex_installer.common_fonts.CommonFonts
     :members:
@@ -165,8 +165,8 @@ common_fonts
 
 ----
 
-common_widgets
-^^^^^^^^^^^^^^
+common_widgets.py
+^^^^^^^^^^^^^^^^^
 
 .. autoclass:: ex_installer.common_widgets.WindowLayout
     :members:
@@ -190,8 +190,8 @@ common_widgets
 
 ----
 
-git_client
-^^^^^^^^^^
+git_client.py
+^^^^^^^^^^^^^
 
 .. autoclass:: ex_installer.git_client.ThreadedGitClient
     :members:
