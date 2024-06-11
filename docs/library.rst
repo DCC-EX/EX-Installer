@@ -48,15 +48,6 @@ select_product
 
 ----
 
-select_version_config
----------------------
-
-.. autoclass:: ex_installer.select_version_config.SelectVersionConfig
-    :members:
-    :undoc-members:
-
-----
-
 serial_monitor
 --------------
 
@@ -66,14 +57,36 @@ serial_monitor
 
 ----
 
-ex_commandstation
+EX CommandStation
 -----------------
+
+ex_commandstation
+^^^^^^^^^^^^^^^^^
 
 .. autoclass:: ex_installer.ex_commandstation.EXCommandStation
     :members:
     :undoc-members:
 
 ----
+
+select_version_config
+^^^^^^^^^^^^^^^^^^^^^
+
+.. autoclass:: ex_installer.select_version_config.SelectVersionConfig
+    :members:
+    :undoc-members:
+
+----
+
+advanced_config
+^^^^^^^^^^^^^^^
+
+.. autoclass:: ex_installer.advanced_config.AdvancedConfig
+    :members:
+    :undoc-members:
+
+-----
+
 
 ex_ioexpander
 -------------
@@ -93,13 +106,6 @@ ex_turntable
 
 ----
 
-advanced_config
----------------
-
-.. autoclass:: ex_installer.advanced_config.AdvancedConfig
-    :members:
-    :undoc-members:
-
 arduino_cli
 -----------
 
@@ -113,8 +119,8 @@ arduino_cli
 
 ----
 
-Utility
--------
+Utility/Common
+--------------
 
 file_manager
 ^^^^^^^^^^^^
@@ -164,7 +170,7 @@ common_widgets
 ----
 
 git_client
-----------
+^^^^^^^^^^
 
 .. autoclass:: ex_installer.git_client.ThreadedGitClient
     :members:
