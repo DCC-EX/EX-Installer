@@ -348,7 +348,7 @@ class SelectVersionConfig(WindowLayout):
     def delete_config_files(self):
         """
         Function to delete config files from product directory
-          needed on subsequent passes thru the logic
+        needed on subsequent passes thru the logic
         """
         file_list = []
         min_list = fm.get_config_files(self.product_dir, pd[self.product]["minimum_config_files"])
@@ -369,7 +369,7 @@ class SelectVersionConfig(WindowLayout):
     def copy_config_files(self):
         """
         Function to copy config files from selected directory to product directory
-          also switches view to advanced_config if copy is successful
+        also switches view to advanced_config if copy is successful
         """
         copy_list = fm.get_config_files(self.config_path.get(), pd[self.product]["minimum_config_files"])
         if copy_list:
