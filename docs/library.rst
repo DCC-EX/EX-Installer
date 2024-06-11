@@ -6,6 +6,6 @@ Library
 EXCommandStation
 ================
 
-.. autoclass:: ex_commandstation.EXCommandStation
+.. autoclass:: ex_installer.ex_commandstation.EXCommandStation
     :members:
     :undoc-members:
