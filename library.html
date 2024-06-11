@@ -29,7 +29,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="prev" title="Documentation for the EX-Installer" href="index.html" /> 
+    <link rel="next" title="Licence" href="licence.html" />
+    <link rel="prev" title="Running and Building" href="running-and-building.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -54,15 +55,25 @@
         </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
               <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="index.html">EX-Installer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="running-and-building.html">Running and Building</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="running-and-building.html#running-ex-installer">Running EX-Installer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="running-and-building.html#versioning">Versioning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="running-and-building.html#how-to-build-binaries">How to build binaries</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="running-and-building.html#build-script">Build script</a></li>
+<li class="toctree-l3"><a class="reference internal" href="running-and-building.html#building-manually">Building manually</a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Code Library</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#welcome">welcome</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#welcome-welcome-py">Welcome (welcome.py)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ex_installer.welcome.Welcome"><code class="docutils literal notranslate"><span class="pre">Welcome</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.welcome.Welcome.set_text"><code class="docutils literal notranslate"><span class="pre">Welcome.set_text()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#ex-installer">ex_installer</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ex-installer-ex-installer-py">EX-Installer (ex_installer.py)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller"><code class="docutils literal notranslate"><span class="pre">EXInstaller</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.about"><code class="docutils literal notranslate"><span class="pre">EXInstaller.about()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.acli"><code class="docutils literal notranslate"><span class="pre">EXInstaller.acli</span></code></a></li>
@@ -79,7 +90,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#manage-arduino-cli">manage_arduino_cli</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#manage-arduino-cli-manage-arduino-cli-py">Manage Arduino CLI (manage_arduino_cli.py)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.check_arduino_cli"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI.check_arduino_cli()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.get_library_list"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI.get_library_list()</span></code></a></li>
@@ -95,7 +106,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#select-device">select_device</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#select-device-select-device-py">Select Device (select_device.py)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ex_installer.select_device.SelectDevice"><code class="docutils literal notranslate"><span class="pre">SelectDevice</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.select_device.SelectDevice.get_port_description"><code class="docutils literal notranslate"><span class="pre">SelectDevice.get_port_description()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.select_device.SelectDevice.instruction_text"><code class="docutils literal notranslate"><span class="pre">SelectDevice.instruction_text</span></code></a></li>
@@ -107,14 +118,14 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#select-product">select_product</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#select-product-select-product-py">Select Product (select_product.py)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ex_installer.select_product.SelectProduct"><code class="docutils literal notranslate"><span class="pre">SelectProduct</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.select_product.SelectProduct.check_product_device"><code class="docutils literal notranslate"><span class="pre">SelectProduct.check_product_device()</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#serial-monitor">serial_monitor</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#serail-monitor-serial-monitor-py">Serail Monitor (serial_monitor.py)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ex_installer.serial_monitor.SerialMonitor"><code class="docutils literal notranslate"><span class="pre">SerialMonitor</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.serial_monitor.SerialMonitor.browse_log_dir"><code class="docutils literal notranslate"><span class="pre">SerialMonitor.browse_log_dir()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.serial_monitor.SerialMonitor.close_monitor"><code class="docutils literal notranslate"><span class="pre">SerialMonitor.close_monitor()</span></code></a></li>
@@ -129,8 +140,8 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#ex-commandstation">EX CommandStation</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#id1">ex_commandstation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ex-commandstation">EX-CommandStation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#ex-commandstation-py">ex_commandstation.py</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation"><code class="docutils literal notranslate"><span class="pre">EXCommandStation</span></code></a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.check_invalid_wifi_password"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.check_invalid_wifi_password()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.check_motor_driver"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.check_motor_driver()</span></code></a></li>
@@ -162,7 +173,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#select-version-config">select_version_config</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#select-version-select-version-config-py">Select Version (select_version_config.py)</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.select_version_config.SelectVersionConfig"><code class="docutils literal notranslate"><span class="pre">SelectVersionConfig</span></code></a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.select_version_config.SelectVersionConfig.browse_configdir"><code class="docutils literal notranslate"><span class="pre">SelectVersionConfig.browse_configdir()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.select_version_config.SelectVersionConfig.copy_config_files"><code class="docutils literal notranslate"><span class="pre">SelectVersionConfig.copy_config_files()</span></code></a></li>
@@ -181,7 +192,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#advanced-config">advanced_config</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#advanced-config-advanced-config-py">Advanced Config (advanced_config.py)</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.advanced_config.AdvancedConfig"><code class="docutils literal notranslate"><span class="pre">AdvancedConfig</span></code></a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.advanced_config.AdvancedConfig.reload_view"><code class="docutils literal notranslate"><span class="pre">AdvancedConfig.reload_view()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.advanced_config.AdvancedConfig.save_config_files"><code class="docutils literal notranslate"><span class="pre">AdvancedConfig.save_config_files()</span></code></a></li>
@@ -192,7 +203,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#ex-ioexpander">ex_ioexpander</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ex-ioexpander-ex-ioexpander-py">EX-IOExpander (ex_ioexpander.py)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ex_installer.ex_ioexpander.EXIOExpander"><code class="docutils literal notranslate"><span class="pre">EXIOExpander</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_ioexpander.EXIOExpander.decrement_address"><code class="docutils literal notranslate"><span class="pre">EXIOExpander.decrement_address()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_ioexpander.EXIOExpander.diag_test_options"><code class="docutils literal notranslate"><span class="pre">EXIOExpander.diag_test_options()</span></code></a></li>
@@ -206,7 +217,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#ex-turntable">ex_turntable</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#ex-turntable-ex-turntable-py">EX-Turntable (ex_turntable.py)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ex_installer.ex_turntable.EXTurntable"><code class="docutils literal notranslate"><span class="pre">EXTurntable</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_turntable.EXTurntable.check_stepper"><code class="docutils literal notranslate"><span class="pre">EXTurntable.check_stepper()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_turntable.EXTurntable.decrement_address"><code class="docutils literal notranslate"><span class="pre">EXTurntable.decrement_address()</span></code></a></li>
@@ -228,7 +239,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="#arduino-cli">arduino_cli</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#arduino-cli-arduino-cli-py">Arduino CLI (arduino_cli.py)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ex_installer.arduino_cli.ThreadedArduinoCLI"><code class="docutils literal notranslate"><span class="pre">ThreadedArduinoCLI</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ThreadedArduinoCLI.arduino_cli_lock"><code class="docutils literal notranslate"><span class="pre">ThreadedArduinoCLI.arduino_cli_lock</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ThreadedArduinoCLI.run"><code class="docutils literal notranslate"><span class="pre">ThreadedArduinoCLI.run()</span></code></a></li>
@@ -258,7 +269,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#utility-common">Utility/Common</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#file-manager">file_manager</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#file-manager-py">file_manager.py</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.file_manager.ThreadedDownloader"><code class="docutils literal notranslate"><span class="pre">ThreadedDownloader</span></code></a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.ThreadedDownloader.download_lock"><code class="docutils literal notranslate"><span class="pre">ThreadedDownloader.download_lock</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.ThreadedDownloader.run"><code class="docutils literal notranslate"><span class="pre">ThreadedDownloader.run()</span></code></a></li>
@@ -289,14 +300,14 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#common-fonts">common_fonts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#common-fonts-py">common_fonts.py</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.common_fonts.CommonFonts"><code class="docutils literal notranslate"><span class="pre">CommonFonts</span></code></a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.common_fonts.CommonFonts.default_font"><code class="docutils literal notranslate"><span class="pre">CommonFonts.default_font</span></code></a></li>
 </ul>
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#common-widgets">common_widgets</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#common-widgets-py">common_widgets.py</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.common_widgets.WindowLayout"><code class="docutils literal notranslate"><span class="pre">WindowLayout</span></code></a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.common_widgets.WindowLayout.disable_input_states"><code class="docutils literal notranslate"><span class="pre">WindowLayout.disable_input_states()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.common_widgets.WindowLayout.get_exception"><code class="docutils literal notranslate"><span class="pre">WindowLayout.get_exception()</span></code></a></li>
@@ -346,7 +357,7 @@
 </li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#git-client">git_client</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#git-client-py">git_client.py</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.git_client.ThreadedGitClient"><code class="docutils literal notranslate"><span class="pre">ThreadedGitClient</span></code></a><ul>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.git_client.ThreadedGitClient.api_lock"><code class="docutils literal notranslate"><span class="pre">ThreadedGitClient.api_lock</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.git_client.ThreadedGitClient.run"><code class="docutils literal notranslate"><span class="pre">ThreadedGitClient.run()</span></code></a></li>
@@ -374,6 +385,7 @@
 </li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="licence.html">Licence</a></li>
 </ul>
 
         </div>
@@ -403,8 +415,8 @@
   <section id="code-library">
 <h1>Code Library<a class="headerlink" href="#code-library" title="Link to this heading"></a></h1>
 <hr class="docutils" id="reference-db-database" />
-<section id="welcome">
-<h2>welcome<a class="headerlink" href="#welcome" title="Link to this heading"></a></h2>
+<section id="welcome-welcome-py">
+<h2>Welcome (welcome.py)<a class="headerlink" href="#welcome-welcome-py" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.welcome.Welcome">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.welcome.</span></span><span class="sig-name descname"><span class="pre">Welcome</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.welcome.Welcome" title="Link to this definition"></a></dt>
@@ -418,8 +430,8 @@
 
 </section>
 <hr class="docutils" />
-<section id="ex-installer">
-<h2>ex_installer<a class="headerlink" href="#ex-installer" title="Link to this heading"></a></h2>
+<section id="ex-installer-ex-installer-py">
+<h2>EX-Installer (ex_installer.py)<a class="headerlink" href="#ex-installer-ex-installer-py" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.ex_installer.EXInstaller">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.ex_installer.</span></span><span class="sig-name descname"><span class="pre">EXInstaller</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_installer.EXInstaller" title="Link to this definition"></a></dt>
@@ -507,8 +519,8 @@ self.product_patch_version</p>
 </dd></dl>
 
 </section>
-<section id="manage-arduino-cli">
-<h2>manage_arduino_cli<a class="headerlink" href="#manage-arduino-cli" title="Link to this heading"></a></h2>
+<section id="manage-arduino-cli-manage-arduino-cli-py">
+<h2>Manage Arduino CLI (manage_arduino_cli.py)<a class="headerlink" href="#manage-arduino-cli-manage-arduino-cli-py" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.manage_arduino_cli.</span></span><span class="sig-name descname"><span class="pre">ManageArduinoCLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI" title="Link to this definition"></a></dt>
@@ -572,8 +584,8 @@ self.product_patch_version</p>
 
 </section>
 <hr class="docutils" />
-<section id="select-device">
-<h2>select_device<a class="headerlink" href="#select-device" title="Link to this heading"></a></h2>
+<section id="select-device-select-device-py">
+<h2>Select Device (select_device.py)<a class="headerlink" href="#select-device-select-device-py" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.select_device.SelectDevice">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.select_device.</span></span><span class="sig-name descname"><span class="pre">SelectDevice</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.select_device.SelectDevice" title="Link to this definition"></a></dt>
@@ -614,8 +626,8 @@ self.product_patch_version</p>
 
 </section>
 <hr class="docutils" />
-<section id="select-product">
-<h2>select_product<a class="headerlink" href="#select-product" title="Link to this heading"></a></h2>
+<section id="select-product-select-product-py">
+<h2>Select Product (select_product.py)<a class="headerlink" href="#select-product-select-product-py" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.select_product.SelectProduct">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.select_product.</span></span><span class="sig-name descname"><span class="pre">SelectProduct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.select_product.SelectProduct" title="Link to this definition"></a></dt>
@@ -629,8 +641,8 @@ self.product_patch_version</p>
 
 </section>
 <hr class="docutils" />
-<section id="serial-monitor">
-<h2>serial_monitor<a class="headerlink" href="#serial-monitor" title="Link to this heading"></a></h2>
+<section id="serail-monitor-serial-monitor-py">
+<h2>Serail Monitor (serial_monitor.py)<a class="headerlink" href="#serail-monitor-serial-monitor-py" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.serial_monitor.SerialMonitor">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.serial_monitor.</span></span><span class="sig-name descname"><span class="pre">SerialMonitor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.serial_monitor.SerialMonitor" title="Link to this definition"></a></dt>
@@ -700,9 +712,9 @@ self.product_patch_version</p>
 </section>
 <hr class="docutils" />
 <section id="ex-commandstation">
-<h2>EX CommandStation<a class="headerlink" href="#ex-commandstation" title="Link to this heading"></a></h2>
-<section id="id1">
-<h3>ex_commandstation<a class="headerlink" href="#id1" title="Link to this heading"></a></h3>
+<h2>EX-CommandStation<a class="headerlink" href="#ex-commandstation" title="Link to this heading"></a></h2>
+<section id="ex-commandstation-py">
+<h3>ex_commandstation.py<a class="headerlink" href="#ex-commandstation-py" title="Link to this heading"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.ex_commandstation.EXCommandStation">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.ex_commandstation.</span></span><span class="sig-name descname"><span class="pre">EXCommandStation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_commandstation.EXCommandStation" title="Link to this definition"></a></dt>
@@ -878,8 +890,8 @@ else:
 
 </section>
 <hr class="docutils" />
-<section id="select-version-config">
-<h3>select_version_config<a class="headerlink" href="#select-version-config" title="Link to this heading"></a></h3>
+<section id="select-version-select-version-config-py">
+<h3>Select Version (select_version_config.py)<a class="headerlink" href="#select-version-select-version-config-py" title="Link to this heading"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.select_version_config.SelectVersionConfig">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.select_version_config.</span></span><span class="sig-name descname"><span class="pre">SelectVersionConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.select_version_config.SelectVersionConfig" title="Link to this definition"></a></dt>
@@ -988,8 +1000,8 @@ needed on subsequent passes thru the logic</p>
 
 </section>
 <hr class="docutils" />
-<section id="advanced-config">
-<h3>advanced_config<a class="headerlink" href="#advanced-config" title="Link to this heading"></a></h3>
+<section id="advanced-config-advanced-config-py">
+<h3>Advanced Config (advanced_config.py)<a class="headerlink" href="#advanced-config-advanced-config-py" title="Link to this heading"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.advanced_config.AdvancedConfig">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.advanced_config.</span></span><span class="sig-name descname"><span class="pre">AdvancedConfig</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.advanced_config.AdvancedConfig" title="Link to this definition"></a></dt>
@@ -1021,8 +1033,8 @@ needed on subsequent passes thru the logic</p>
 </section>
 </section>
 <hr class="docutils" />
-<section id="ex-ioexpander">
-<h2>ex_ioexpander<a class="headerlink" href="#ex-ioexpander" title="Link to this heading"></a></h2>
+<section id="ex-ioexpander-ex-ioexpander-py">
+<h2>EX-IOExpander (ex_ioexpander.py)<a class="headerlink" href="#ex-ioexpander-ex-ioexpander-py" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.ex_ioexpander.EXIOExpander">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.ex_ioexpander.</span></span><span class="sig-name descname"><span class="pre">EXIOExpander</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_ioexpander.EXIOExpander" title="Link to this definition"></a></dt>
@@ -1093,8 +1105,8 @@ else:
 
 </section>
 <hr class="docutils" />
-<section id="ex-turntable">
-<h2>ex_turntable<a class="headerlink" href="#ex-turntable" title="Link to this heading"></a></h2>
+<section id="ex-turntable-ex-turntable-py">
+<h2>EX-Turntable (ex_turntable.py)<a class="headerlink" href="#ex-turntable-ex-turntable-py" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.ex_turntable.EXTurntable">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.ex_turntable.</span></span><span class="sig-name descname"><span class="pre">EXTurntable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_turntable.EXTurntable" title="Link to this definition"></a></dt>
@@ -1237,8 +1249,8 @@ else:
 
 </section>
 <hr class="docutils" />
-<section id="arduino-cli">
-<h2>arduino_cli<a class="headerlink" href="#arduino-cli" title="Link to this heading"></a></h2>
+<section id="arduino-cli-arduino-cli-py">
+<h2>Arduino CLI (arduino_cli.py)<a class="headerlink" href="#arduino-cli-arduino-cli-py" title="Link to this heading"></a></h2>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.arduino_cli.ThreadedArduinoCLI">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.arduino_cli.</span></span><span class="sig-name descname"><span class="pre">ThreadedArduinoCLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">acli_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">params</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_limit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">300</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.arduino_cli.ThreadedArduinoCLI" title="Link to this definition"></a></dt>
@@ -1403,8 +1415,8 @@ they will be terminated</p>
 <hr class="docutils" />
 <section id="utility-common">
 <h2>Utility/Common<a class="headerlink" href="#utility-common" title="Link to this heading"></a></h2>
-<section id="file-manager">
-<h3>file_manager<a class="headerlink" href="#file-manager" title="Link to this heading"></a></h3>
+<section id="file-manager-py">
+<h3>file_manager.py<a class="headerlink" href="#file-manager-py" title="Link to this heading"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.file_manager.ThreadedDownloader">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.file_manager.</span></span><span class="sig-name descname"><span class="pre">ThreadedDownloader</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">url</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.file_manager.ThreadedDownloader" title="Link to this definition"></a></dt>
@@ -1557,8 +1569,8 @@ Writes utf-8 encoded</p>
 
 </section>
 <hr class="docutils" />
-<section id="common-fonts">
-<h3>common_fonts<a class="headerlink" href="#common-fonts" title="Link to this heading"></a></h3>
+<section id="common-fonts-py">
+<h3>common_fonts.py<a class="headerlink" href="#common-fonts-py" title="Link to this heading"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.common_fonts.CommonFonts">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.common_fonts.</span></span><span class="sig-name descname"><span class="pre">CommonFonts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.common_fonts.CommonFonts" title="Link to this definition"></a></dt>
@@ -1572,8 +1584,8 @@ Writes utf-8 encoded</p>
 
 </section>
 <hr class="docutils" />
-<section id="common-widgets">
-<h3>common_widgets<a class="headerlink" href="#common-widgets" title="Link to this heading"></a></h3>
+<section id="common-widgets-py">
+<h3>common_widgets.py<a class="headerlink" href="#common-widgets-py" title="Link to this heading"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.common_widgets.WindowLayout">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.common_widgets.</span></span><span class="sig-name descname"><span class="pre">WindowLayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.common_widgets.WindowLayout" title="Link to this definition"></a></dt>
@@ -1823,8 +1835,8 @@ CreateTooltip(self.widget, “Tool tip contextual help text”[, URL])</p>
 
 </section>
 <hr class="docutils" />
-<section id="git-client">
-<h3>git_client<a class="headerlink" href="#git-client" title="Link to this heading"></a></h3>
+<section id="git-client-py">
+<h3>git_client.py<a class="headerlink" href="#git-client-py" title="Link to this heading"></a></h3>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.git_client.ThreadedGitClient">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.git_client.</span></span><span class="sig-name descname"><span class="pre">ThreadedGitClient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">task_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">task</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.git_client.ThreadedGitClient" title="Link to this definition"></a></dt>
@@ -1951,7 +1963,8 @@ vX.Y.Z-Prod|Devel</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="index.html" class="btn btn-neutral float-left" title="Documentation for the EX-Installer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="running-and-building.html" class="btn btn-neutral float-left" title="Running and Building" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="licence.html" class="btn btn-neutral float-right" title="Licence" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
