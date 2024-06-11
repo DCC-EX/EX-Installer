@@ -3,7 +3,9 @@ Module for a Git client using the pygit2 module
 
 This model enables cloning and selecting versions from GitHub repositories using threads and queues
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 

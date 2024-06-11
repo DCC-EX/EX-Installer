@@ -1,6 +1,7 @@
 """
 Main application controller
 
+© 2024, Peter Cole.
 © 2023, Peter Cole.
 © 2023, Harald Barth.
 All rights reserved.

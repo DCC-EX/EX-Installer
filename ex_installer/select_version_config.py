@@ -2,6 +2,25 @@
 Module for selecting the version of the software being installed
 
 Also will allow for selecting a directory containing existing config files
+
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
@@ -241,6 +260,8 @@ class SelectVersionConfig(WindowLayout):
         else:
             self.latest_devel_radio.grid_remove()
         self.version_list = self.git.get_repo_versions(self.repo)
+        self.version_list.update({'v9.9.9-Devel devel branch':
+                                  {'major': 9, 'minor': 9, 'patch': 9, 'type': 'Devel', 'ref': 'origin/devel'}})
         if self.version_list:
             version_select = list(self.version_list.keys())
             self.select_version_combo.configure(values=version_select)
@@ -260,7 +281,13 @@ class SelectVersionConfig(WindowLayout):
             self.set_next_config()
         elif self.select_version.get() == 2:
             if self.select_version_combo.get() != "Select a version":
-                self.repo.checkout(refname=self.version_list[self.select_version_combo.get()]["ref"])
+                # self.repo.checkout(refname=self.version_list[self.select_version_combo.get()]["ref"])
+                rname = self.version_list[self.select_version_combo.get()]["ref"]
+                try:
+                    self.repo.checkout(refname=rname)
+                except Exception:
+                    _, ref = self. repo.resolve_refish(refish=rname)
+                    self.repo.checkout(refname=ref)
                 self.log.debug("Version selected: %s", self.version_list[self.select_version_combo.get()]["ref"])
                 self.set_next_config()
             else:

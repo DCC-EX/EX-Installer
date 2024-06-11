@@ -1,8 +1,10 @@
 """
 This is the root window of the EX-Installer application.
 
-© 2023, Peter Cole. All rights reserved.
-© 2023, Harald Barth. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+© 2023, Harald Barth.
+All rights reserved.
 
 This file is part of EX-Installer.
 

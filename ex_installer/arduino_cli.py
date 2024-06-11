@@ -5,7 +5,9 @@ This model can be used to download, install, configure, and update the Arduino C
 
 This module uses threads and queues
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 

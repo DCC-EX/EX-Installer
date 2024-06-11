@@ -1,6 +1,7 @@
 """
 Module for the EX-CommandStation page view
 
+© 2024, Peter Cole. All rights reserved.
 © 2023, Peter Cole. All rights reserved.
 © 2023, M Steve Todd. All rights reserved.
 

@@ -1,7 +1,9 @@
 """
 Module containing details for each product able to be installed with EX-Installer
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 

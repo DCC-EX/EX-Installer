@@ -7,6 +7,7 @@ Module for the Advanced Configuration page view
   2) If user chooses "Advanced Config" on the product configuration page
   3) by backing up from Compile_Upload (only if reached from this view)
 
+© 2024, Peter Cole.
 © 2023, M Steve Todd. All rights reserved.
 
 This file is part of EX-Installer.
