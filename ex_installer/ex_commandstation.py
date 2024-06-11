@@ -30,7 +30,9 @@ from .common_widgets import WindowLayout, CreateToolTip
 from .product_details import product_details as pd
 from .file_manager import FileManager as fm
 
-
+## Documentation for a class.
+#
+#  More details.
 class EXCommandStation(WindowLayout):
     """
     Class for the EX-CommandStation view
@@ -65,6 +67,7 @@ class EXCommandStation(WindowLayout):
         "DCX": "DCX",
     }
 
+    ## The constructor
     def __init__(self, parent, *args, **kwargs):
         """
         Initialise view
@@ -107,6 +110,11 @@ class EXCommandStation(WindowLayout):
         self.display_config_screen()
         self.next_back.hide_log_button()
 
+    ## Documentation for a method.
+    #  @param self The object pointer
+    #  @param major TBA
+    #  @param minor TBA
+    #  @param patch TBA
     def set_product_version(self, version, major=None, minor=None, patch=None):
         """
         Function to be called by the switch_frame function to set the chosen version
