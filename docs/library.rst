@@ -10,10 +10,10 @@ EXCommandStation
     :members:
     :undoc-members:
 
-advanced_confy
---------------
+advanced_config
+---------------
 
-.. autoclass:: ex_installer.advanced_confy.AdvancedConfig
+.. autoclass:: ex_installer.advanced_config.AdvancedConfig
     :members:
     :undoc-members:
 
@@ -24,12 +24,32 @@ arduino_cli
     :members:
     :undoc-members:
 
-
 .. autoclass:: ex_installer.arduino_cli.ArduinoCLI
     :members:
     :undoc-members:
 
+common_fonts
+------------
 
-.. autoclass:: ex_installer.arduino_cli.ThreadedArduinoCLI
+.. autoclass:: ex_installer.common_fonts.CommonFonts
+    :members:
+    :undoc-members:
+
+common_widgets
+--------------
+
+.. autoclass:: ex_installer.common_widgets.WindowLayout
+    :members:
+    :undoc-members:
+
+.. autoclass:: ex_installer.common_widgets.NetBack
+    :members:
+    :undoc-members:
+
+.. autoclass:: ex_installer.common_widgets.FormatTextbox
+    :members:
+    :undoc-members:
+
+.. autoclass:: ex_installer.common_widgets.CreateToolTip
     :members:
     :undoc-members:
