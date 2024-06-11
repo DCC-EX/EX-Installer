@@ -39,9 +39,9 @@ from .common_fonts import CommonFonts
 
 class WindowLayout(ctk.CTkFrame):
     """
-    Class to define the window layout
+    Class to define the window layout used throughout the application.
 
-    All views must inherit from this
+    All views must inherit from this.
     """
 
     def __init__(self, parent, *args, **kwargs):

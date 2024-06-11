@@ -35,7 +35,11 @@ from ex_installer.file_manager import FileManager as fm
 
 def main(debug, fake):
     """
-    Main function to start the application
+    Main method to start the application.
+
+    Arguments:
+        debug (boolean) - Accept command line option -D|--debug to enable debug logging
+        fake (boolean) - Accept command line option -F|--fake to enable a fake Arduino USB device for testing/demo
     """
 
     # Set up logger
