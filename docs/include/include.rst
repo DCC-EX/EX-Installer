@@ -5,6 +5,11 @@
 
   <a href="https://dcc-ex.com/"><span class="dccex-suffix">DCC-</span><span class="dccex-prefix">EX</span></a>
 ..
+.. |EX-I| raw:: html
+
+  <a href="https://dcc-ex.com/"><span class="ex-prefix">EX</span><span class="ex-suffix">&#8209;Installer</span></a>
+..
+..
 .. |EX-CS| raw:: html
 
   <a href="https://dcc-ex.com/"><span class="ex-prefix">EX</span><span class="ex-suffix">&#8209;CommandStation</span></a>

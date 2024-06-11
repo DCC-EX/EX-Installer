@@ -8,16 +8,17 @@ Documentation for the EX-Installer
   :hidden:
 
   EX-Installer <self>
+  running-and-building
   library
+  licence
 
 DCC-EX EX-Installer
---------------------------------------
+-------------------
 
-EX-Installer is a Python based, cross-platform installer for the various Arduino based DCC-EX products.
-
-
-
-Credits
--------
+|EX-I| is a Python based, cross-platform installer for the various Arduino based |DCC-EX| products.
 
 
+Usage
+-----
+
+Full instructions for using |EX-I| are available at https://dcc-ex.com/ex-installer/index.html
