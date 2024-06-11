@@ -171,4 +171,3 @@ git_client
     :members:
     :undoc-members:
 
-----
