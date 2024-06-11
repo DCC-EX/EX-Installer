@@ -6,9 +6,7 @@
 # from sphinx.builders.html import StandaloneHTMLBuilder
 import subprocess
 # import os
-
-# Doxygen
-subprocess.call('doxygen Doxyfile.in', shell=True)
+sys.path.insert(0, os.path.abspath('.'))
 
 # -- Project information -----------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
@@ -24,7 +22,8 @@ extensions = [
   'sphinx_sitemap',
   'sphinxcontrib.spelling',
   'sphinx_rtd_dark_mode',
-  'breathe'
+  'breathe',
+  'sphinx.ext.autodoc'
 ]
 
 autosectionlabel_prefix_document = True
