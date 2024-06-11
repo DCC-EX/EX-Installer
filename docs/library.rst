@@ -3,12 +3,16 @@ Library
 
 .. _reference_db_database:
 
+----
+
 EXCommandStation
 ----------------
 
 .. autoclass:: ex_installer.ex_commandstation.EXCommandStation
     :members:
     :undoc-members:
+
+----
 
 advanced_config
 ---------------
@@ -28,12 +32,16 @@ arduino_cli
     :members:
     :undoc-members:
 
+----
+
 common_fonts
 ------------
 
 .. autoclass:: ex_installer.common_fonts.CommonFonts
     :members:
     :undoc-members:
+
+----
 
 common_widgets
 --------------
@@ -53,3 +61,5 @@ common_widgets
 .. autoclass:: ex_installer.common_widgets.CreateToolTip
     :members:
     :undoc-members:
+
+----
