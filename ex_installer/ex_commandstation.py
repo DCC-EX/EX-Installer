@@ -744,6 +744,29 @@ class EXCommandStation(WindowLayout):
             self.current_limit_label.grid_remove()
             self.current_limit_entry.grid_remove()
 
+    def delete_config_files(self):
+        """
+        Function to delete config files from product directory
+          needed on subsequent passes thru the logic
+        """
+        file_list = []
+        local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
+        product_dir = fm.get_install_dir(local_repo_dir)
+        min_list = fm.get_config_files(product_dir, pd[self.product]["minimum_config_files"])
+        if min_list:
+            file_list += min_list
+        other_list = None
+        if "other_config_files" in pd[self.product]:
+            other_list = fm.get_config_files(product_dir, pd[self.product]["other_config_files"])
+        if other_list:
+            file_list += other_list
+        self.log.debug("Deleting files: %s", file_list)
+        error_list = fm.delete_config_files(product_dir, file_list)
+        if error_list:
+            file_list = ", ".join(error_list)
+            self.process_error(f"Failed to delete one or more files: {file_list}")
+            self.log.error("Failed to delete: %s", file_list)
+
     def generate_config(self):
         """
         Function to validate options and return any errors
@@ -752,6 +775,7 @@ class EXCommandStation(WindowLayout):
 
         Returns a tuple of (True|False, error_list|config_list)
         """
+        self.delete_config_files()
         param_errors = []
         config_list = []
         if self.motor_driver_combo.get() == "Select motor driver":
