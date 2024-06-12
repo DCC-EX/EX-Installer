@@ -373,6 +373,18 @@ class ArduinoCLI:
         extract = ThreadedExtractor(download_file, cli_directory, queue)
         extract.start()
 
+    def add_url_config(self, file_path, queue):
+        """
+        Adds extra URLs to the Arduino CLI configuration
+        """
+        params = ["config", "add", "--format", "jsonmini", "board_manager.additional_urls"]
+        if len(self.extra_platforms) > 0:
+            for extra_platform in self.extra_platforms:
+                acli = ThreadedArduinoCLI(file_path,
+                                          params + [self.extra_platforms[extra_platform]["url"]],
+                                          queue)
+                acli.start()
+
     def initialise_config(self, file_path, queue):
         """
         Initialises the Arduino CLI configuration with the provided additional boards
@@ -380,14 +392,9 @@ class ArduinoCLI:
         Overwrites existing configuration options
         """
         params = ["config", "init", "--format", "jsonmini", "--overwrite"]
-        if len(self.extra_platforms) > 0:
-            platform_list = []
-            for extra_platform in self.extra_platforms:
-                platform_list.append(self.extra_platforms[extra_platform]["url"])
-            _url_list = ",".join(platform_list)
-            params += ["--additional-urls", _url_list]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
+        self.add_url_config(file_path, queue)
 
     def update_index(self, file_path, queue):
         """
@@ -409,6 +416,7 @@ class ArduinoCLI:
         """
         Install packages for the listed Arduino platforms
         """
+        self.add_url_config(file_path, queue)
         params = ["core", "install", package, "--format", "jsonmini"]
         acli = ThreadedArduinoCLI(file_path, params, queue, 600)
         acli.start()
@@ -417,6 +425,7 @@ class ArduinoCLI:
         """
         Upgrade Arduino CLI platforms
         """
+        self.add_url_config(file_path, queue)
         params = ["core", "upgrade", "--format", "jsonmini"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
