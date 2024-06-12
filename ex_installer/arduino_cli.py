@@ -442,6 +442,8 @@ class ArduinoCLI:
         Compiles and uploads the sketch in the specified directory to the provided board/port
         """
         params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
+        if fqbn.startswith('esp32:esp32'):
+            params = params + [ "--board-options", "UploadSpeed=115200" ]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
 
