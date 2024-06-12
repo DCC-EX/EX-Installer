@@ -22,6 +22,7 @@ along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
+import time
 import customtkinter as ctk
 import logging
 
@@ -77,6 +78,7 @@ class ManageArduinoCLI(WindowLayout):
         self.package_dict = {
             "Arduino AVR": "arduino:avr"
         }
+        self.packages_to_install = self.package_dict
 
         # Set up list for library installs
         self.library_list = []
@@ -239,6 +241,8 @@ class ManageArduinoCLI(WindowLayout):
                 self.restore_input_states()
 
     def manage_cli(self, event):
+        # Very ugly fix, probably race condition in threads
+        time.sleep(0.1)
         """
         Manage the Arduino CLI
         """
@@ -281,27 +285,30 @@ class ManageArduinoCLI(WindowLayout):
             if self.process_status == "success":
                 self.process_start("upgrade_platforms", "Upgrading Arduino platforms", "Manage_CLI")
                 self.acli.upgrade_platforms(self.acli.cli_file_path(), self.queue)
+                self.packages_to_install = self.package_dict
             elif self.process_status == "error":
                 self.process_error(self.process_topic)
                 self.restore_input_states()
         elif self.process_phase == "upgrade_platforms" or self.process_phase == "install_packages":
             if self.process_status == "success":
-                if self.package_dict:
-                    package = next(iter(self.package_dict))
+                if len(self.packages_to_install)>0:
+                    package = next(iter(self.packages_to_install))
+                    packagestr = self.packages_to_install[package]
+                    del self.packages_to_install[package]
                     self.process_start("install_packages", f"Installing package {package}", "Manage_CLI")
-                    self.acli.install_package(self.acli.cli_file_path(), self.package_dict[package], self.queue)
-                    del self.package_dict[package]
+                    self.acli.install_package(self.acli.cli_file_path(), packagestr, self.queue)
                 else:
                     self.process_stop()
+                    self.libraries_to_install = self.library_list
                     self.manage_cli("install_libraries")
             elif self.process_status == "error":
                 self.process_error(self.process_topic)
                 self.restore_input_states()
         elif event == "install_libraries" or self.process_phase == "install_libraries":
             if self.process_status == "success" or event == "install_libraries":
-                if len(self.library_list) > 0:
-                    library = self.library_list[0]
-                    del self.library_list[0]
+                if len(self.libraries_to_install) > 0:
+                    library = self.libraries_to_install[0]
+                    del self.libraries_to_install[0]
                     self.process_start("install_libraries", "Install Arduino library " + library, "Manage_CLI")
                     self.acli.install_library(self.acli.cli_file_path(), library, self.queue)
                 else:
