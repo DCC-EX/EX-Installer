@@ -387,9 +387,9 @@ class ArduinoCLI:
 
     def initialise_config(self, file_path, queue):
         """
-        Initialises the Arduino CLI configuration with the provided additional boards
+        Initialises the Arduino CLI configuration with the provided additional boards.
 
-        Overwrites existing configuration options
+        Overwrites existing configuration options.
         """
         params = ["config", "init", "--format", "jsonmini", "--overwrite"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
@@ -448,11 +448,11 @@ class ArduinoCLI:
 
     def upload_sketch(self, file_path, fqbn, port, sketch_dir, queue):
         """
-        Compiles and uploads the sketch in the specified directory to the provided board/port
+        Compiles and uploads the sketch in the specified directory to the provided board/port.
         """
         params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
         if fqbn.startswith('esp32:esp32'):
-            params = params + [ "--board-options", "UploadSpeed=115200" ]
+            params = params + ["--board-options", "UploadSpeed=115200"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
 
