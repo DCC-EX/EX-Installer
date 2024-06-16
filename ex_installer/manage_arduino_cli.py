@@ -22,7 +22,6 @@ along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
-import time
 import customtkinter as ctk
 import logging
 
@@ -52,7 +51,14 @@ class ManageArduinoCLI(WindowLayout):
                                 "several minutes to the refresh process. Maybe grab a cup of tea or a coffee!")
 
     """
-    Class for the Manage Arduino CLI view
+    Class for the Manage Arduino CLI view.
+
+    Managing the CLI should all be driven by events.
+
+    There are two event callbacks:
+
+        - <<Check_Arduino_CLI>> - used to check if the Arduino is installed and if so, which version
+        - <<Manage_CLI>> - used to manage installation and updates of the Arduino CLI
     """
     def __init__(self, parent, *args, **kwargs):
         """
@@ -161,8 +167,7 @@ class ManageArduinoCLI(WindowLayout):
                                            text_color="#00353D",
                                            font=self.instruction_font)
             self.instruction_label.configure(text=self.refresh_instruction_text)
-            self.manage_cli_button.configure(text="Refresh Arduino CLI",
-                                             command=lambda event="refresh_cli": self.manage_cli(event))
+            self.manage_cli_button.configure(text="Refresh Arduino CLI", command=self._generate_refresh_cli)
             self.next_back.enable_next()
             self.check_arduino_cli("get_cli_info")
         else:
@@ -170,8 +175,7 @@ class ManageArduinoCLI(WindowLayout):
                                            text_color="#FF5C00",
                                            font=self.bold_instruction_font)
             self.instruction_label.configure(text=self.install_instruction_text)
-            self.manage_cli_button.configure(text="Install Arduino CLI",
-                                             command=lambda event="install_cli": self.manage_cli(event))
+            self.manage_cli_button.configure(text="Install Arduino CLI", command=self._generate_install_cli)
             self.next_back.disable_next()
 
     def get_library_list(self):
@@ -240,12 +244,50 @@ class ManageArduinoCLI(WindowLayout):
                 self.process_error("Failed to get list of installed platforms")
                 self.restore_input_states()
 
+    def _generate_install_cli(self):
+        """
+        Generates an event to start installing the Arduino CLI.
+        """
+        self.process_phase = "install_cli"
+        self.process_status = "start"
+        self.event_generate("<<Manage_CLI>>")
+
+    def _generate_refresh_cli(self):
+        """
+        Generates an event to start refreshing the Arduino CLI.
+        """
+        self.process_phase = "refresh_cli"
+        self.process_status = "start"
+        self.event_generate("<<Manage_CLI>>")
+
     def manage_cli(self, event):
-        # Very ugly fix, probably race condition in threads
-        time.sleep(0.1)
         """
-        Manage the Arduino CLI
+        Method to manage the state of the Arduino CLI.
+
+        If not installed, it must:
+
+        - Download the latest CLI
+        - Extract the CLI
+        - Initialise the CLI config with the selected platform types
+        - Update the CLI core index
+        - Upgrade all installed platforms (this should match any specific version and not just upgrade)
+        - Install any required libraries
+
+        If already installed, it must:
         """
+        print(f"Phase: {self.process_phase}")
+        print(f"Status: {self.process_status}")
+        match self.process_phase:
+            case "install_cli":
+                print("Installing CLI")
+            case "download_cli":
+                print("Downloading")
+            case "refresh_cli":
+                print("Refreshing CLI")
+            case _:
+                print("Unknown phase")
+
+    def disable_the_garbage(self, event):
         if event == "install_cli":
             self.disable_input_states(self)
             self.process_start("download_cli", "Downloading the Arduino CLI", "Manage_CLI")
@@ -266,6 +308,7 @@ class ManageArduinoCLI(WindowLayout):
                 self.process_start("config_cli", "Configuring the Arduino CLI", "Manage_CLI")
                 for widget in self.extra_platforms_frame.winfo_children():
                     if isinstance(widget, ctk.CTkSwitch):
+                        print(widget.cget("text")["platform_id"])
                         if not widget.cget("text") in self.package_dict and widget.cget("variable").get() == "on":
                             self.package_dict[widget.cget("text")] = (
                                 self.acli.extra_platforms[widget.cget("text")["platform_id"]]
@@ -291,7 +334,7 @@ class ManageArduinoCLI(WindowLayout):
                 self.restore_input_states()
         elif self.process_phase == "upgrade_platforms" or self.process_phase == "install_packages":
             if self.process_status == "success":
-                if len(self.packages_to_install)>0:
+                if len(self.packages_to_install) > 0:
                     package = next(iter(self.packages_to_install))
                     packagestr = self.packages_to_install[package]
                     del self.packages_to_install[package]
