@@ -176,7 +176,6 @@ class WindowLayout(ctk.CTkFrame):
         Starts a background process that requires monitoring and a progress bar
         """
         self.process_phase = next_phase
-        self.process_status = "start"
         self.status_label.configure(text=activity, text_color="#00353D")
         self.monitor_queue(self.queue, event)
         self.progress_bar.start()
