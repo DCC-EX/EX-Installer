@@ -26,6 +26,7 @@ Version history:
             - Fix bug where a blank myAutomation.h file cannot be disabled after being enabled
             - Add ability to install the very latest devel branch by selecting v9.9.9-Devel
             - Refactor the manage_cli() method of the manage_arduino_cli module to make it more maintainable
+            - Updates to work with Arduino CLI 1.0.0 as the board list output has changed
 0.0.18      - Update EX-Turntable configuration options to suit changes in 0.7.0
             - Dependabot update for cryptography to 42.0.4
             - Add link to DCC-EX News articles about EX-Installer to the Info menu
