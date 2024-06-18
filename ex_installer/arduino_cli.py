@@ -166,6 +166,7 @@ class ThreadedArduinoCLI(Thread):
                 else:
                     status = "error"
                     self.log.error(data)
+                self.log.debug(f"Thread output, status: {status}\ntopic: {topic}\ndata: {data}\nparams: {self.params}")
                 self.queue.put(
                     QueueMessage(status, topic, data)
                 )

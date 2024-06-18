@@ -84,7 +84,7 @@ class ManageArduinoCLI(WindowLayout):
         self.package_dict = {
             "Arduino AVR": "arduino:avr"
         }
-        self.packages_to_install = self.package_dict
+        self.packages_to_install = self.package_dict.copy()
 
         # Set up list for library installs
         self.library_list = []
@@ -283,16 +283,19 @@ class ManageArduinoCLI(WindowLayout):
         - Install any required libraries
         - Refresh the list of attached boards
         """
-        print(f"Phase: {self.process_phase} Status: {self.process_status}")
+        self.log.debug(f"manage_cli() called\nprocess_phase: {self.process_phase}\nprocess_status: " +
+                       f"{self.process_status}")
         if self.process_status == "error":
             self._process_error()
         else:
             match self.process_phase:
                 case "install_cli":
                     self.process_status = "start"
+                    self.disable_input_states(self)
                     self._download_cli()
                 case "refresh_cli":
                     self.process_status = "start"
+                    self.disable_input_states(self)
                     self._update_core_index()
                 case "download_cli":
                     self._download_cli()
@@ -333,6 +336,7 @@ class ManageArduinoCLI(WindowLayout):
 
         Any other status is an error.
         """
+        self.log.debug(f"_download_cli() {self.process_status}")
         if self.process_status == "start":
             self.disable_input_states(self)
             self.process_start("download_cli", "Downloading the Arduino CLI", "Manage_CLI")
@@ -354,6 +358,7 @@ class ManageArduinoCLI(WindowLayout):
 
         Any other status is an error.
         """
+        self.log.debug(f"_extract_cli() {self.process_status}")
         if self.process_status == "start":
             download_file = self.process_data
             self.process_start("extract_cli", "Installing the Arduino CLI", "Manage_CLI")
@@ -377,6 +382,7 @@ class ManageArduinoCLI(WindowLayout):
 
         Any other status is an error.
         """
+        self.log.debug(f"_init_cli() {self.process_status}")
         if self.process_status == "start":
             self.process_start("init_cli", "Configuring the Arduino CLI", "Manage_CLI")
             for widget in self.extra_platforms_frame.winfo_children():
@@ -402,6 +408,7 @@ class ManageArduinoCLI(WindowLayout):
 
         Any other status is an error.
         """
+        self.log.debug(f"_update_core_index() {self.process_status}")
         if self.process_status == "start":
             self.process_start("update_index", "Updating core index", "Manage_CLI")
             self.acli.update_index(self.acli.cli_file_path(), self.queue)
@@ -421,11 +428,12 @@ class ManageArduinoCLI(WindowLayout):
 
         Any other status is an error.
         """
+        self.log.debug(f"_upgrade_platforms() {self.process_status}")
         if self.process_status == "start":
             self.process_start("upgrade_platforms", "Upgrading Arduino platforms", "Manage_CLI")
             self.acli.upgrade_platforms(self.acli.cli_file_path(), self.queue)
         elif self.process_status == "success":
-            self.packages_to_install = self.package_dict
+            self.packages_to_install = self.package_dict.copy()
             self.process_status = "start"
             self._install_packages()
         else:
@@ -437,26 +445,28 @@ class ManageArduinoCLI(WindowLayout):
 
         This needs to cycle through each package to install them.
 
-        If we need to start, call _install_package().
+        If we need to start, call _install_single_package().
 
         Any other status is an error.
         """
+        self.log.debug(f"_install_packages() {self.process_status}")
         if self.process_status == "start" or (len(self.packages_to_install) > 0 and self.process_status == "success"):
             package = next(iter(self.packages_to_install))
             packagestr = self.packages_to_install[package]
             del self.packages_to_install[package]
-            self._install_package(package, packagestr)
+            self._install_single_package(package, packagestr)
         elif self.process_status == "success":
             self.process_status = "start"
-            self.libraries_to_install = self.library_list
+            self.libraries_to_install = self.library_list.copy()
             self._install_libraries()
         else:
             self._process_error()
 
-    def _install_package(self, package, packagestr):
+    def _install_single_package(self, package, packagestr):
         """
         Method to start installing the specified package.
         """
+        self.log.debug(f"_install_single_package() {self.process_status}\npackage: {package}, packagestr: {packagestr}")
         self.process_start("install_packages", f"Installing package {package}", "Manage_CLI")
         self.acli.install_package(self.acli.cli_file_path(), packagestr, self.queue)
 
@@ -466,24 +476,26 @@ class ManageArduinoCLI(WindowLayout):
 
         This needs to cycle through each library to install them.
 
-        If we need to start, call _install_library().
+        If we need to start, call _install_single_library().
 
         Any other status is an error.
         """
+        self.log.debug(f"_install_libraries() {self.process_status}")
         if self.process_status == "start" or (len(self.libraries_to_install) > 0 and self.process_status == "success"):
             library = self.libraries_to_install[0]
             del self.libraries_to_install[0]
-            self._install_library(library)
+            self._install_single_library(library)
         elif self.process_status == "success":
             self.process_status = "start"
             self._refresh_boards()
         else:
             self._process_error()
 
-    def _install_library(self, library):
+    def _install_single_library(self, library):
         """
         Method to start installing the specified library.
         """
+        self.log.debug(f"_install_single_library() {self.process_status}\nlibrary: {library}")
         self.process_start("install_libraries", "Install Arduino library " + library, "Manage_CLI")
         self.acli.install_library(self.acli.cli_file_path(), library, self.queue)
 
@@ -497,6 +509,7 @@ class ManageArduinoCLI(WindowLayout):
 
         Any other status is an error.
         """
+        self.log.debug(f"_refresh_boards() {self.process_status}")
         if self.process_status == "start":
             self.process_start("refresh_boards", "Refreshing Arduino CLI board list", "Manage_CLI")
             self.acli.list_boards(self.acli.cli_file_path(), self.queue)
@@ -509,11 +522,13 @@ class ManageArduinoCLI(WindowLayout):
         """
         Method to finalise the processes on successful completion.
         """
-        print("Process finished now")
+        self.log.debug("_process_finished()")
         self.process_stop()
         self.restore_input_states()
         self.set_state()
 
+
+"""
     def disable_the_garbage(self, event):
         if event == "install_cli":
             self.disable_input_states(self)
@@ -596,3 +611,4 @@ class ManageArduinoCLI(WindowLayout):
             elif self.process_status == "error":
                 self.process_error(self.process_topic)
                 self.restore_input_states()
+"""
