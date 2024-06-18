@@ -162,8 +162,12 @@ class SelectDevice(WindowLayout):
             self.acli.list_boards(self.acli.cli_file_path(), self.queue)
         elif self.process_phase == "refresh_list":
             if self.process_status == "success":
+                # Arduino CLI 1.0.0 adds the list as a value to a dict, need to reset that to just a list
+                if len(self.process_data) > 0 and "detected_ports" in self.process_data:
+                    if isinstance(self.process_data["detected_ports"], list):
+                        self.process_data = self.process_data["detected_ports"]
                 # If no boards found, but fake enabled, add a dummy discovered port
-                if len(self.process_data) == 0 and self.parent.fake is True:
+                elif len(self.process_data) == 0 and self.parent.fake is True:
                     if platform.system() == "Windows":
                         fake_port = "COM10"
                     else:
