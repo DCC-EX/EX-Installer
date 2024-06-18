@@ -184,6 +184,7 @@ class WindowLayout(ctk.CTkFrame):
         """
         Stops the progress bar and resets status text
         """
+        self.log.debug("process_stop()")
         self.progress_bar.stop()
         self.status_label.configure(text="Idle", text_color="#00353D")
         self.process_phase = None
