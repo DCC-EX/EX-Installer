@@ -229,7 +229,10 @@ class ManageArduinoCLI(WindowLayout):
                 self.process_error("An unknown error occurred")
         elif self.process_phase == "get_platforms":
             if self.process_status == "success":
-                if type(self.process_data) is list:
+                if len(self.process_data) > 0 and "platforms" in self.process_data:
+                    if isinstance(self.process_data["platforms"], list):
+                        self.process_data = self.process_data["platforms"]
+                if isinstance(self.process_data, list):
                     for child in self.extra_platforms_frame.winfo_children():
                         if isinstance(child, ctk.CTkSwitch):
                             # remove with "@" appended version before compare
