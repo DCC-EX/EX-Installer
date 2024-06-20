@@ -169,7 +169,7 @@ class ManageArduinoCLI(WindowLayout):
             self.instruction_label.configure(text=self.refresh_instruction_text)
             self.manage_cli_button.configure(text="Refresh Arduino CLI", command=self._generate_refresh_cli)
             self.next_back.enable_next()
-            self.check_arduino_cli("get_cli_info")
+            self._generate_check_cli()
         else:
             self.cli_state_label.configure(text=self.not_installed_text,
                                            text_color="#FF5C00",
@@ -205,7 +205,91 @@ class ManageArduinoCLI(WindowLayout):
                 del self.package_dict[switch.cget("text")]
                 self.log.debug("Disable package %s", switch.cget("text"))
 
+    def _generate_check_cli(self):
+        """
+        Generates an event to start checking the state of the Arduino CLI.
+        """
+        self.process_phase = "check_arduino_cli"
+        self.process_status = "start"
+        self.check_arduino_cli(None)
+
     def check_arduino_cli(self, event):
+        """
+        Check the version of the Arduino CLI, and if additional platforms are installed.
+        """
+        self.log.debug(f"check_arduino_cli() called\nprocess_phase: {self.process_phase}\nprocess_status: " +
+                       f"{self.process_status}")
+        if self.process_status == "error":
+            self._process_error()
+        else:
+            match self.process_phase:
+                case "check_arduino_cli":
+                    self._check_cli_version()
+                case "get_platforms":
+                    self._get_installed_platforms()
+                case _:
+                    self._process_error()
+
+    def _check_cli_version(self):
+        """
+        Method to check the version of CLI that is present (if installed).
+
+        If we need to start, call the acli.get_version() method.
+
+        If it was successful, call _get_platforms().
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_check_cli_version() {self.process_status}")
+        if self.process_status == "start":
+            self.process_start("check_arduino_cli", "Checking Arduino CLI version", "Check_Arduino_CLI")
+            self.disable_input_states(self)
+            self.acli.get_version(self.acli.cli_file_path(), self.queue)
+        elif self.process_status == "success":
+            if "VersionString" in self.process_data:
+                text = self.cli_state_label.cget("text") + f" (version {self.process_data['VersionString']})"
+                self.cli_state_label.configure(text=text)
+            self.process_status = "start"
+            self._get_installed_platforms()
+        elif self.process_status == "error":
+            self.process_error("Failed to check if the Arduino CLI is installed")
+            self.restore_input_states()
+        else:
+            self.process_error("An unknown error occurred")
+
+    def _get_installed_platforms(self):
+        """
+        Method to obtain the currently installed Arduino platforms.
+
+        If we need to start call the acli.get_platforms() method.
+
+        If successful, set the platform switch widgets appropriately.
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_get_installed_platforms() {self.process_status}")
+        if self.process_status == "start":
+            self.process_start("get_platforms", "Obtaining list of installed platforms", "Check_Arduino_CLI")
+            self.acli.get_platforms(self.acli.cli_file_path(), self.queue)
+        elif self.process_status == "success":
+            if len(self.process_data) > 0 and "platforms" in self.process_data:
+                if isinstance(self.process_data["platforms"], list):
+                    self.process_data = self.process_data["platforms"]
+            if isinstance(self.process_data, list):
+                for child in self.extra_platforms_frame.winfo_children():
+                    if isinstance(child, ctk.CTkSwitch):
+                        # remove with "@" appended version before compare
+                        platformid = (self.acli.extra_platforms[child.cget("text")]["platform_id"]).split('@', 2)[0]
+                        for platform in self.process_data:
+                            if platformid == platform["id"]:
+                                child.cget("variable").set("on")
+                                self.update_package_list(child)
+            self.restore_input_states()
+            self.process_stop()
+        else:
+            self.process_error("An unknown error occurred")
+
+    def disabled_check_arduino_cli(self, event):
         """
         Function to check if the Arduino CLI is installed and if so, what version it is
 
@@ -317,7 +401,6 @@ class ManageArduinoCLI(WindowLayout):
                 case "refresh_boards":
                     self._refresh_boards()
                 case _:
-                    print("Unknown phase")
                     self._process_error()
 
     def _process_error(self):
