@@ -201,10 +201,25 @@ class ArduinoCLI:
         "Windows64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip"
     }
 
-    # Dictionary for additional board/platform support for the Arduino CLI
+    """
+    Dictionary for additional board/platform support for the Arduino CLI.
+
+    If a specific version is required, it must be provided as a separate key/value pair:
+
+    extra_platforms = {
+        "Platform Name": {
+            "platform_id": "",
+            "version": "",
+            "url": ""
+        }
+    }
+
+    If the version is not specifically required, do not include the version key.
+    """
     extra_platforms = {
         "Espressif ESP32": {
-            "platform_id": "esp32:esp32@2.0.17",
+            "platform_id": "esp32:esp32",
+            "version": "@2.0.17",
             "url": "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
         },
         "STMicroelectronics Nucleo/STM32": {
@@ -213,7 +228,9 @@ class ArduinoCLI:
         }
     }
 
-    # Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices
+    """
+    Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices.
+    """
     supported_devices = {
         "Arduino Mega or Mega 2560": "arduino:avr:mega",
         "Arduino Uno": "arduino:avr:uno",
@@ -224,7 +241,14 @@ class ArduinoCLI:
         "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
     }
 
-    # Dictionary of DCC-EX specific devices, used to preselect or exclude motor definitions
+    """
+    Dictionary of DCC-EX specific devices, used to preselect or exclude motor driver definitions.
+
+    While this isn't ideal, it makes it easier with the current implementation to control what users can and
+    can't select for motor drivers.
+
+    Future additions must start with "DCC-EX" in order to be used for this purpose.
+    """
     dccex_devices = {
         "DCC-EX EX-CSB1": "EXCSB1"
     }
