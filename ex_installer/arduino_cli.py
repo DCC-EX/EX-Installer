@@ -409,7 +409,6 @@ class ArduinoCLI:
             params += ["--additional-urls", _url_list]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
-        self.add_url_config(file_path, queue)
 
     def update_index(self, file_path, queue):
         """
