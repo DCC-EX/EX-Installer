@@ -22,7 +22,6 @@ along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
-import time
 import customtkinter as ctk
 import logging
 
@@ -52,7 +51,14 @@ class ManageArduinoCLI(WindowLayout):
                                 "several minutes to the refresh process. Maybe grab a cup of tea or a coffee!")
 
     """
-    Class for the Manage Arduino CLI view
+    Class for the Manage Arduino CLI view.
+
+    Managing the CLI should all be driven by events.
+
+    There are two event callbacks:
+
+        - <<Check_Arduino_CLI>> - used to check if the Arduino is installed and if so, which version
+        - <<Manage_CLI>> - used to manage installation and updates of the Arduino CLI
     """
     def __init__(self, parent, *args, **kwargs):
         """
@@ -78,7 +84,7 @@ class ManageArduinoCLI(WindowLayout):
         self.package_dict = {
             "Arduino AVR": "arduino:avr"
         }
-        self.packages_to_install = self.package_dict
+        self.packages_to_install = self.package_dict.copy()
 
         # Set up list for library installs
         self.library_list = []
@@ -133,6 +139,10 @@ class ManageArduinoCLI(WindowLayout):
                                "can disregard these options as support is already included with the Arduino CLI.")
         CreateToolTip(self.extra_platforms_label, extra_platforms_tip)
 
+        """
+        To add additional supported platforms, these must be added to the extra_platforms dictionary in the arduino_cli
+        module.
+        """
         for index, platform in enumerate(self.acli.extra_platforms):
             platform_tip = (f"Support for {platform} devices is not included with the Arduino CLI by default. " +
                             "In order to be able to load any of our software on to these devices, you must " +
@@ -161,17 +171,15 @@ class ManageArduinoCLI(WindowLayout):
                                            text_color="#00353D",
                                            font=self.instruction_font)
             self.instruction_label.configure(text=self.refresh_instruction_text)
-            self.manage_cli_button.configure(text="Refresh Arduino CLI",
-                                             command=lambda event="refresh_cli": self.manage_cli(event))
+            self.manage_cli_button.configure(text="Refresh Arduino CLI", command=self._generate_refresh_cli)
+            self._generate_check_cli()
             self.next_back.enable_next()
-            self.check_arduino_cli("get_cli_info")
         else:
             self.cli_state_label.configure(text=self.not_installed_text,
                                            text_color="#FF5C00",
                                            font=self.bold_instruction_font)
             self.instruction_label.configure(text=self.install_instruction_text)
-            self.manage_cli_button.configure(text="Install Arduino CLI",
-                                             command=lambda event="install_cli": self.manage_cli(event))
+            self.manage_cli_button.configure(text="Install Arduino CLI", command=self._generate_install_cli)
             self.next_back.disable_next()
 
     def get_library_list(self):
@@ -193,136 +201,405 @@ class ManageArduinoCLI(WindowLayout):
                 self.package_dict[switch.cget("text")] = self.acli.extra_platforms[switch.cget("text")]["platform_id"]
                 self.log.debug("Enable package and install %s",
                                self.acli.extra_platforms[switch.cget("text")]["platform_id"])
-                # We unconditionally install here to get the right esp32:esp32 version for sure
-                self.acli.install_package(self.acli.cli_file_path(),
-                                          self.acli.extra_platforms[switch.cget("text")]["platform_id"], self.queue)
         elif switch.cget("variable").get() == "off":
             if switch.cget("text") in self.package_dict:
                 del self.package_dict[switch.cget("text")]
                 self.log.debug("Disable package %s", switch.cget("text"))
 
+    def _generate_check_cli(self):
+        """
+        Generates an event to start checking the state of the Arduino CLI.
+
+        For some reason this doesn't generate the event, call check_arduino_cli method with None argument for now.
+        """
+        self.process_phase = "check_arduino_cli"
+        self.process_status = "start"
+        # This doesn't work for some reason, call with None for now
+        # self.event_generate("<<Check_Arduino_CLI>>")
+        self.check_arduino_cli(None)
+
     def check_arduino_cli(self, event):
         """
-        Function to check if the Arduino CLI is installed and if so, what version it is
-
-        On completion, will move to the Manage Arduino CLI screen
+        Check the version of the Arduino CLI, and if additional platforms are installed.
         """
-        if event == "get_cli_info":
+        self.log.debug(f"check_arduino_cli() called\nprocess_phase: {self.process_phase}\nprocess_status: " +
+                       f"{self.process_status}")
+        if self.process_status == "error":
+            self._process_error()
+        else:
+            match self.process_phase:
+                case "check_arduino_cli":
+                    self._check_cli_version()
+                case "get_platforms":
+                    self._get_installed_platforms()
+                case _:
+                    self._process_error()
+
+    def _check_cli_version(self):
+        """
+        Method to check the version of CLI that is present (if installed).
+
+        If we need to start, call the acli.get_version() method.
+
+        If it was successful, call _get_platforms().
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_check_cli_version() {self.process_status}")
+        if self.process_status == "start":
             self.process_start("check_arduino_cli", "Checking Arduino CLI version", "Check_Arduino_CLI")
             self.disable_input_states(self)
             self.acli.get_version(self.acli.cli_file_path(), self.queue)
-        elif self.process_phase == "check_arduino_cli":
-            if self.process_status == "success":
-                if "VersionString" in self.process_data:
-                    text = self.cli_state_label.cget("text") + f" (version {self.process_data['VersionString']})"
-                    self.cli_state_label.configure(text=text)
-                self.process_start("get_platforms", "Obtaining list of installed platforms", "Check_Arduino_CLI")
-                self.acli.get_platforms(self.acli.cli_file_path(), self.queue)
-            elif self.process_status == "error":
-                self.process_error("Failed to check if the Arduino CLI is installed")
-                self.restore_input_states()
-            else:
-                self.process_error("An unknown error occurred")
-        elif self.process_phase == "get_platforms":
-            if self.process_status == "success":
-                if type(self.process_data) is list:
-                    for child in self.extra_platforms_frame.winfo_children():
-                        if isinstance(child, ctk.CTkSwitch):
-                            # remove with "@" appended version before compare
-                            platformid = (self.acli.extra_platforms[child.cget("text")]["platform_id"]).split('@', 2)[0]
-                            for platform in self.process_data:
-                                if platformid == platform["id"]:
-                                    child.cget("variable").set("on")
+        elif self.process_status == "success":
+            if "VersionString" in self.process_data:
+                text = self.cli_state_label.cget("text") + f" (version {self.process_data['VersionString']})"
+                self.cli_state_label.configure(text=text)
+            self.process_status = "start"
+            self._get_installed_platforms()
+        elif self.process_status == "error":
+            self.process_error("Failed to check if the Arduino CLI is installed")
+            self.restore_input_states()
+        else:
+            self.process_error("An unknown error occurred")
+
+    def _get_installed_platforms(self):
+        """
+        Method to obtain the currently installed Arduino platforms.
+
+        If we need to start call the acli.get_platforms() method.
+
+        If successful:
+
+        - Set the extra_platforms_frame CTKSwitch widgets to the correct state
+        - If a package is installed and an explicit version is defined, compare these
+        - If a package is installed but not the explicit version, add to the list
+        - If a package is installed without an explicit version but not latest, add to the list
+        - If a package is not installed but should be, add to the list
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_get_installed_platforms() {self.process_status}")
+        if self.process_status == "start":
+            self.process_start("get_platforms", "Obtaining list of installed platforms", "Check_Arduino_CLI")
+            self.acli.get_platforms(self.acli.cli_file_path(), self.queue)
+        elif self.process_status == "success":
+            if len(self.process_data) > 0 and "platforms" in self.process_data:
+                if isinstance(self.process_data["platforms"], list):
+                    self.process_data = self.process_data["platforms"]
+            if isinstance(self.process_data, list):
+                for child in self.extra_platforms_frame.winfo_children():
+                    if isinstance(child, ctk.CTkSwitch):
+                        # Need to compare against the platform ID and version
+                        if "@" in self.acli.extra_platforms[child.cget("text")]["platform_id"]:
+                            result = (self.acli.extra_platforms[child.cget("text")]["platform_id"]).split("@", 2)
+                            platformid = result[0]
+                            required_version = result[1]
+                        else:
+                            platformid = self.acli.extra_platforms[child.cget("text")]["platform_id"]
+                            required_version = None
+                        for platform in self.process_data:
+                            if platformid == platform["id"]:
+                                child.cget("variable").set("on")
+                                installed = platform["installed"]
+                                latest = platform["latest"]
+                                # Don't update if our installed platform the right version
+                                if required_version is not None and installed == required_version:
+                                    break
+                                # Don't update if we already have the latest
+                                elif required_version is None and installed == latest:
+                                    break
+                                # Anything else means we must update
+                                else:
+                                    if required_version is not None:
+                                        self.log.debug(f"Must update {platformid} from {installed} to " +
+                                                       f"{required_version}")
+                                    else:
+                                        self.log.debug(f"Must update {platformid} from {installed} to {latest}")
                                     self.update_package_list(child)
-                self.restore_input_states()
-                self.process_stop()
-            elif self.process_status == "error":
-                self.process_error("Failed to get list of installed platforms")
-                self.restore_input_states()
+
+            self.restore_input_states()
+            self.process_stop()
+        else:
+            self.process_error("An unknown error occurred")
+
+    def _generate_install_cli(self):
+        """
+        Generates an event to start installing the Arduino CLI.
+        """
+        self.process_phase = "install_cli"
+        self.process_status = "start"
+        self.event_generate("<<Manage_CLI>>")
+
+    def _generate_refresh_cli(self):
+        """
+        Generates an event to start refreshing the Arduino CLI.
+        """
+        self.process_phase = "refresh_cli"
+        self.process_status = "start"
+        self.event_generate("<<Manage_CLI>>")
 
     def manage_cli(self, event):
-        # Very ugly fix, probably race condition in threads
-        time.sleep(0.1)
         """
-        Manage the Arduino CLI
+        Method to manage the state of the Arduino CLI.
+
+        If not installed, it must:
+
+        - Download the latest CLI
+        - Extract the CLI
+        - Initialise the CLI config with the selected platform types
+        - Update the CLI core index
+        - Upgrade platforms
+        - Install required packages (this should match any specific version and not just upgrade)
+        - Install any required libraries
+        - Refresh the list of attached boards
+
+        If already installed, it must:
+
+        - Update the CLI core index
+        - Upgrade platforms
+        - Upgrade required packages (this should match any specific version and not just upgrade)
+        - Install any required libraries
+        - Refresh the list of attached boards
         """
-        if event == "install_cli":
+        self.log.debug(f"manage_cli() called\nprocess_phase: {self.process_phase}\nprocess_status: " +
+                       f"{self.process_status}")
+        if self.process_status == "error":
+            self._process_error()
+        else:
+            match self.process_phase:
+                case "install_cli":
+                    self.process_status = "start"
+                    self.disable_input_states(self)
+                    self._download_cli()
+                case "refresh_cli":
+                    self.process_status = "start"
+                    self.disable_input_states(self)
+                    self._update_core_index()
+                case "download_cli":
+                    self._download_cli()
+                case "extract_cli":
+                    self._extract_cli()
+                case "init_cli":
+                    self._init_cli()
+                case "update_index":
+                    self._update_core_index()
+                case "upgrade_platforms":
+                    self._upgrade_platforms()
+                case "install_packages":
+                    self._install_packages()
+                case "install_libraries":
+                    self._install_libraries()
+                case "refresh_boards":
+                    self._refresh_boards()
+                case _:
+                    self._process_error()
+
+    def _process_error(self):
+        """
+        Method to deal with an error in the process.
+        """
+        self.process_error(self.process_topic)
+        self.restore_input_states()
+        self.log.error(f"Error encountered in process phase {self.process_phase}")
+        self.log.error(self.process_data)
+
+    def _download_cli(self):
+        """
+        Method to start downloading the Arduino CLI.
+
+        If we need to start, call the acli.download_cli() method.
+
+        If it was successful, call _extract_cli().
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_download_cli() {self.process_status}")
+        if self.process_status == "start":
             self.disable_input_states(self)
             self.process_start("download_cli", "Downloading the Arduino CLI", "Manage_CLI")
             self.acli.download_cli(self.queue)
-        elif self.process_phase == "download_cli":
-            if self.process_status == "success":
-                download_file = self.process_data
-                self.process_start("extract_cli", "Installing the Arduino CLI", "Manage_CLI")
-                self.acli.install_cli(download_file, self.acli.cli_file_path(), self.queue)
-            elif self.process_status == "error":
-                self.process_error(self.process_topic)
-                self.restore_input_states()
-        elif event == "refresh_cli" or self.process_phase == "extract_cli":
-            if event == "refresh_cli":
-                self.disable_input_states(self)
-                self.get_library_list()
-            if self.process_status == "success" or event == "refresh_cli":
-                self.process_start("config_cli", "Configuring the Arduino CLI", "Manage_CLI")
-                for widget in self.extra_platforms_frame.winfo_children():
-                    if isinstance(widget, ctk.CTkSwitch):
-                        if not widget.cget("text") in self.package_dict and widget.cget("variable").get() == "on":
-                            self.package_dict[widget.cget("text")] = (
-                                self.acli.extra_platforms[widget.cget("text")["platform_id"]]
-                                )
-                self.acli.initialise_config(self.acli.cli_file_path(), self.queue)
-            elif self.process_status == "error":
-                self.process_error(self.process_topic)
-                self.restore_input_states()
-        elif self.process_phase == "config_cli":
-            if self.process_status == "success":
-                self.process_start("update_index", "Updating core index", "Manage_CLI")
-                self.acli.update_index(self.acli.cli_file_path(), self.queue)
-            elif self.process_status == "error":
-                self.process_error(self.process_topic)
-                self.restore_input_states()
-        elif self.process_phase == "update_index":
-            if self.process_status == "success":
-                self.process_start("upgrade_platforms", "Upgrading Arduino platforms", "Manage_CLI")
-                self.acli.upgrade_platforms(self.acli.cli_file_path(), self.queue)
-                self.packages_to_install = self.package_dict
-            elif self.process_status == "error":
-                self.process_error(self.process_topic)
-                self.restore_input_states()
-        elif self.process_phase == "upgrade_platforms" or self.process_phase == "install_packages":
-            if self.process_status == "success":
-                if len(self.packages_to_install)>0:
-                    package = next(iter(self.packages_to_install))
-                    packagestr = self.packages_to_install[package]
-                    del self.packages_to_install[package]
-                    self.process_start("install_packages", f"Installing package {package}", "Manage_CLI")
-                    self.acli.install_package(self.acli.cli_file_path(), packagestr, self.queue)
-                else:
-                    self.process_stop()
-                    self.libraries_to_install = self.library_list
-                    self.manage_cli("install_libraries")
-            elif self.process_status == "error":
-                self.process_error(self.process_topic)
-                self.restore_input_states()
-        elif event == "install_libraries" or self.process_phase == "install_libraries":
-            if self.process_status == "success" or event == "install_libraries":
-                if len(self.libraries_to_install) > 0:
-                    library = self.libraries_to_install[0]
-                    del self.libraries_to_install[0]
-                    self.process_start("install_libraries", "Install Arduino library " + library, "Manage_CLI")
-                    self.acli.install_library(self.acli.cli_file_path(), library, self.queue)
-                else:
-                    self.process_stop()
-                    self.process_start("refresh_list", "Refreshing Arduino CLI board list", "Manage_CLI")
-                    self.acli.list_boards(self.acli.cli_file_path(), self.queue)
-            elif self.process_status == "error":
-                self.process_error(self.process_topic)
-                self.restore_input_states()
-        elif self.process_phase == "refresh_list":
-            if self.process_status == "success":
-                self.process_stop()
-                self.restore_input_states()
-                self.set_state()
-            elif self.process_status == "error":
-                self.process_error(self.process_topic)
-                self.restore_input_states()
+        elif self.process_status == "success":
+            self.process_status = "start"
+            self._extract_cli()
+        else:
+            self._process_error()
+
+    def _extract_cli(self):
+        """
+        Method to start extracting the Arduino CLI, which relies on the downloaded file being
+        available in the process_data attribute.
+
+        If we need to start, call the acli.install_cli() method.
+
+        If it was successful, call _init_cli().
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_extract_cli() {self.process_status}")
+        if self.process_status == "start":
+            download_file = self.process_data
+            self.process_start("extract_cli", "Installing the Arduino CLI", "Manage_CLI")
+            self.acli.install_cli(download_file, self.acli.cli_file_path(), self.queue)
+        elif self.process_status == "success":
+            self.process_status = "start"
+            self._init_cli()
+        else:
+            self._process_error()
+
+    def _init_cli(self):
+        """
+        Method to start the CLI initialisation process.
+
+        Note that this must cycle through each widget in the "extra_platforms_frame" frame to
+        be able to flag each additional platform that needs to be installed.
+
+        If we need to start, call the acli.initialise_config() method.
+
+        If successful, call _update_core_index().
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_init_cli() {self.process_status}")
+        if self.process_status == "start":
+            self.process_start("init_cli", "Configuring the Arduino CLI", "Manage_CLI")
+            for widget in self.extra_platforms_frame.winfo_children():
+                if isinstance(widget, ctk.CTkSwitch):
+                    if not widget.cget("text") in self.package_dict and widget.cget("variable").get() == "on":
+                        self.package_dict[widget.cget("text")] = (
+                            self.acli.extra_platforms[widget.cget("text")["platform_id"]]
+                            )
+            self.acli.initialise_config(self.acli.cli_file_path(), self.queue)
+        elif self.process_status == "success":
+            self.process_status = "start"
+            self._update_core_index()
+        else:
+            self._process_error()
+
+    def _update_core_index(self):
+        """
+        Method to start the core index update process.
+
+        If we need to start, call the acli.update_index() method.
+
+        If successful, call _upgrade_platforms().
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_update_core_index() {self.process_status}")
+        if self.process_status == "start":
+            self.process_start("update_index", "Updating core index", "Manage_CLI")
+            self.acli.update_index(self.acli.cli_file_path(), self.queue)
+        elif self.process_status == "success":
+            self.process_status = "start"
+            self._upgrade_platforms()
+        else:
+            self._process_error()
+
+    def _upgrade_platforms(self):
+        """
+        Method to start the upgrade platforms process.
+
+        If we need to start, call the acli.upgrade_platforms() method.
+
+        If successful, call _install_packages().
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_upgrade_platforms() {self.process_status}")
+        if self.process_status == "start":
+            self.process_start("upgrade_platforms", "Upgrading Arduino platforms", "Manage_CLI")
+            self.acli.upgrade_platforms(self.acli.cli_file_path(), self.queue)
+        elif self.process_status == "success":
+            self.packages_to_install = self.package_dict.copy()
+            self.process_status = "start"
+            self._install_packages()
+        else:
+            self._process_error()
+
+    def _install_packages(self):
+        """
+        Method to process installing all required packages.
+
+        This needs to cycle through each package to install them.
+
+        If we need to start, call _install_single_package().
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_install_packages() {self.process_status}")
+        if self.process_status == "start" or (len(self.packages_to_install) > 0 and self.process_status == "success"):
+            package = next(iter(self.packages_to_install))
+            packagestr = self.packages_to_install[package]
+            del self.packages_to_install[package]
+            self._install_single_package(package, packagestr)
+        elif self.process_status == "success":
+            self.process_status = "start"
+            self.libraries_to_install = self.library_list.copy()
+            self._install_libraries()
+        else:
+            self._process_error()
+
+    def _install_single_package(self, package, packagestr):
+        """
+        Method to start installing the specified package.
+        """
+        self.log.debug(f"_install_single_package() {self.process_status}\npackage: {package}, packagestr: {packagestr}")
+        self.process_start("install_packages", f"Installing package {package}", "Manage_CLI")
+        self.acli.install_package(self.acli.cli_file_path(), packagestr, self.queue)
+
+    def _install_libraries(self):
+        """
+        Method to start installing the required libraries.
+
+        This needs to cycle through each library to install them.
+
+        If we need to start, call _install_single_library().
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_install_libraries() {self.process_status}")
+        if self.process_status == "start" or (len(self.libraries_to_install) > 0 and self.process_status == "success"):
+            library = self.libraries_to_install[0]
+            del self.libraries_to_install[0]
+            self._install_single_library(library)
+        elif self.process_status == "success":
+            self.process_status = "start"
+            self._refresh_boards()
+        else:
+            self._process_error()
+
+    def _install_single_library(self, library):
+        """
+        Method to start installing the specified library.
+        """
+        self.log.debug(f"_install_single_library() {self.process_status}\nlibrary: {library}")
+        self.process_start("install_libraries", "Install Arduino library " + library, "Manage_CLI")
+        self.acli.install_library(self.acli.cli_file_path(), library, self.queue)
+
+    def _refresh_boards(self):
+        """
+        Method to start refreshing the list of attached boards.
+
+        If we need to start, call the acli.list_boards() method.
+
+        If successful, call _process_finished().
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_refresh_boards() {self.process_status}")
+        if self.process_status == "start":
+            self.process_start("refresh_boards", "Refreshing Arduino CLI board list", "Manage_CLI")
+            self.acli.list_boards(self.acli.cli_file_path(), self.queue)
+        elif self.process_status == "success":
+            self._process_finished()
+        else:
+            self._process_error()
+
+    def _process_finished(self):
+        """
+        Method to finalise the processes on successful completion.
+        """
+        self.log.debug("_process_finished()")
+        self.process_stop()
+        self.restore_input_states()
+        self.set_state()

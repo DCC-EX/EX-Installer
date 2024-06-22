@@ -166,6 +166,7 @@ class ThreadedArduinoCLI(Thread):
                 else:
                     status = "error"
                     self.log.error(data)
+                self.log.debug(f"Thread output, status: {status}\ntopic: {topic}\ndata: {data}\nparams: {self.params}")
                 self.queue.put(
                     QueueMessage(status, topic, data)
                 )
@@ -200,7 +201,18 @@ class ArduinoCLI:
         "Windows64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip"
     }
 
-    # Dictionary for additional board/platform support for the Arduino CLI
+    """
+    Dictionary for additional board/platform support for the Arduino CLI.
+
+    If a specific version is required, it must be provided with an @ after the platform ID:
+
+    extra_platforms = {
+        "Platform Name": {
+            "platform_id": "<packager>:<arch>@<version>",
+            "url": "<url>"
+        }
+    }
+    """
     extra_platforms = {
         "Espressif ESP32": {
             "platform_id": "esp32:esp32@2.0.17",
@@ -212,7 +224,9 @@ class ArduinoCLI:
         }
     }
 
-    # Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices
+    """
+    Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices.
+    """
     supported_devices = {
         "Arduino Mega or Mega 2560": "arduino:avr:mega",
         "Arduino Uno": "arduino:avr:uno",
@@ -223,7 +237,14 @@ class ArduinoCLI:
         "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
     }
 
-    # Dictionary of DCC-EX specific devices, used to preselect or exclude motor definitions
+    """
+    Dictionary of DCC-EX specific devices, used to preselect or exclude motor driver definitions.
+
+    While this isn't ideal, it makes it easier with the current implementation to control what users can and
+    can't select for motor drivers.
+
+    Future additions must start with "DCC-EX" in order to be used for this purpose.
+    """
     dccex_devices = {
         "DCC-EX EX-CSB1": "EXCSB1"
     }
@@ -373,25 +394,19 @@ class ArduinoCLI:
         extract = ThreadedExtractor(download_file, cli_directory, queue)
         extract.start()
 
-    def add_url_config(self, file_path, queue):
-        """
-        Adds extra URLs to the Arduino CLI configuration
-        """
-        params = ["config", "add", "--format", "jsonmini", "board_manager.additional_urls"]
-        if len(self.extra_platforms) > 0:
-            for extra_platform in self.extra_platforms:
-                acli = ThreadedArduinoCLI(file_path,
-                                          params + [self.extra_platforms[extra_platform]["url"]],
-                                          queue)
-                acli.start()
-
     def initialise_config(self, file_path, queue):
         """
-        Initialises the Arduino CLI configuration with the provided additional boards
+        Initialises the Arduino CLI configuration with the provided additional boards.
 
-        Overwrites existing configuration options
+        Overwrites existing configuration options.
         """
         params = ["config", "init", "--format", "jsonmini", "--overwrite"]
+        if len(self.extra_platforms) > 0:
+            platform_list = []
+            for extra_platform in self.extra_platforms:
+                platform_list.append(self.extra_platforms[extra_platform]["url"])
+            _url_list = ",".join(platform_list)
+            params += ["--additional-urls", _url_list]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
         self.add_url_config(file_path, queue)
@@ -416,7 +431,6 @@ class ArduinoCLI:
         """
         Install packages for the listed Arduino platforms
         """
-        self.add_url_config(file_path, queue)
         params = ["core", "install", package, "--format", "jsonmini"]
         acli = ThreadedArduinoCLI(file_path, params, queue, 600)
         acli.start()
@@ -425,7 +439,6 @@ class ArduinoCLI:
         """
         Upgrade Arduino CLI platforms
         """
-        self.add_url_config(file_path, queue)
         params = ["core", "upgrade", "--format", "jsonmini"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
@@ -448,11 +461,11 @@ class ArduinoCLI:
 
     def upload_sketch(self, file_path, fqbn, port, sketch_dir, queue):
         """
-        Compiles and uploads the sketch in the specified directory to the provided board/port
+        Compiles and uploads the sketch in the specified directory to the provided board/port.
         """
         params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
         if fqbn.startswith('esp32:esp32'):
-            params = params + [ "--board-options", "UploadSpeed=115200" ]
+            params = params + ["--board-options", "UploadSpeed=115200"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
 
