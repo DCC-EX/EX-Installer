@@ -300,8 +300,20 @@ class ManageArduinoCLI(WindowLayout):
                         for platform in self.process_data:
                             if platformid == platform["id"]:
                                 child.cget("variable").set("on")
-                                installed = platform["installed"]
-                                latest = platform["latest"]
+                                if "installed" in platform:
+                                    installed = platform["installed"]
+                                elif "installed_version":
+                                    installed = platform["installed_version"]
+                                else:
+                                    self.log.error(f"Arduino CLI output unknown:\n{platform}")
+                                    installed = None
+                                if "latest" in platform:
+                                    latest = platform["latest"]
+                                elif "latest_version" in platform:
+                                    latest = platform["latest_version"]
+                                else:
+                                    self.log.error(f"Arduino CLI output unknown:\n{platform}")
+                                    latest = None
                                 # Don't update if our installed platform the right version
                                 if required_version is not None and installed == required_version:
                                     break
