@@ -204,22 +204,18 @@ class ArduinoCLI:
     """
     Dictionary for additional board/platform support for the Arduino CLI.
 
-    If a specific version is required, it must be provided as a separate key/value pair:
+    If a specific version is required, it must be provided with an @ after the platform ID:
 
     extra_platforms = {
         "Platform Name": {
-            "platform_id": "",
-            "version": "",
-            "url": ""
+            "platform_id": "<packager>:<arch>@<version>",
+            "url": "<url>"
         }
     }
-
-    If the version is not specifically required, do not include the version key.
     """
     extra_platforms = {
         "Espressif ESP32": {
-            "platform_id": "esp32:esp32",
-            "version": "@2.0.17",
+            "platform_id": "esp32:esp32@2.0.17",
             "url": "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
         },
         "STMicroelectronics Nucleo/STM32": {
@@ -398,18 +394,6 @@ class ArduinoCLI:
         extract = ThreadedExtractor(download_file, cli_directory, queue)
         extract.start()
 
-    def add_url_config(self, file_path, queue):
-        """
-        Adds extra URLs to the Arduino CLI configuration
-        """
-        params = ["config", "add", "--format", "jsonmini", "board_manager.additional_urls"]
-        if len(self.extra_platforms) > 0:
-            for extra_platform in self.extra_platforms:
-                acli = ThreadedArduinoCLI(file_path,
-                                          params + [self.extra_platforms[extra_platform]["url"]],
-                                          queue)
-                acli.start()
-
     def initialise_config(self, file_path, queue):
         """
         Initialises the Arduino CLI configuration with the provided additional boards.
@@ -417,6 +401,12 @@ class ArduinoCLI:
         Overwrites existing configuration options.
         """
         params = ["config", "init", "--format", "jsonmini", "--overwrite"]
+        if len(self.extra_platforms) > 0:
+            platform_list = []
+            for extra_platform in self.extra_platforms:
+                platform_list.append(self.extra_platforms[extra_platform]["url"])
+            _url_list = ",".join(platform_list)
+            params += ["--additional-urls", _url_list]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
         self.add_url_config(file_path, queue)
@@ -441,7 +431,6 @@ class ArduinoCLI:
         """
         Install packages for the listed Arduino platforms
         """
-        self.add_url_config(file_path, queue)
         params = ["core", "install", package, "--format", "jsonmini"]
         acli = ThreadedArduinoCLI(file_path, params, queue, 600)
         acli.start()
@@ -450,7 +439,6 @@ class ArduinoCLI:
         """
         Upgrade Arduino CLI platforms
         """
-        self.add_url_config(file_path, queue)
         params = ["core", "upgrade", "--format", "jsonmini"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
