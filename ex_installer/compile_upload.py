@@ -158,7 +158,6 @@ class CompileUpload(WindowLayout):
         fqbn = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"]
         port = self.acli.detected_devices[self.acli.selected_device]["port"]
         if event == "upload_software":
-            self.disable_input_states(self)
             self.set_details("")
             self.process_start("compiling",
                                f"Compiling {pd[self.product]['product_name']} for your {device}",
@@ -182,7 +181,6 @@ class CompileUpload(WindowLayout):
             elif self.process_status == "error":
                 self.set_details(self.process_data)
                 self.process_error(self.process_topic)
-                self.restore_input_states()
                 self.next_back.hide_monitor_button()
                 self.next_back.show_next()
                 self.next_back.show_log_button()
@@ -190,14 +188,12 @@ class CompileUpload(WindowLayout):
         elif self.process_phase == "uploading":
             if self.process_status == "success":
                 self.process_stop()
-                self.restore_input_states()
                 self.set_details(self.process_data)
                 self.upload_success()
                 self.next_back.hide_log_button()
                 self.next_back.show_monitor_button()
             elif self.process_status == "error":
                 self.process_error(self.process_topic)
-                self.restore_input_states()
                 self.set_details(self.process_data)
                 self.upload_error()
                 self.next_back.hide_monitor_button()

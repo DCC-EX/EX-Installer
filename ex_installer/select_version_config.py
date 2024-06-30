@@ -183,7 +183,6 @@ class SelectVersionConfig(WindowLayout):
         """
         if event == "setup_local_repo":
             self.log.debug("Setting up local repository")
-            self.disable_input_states(self)
             self.delete_config_files()
             if os.path.exists(self.product_dir) and os.path.isdir(self.product_dir):
                 if self.git.dir_is_git_repo(self.product_dir):
@@ -192,20 +191,17 @@ class SelectVersionConfig(WindowLayout):
                         changes = self.git.check_local_changes(self.repo)
                         if changes:
                             self.process_error("Local changes have been detected that require resolution")
-                            self.restore_input_states()
                             self.log.error("Local repository file changes: %s", changes)
                             self.resolve_local_changes(changes)
                         else:
                             self.setup_local_repo("get_latest")
                     else:
                         self.process_error(f"{self.product_dir} appears to be a Git repository but is not")
-                        self.restore_input_states()
                 else:
                     if fm.dir_is_empty(self.product_dir):
                         self.setup_local_repo("clone_repo")
                     else:
                         self.process_error(f"{self.product_dir} contains files but is not a repo")
-                        self.restore_input_states()
             else:
                 self.log.debug("Cloning repository")
                 self.setup_local_repo("clone_repo")
@@ -222,24 +218,20 @@ class SelectVersionConfig(WindowLayout):
                 except Exception as error:
                     message = self.get_exception(error)
                     self.process_error(message)
-                    self.restore_input_states()
                     self.log.error(message)
                 else:
                     self.process_start("pull_latest", "Get latest software updates", "Setup_Local_Repo")
                     self.git.pull_latest(self.repo, self.branch_name, self.queue)
             elif self.process_status == "error":
                 self.process_error(self.process_data)
-                self.restore_input_states()
                 self.log.error(self.process_data)
         elif self.process_phase == "pull_latest":
             if self.process_status == "success":
                 self.set_versions(self.repo)
                 self.process_stop()
-                self.restore_input_states()
                 self.set_next_config()
             elif self.process_status == "error":
                 self.process_error("Could not pull latest updates from GitHub")
-                self.restore_input_states()
                 self.log.error("Could not pull updates from GitHub")
 
     def set_versions(self, repo):

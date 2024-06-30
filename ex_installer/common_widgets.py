@@ -78,6 +78,9 @@ class WindowLayout(ctk.CTkFrame):
         self.process_topic = None
         self.process_data = None
 
+        # Flag as to whether a process is in progress or not, used to disable/restore input states
+        self.process_running = False
+
         # Set up queue for process monitoring
         self.queue = Queue()
 
@@ -173,8 +176,13 @@ class WindowLayout(ctk.CTkFrame):
 
     def process_start(self, next_phase, activity, event):
         """
-        Starts a background process that requires monitoring and a progress bar
+        Starts a background process that requires monitoring and a progress bar.
+
+        If this is a new process, we must record and disable the current input states.
         """
+        if not self.process_running:
+            self.disable_input_states(self)
+            self.process_running = True
         self.process_phase = next_phase
         self.status_label.configure(text=activity, text_color="#00353D")
         self.monitor_queue(self.queue, event)
@@ -182,8 +190,13 @@ class WindowLayout(ctk.CTkFrame):
 
     def process_stop(self):
         """
-        Stops the progress bar and resets status text
+        Stops the progress bar and resets status text.
+
+        We must restore the previously recorded input states.
         """
+        if self.process_running:
+            self.restore_input_states()
+            self.process_running = False
         self.log.debug("process_stop()")
         self.progress_bar.stop()
         self.status_label.configure(text="Idle", text_color="#00353D")
@@ -191,8 +204,13 @@ class WindowLayout(ctk.CTkFrame):
 
     def process_error(self, message):
         """
-        Stops the progress bar, sets status text, and makes font red
+        Stops the progress bar, sets status text, and makes font red.
+
+        We must restore the previously recorded input states.
         """
+        if self.process_running:
+            self.restore_input_states()
+            self.process_running = False
         self.progress_bar.stop()
         self.status_label.configure(text=message, text_color="red")
         self.process_phase = None

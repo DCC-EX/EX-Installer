@@ -157,7 +157,6 @@ class SelectDevice(WindowLayout):
             self.acli.selected_device = None
             for widget in self.device_list_frame.winfo_children():
                 widget.destroy()
-            self.disable_input_states(self)
             self.process_start("refresh_list", "Scanning for attached devices", "List_Devices")
             self.acli.list_boards(self.acli.cli_file_path(), self.queue)
         elif self.process_phase == "refresh_list":
@@ -245,10 +244,8 @@ class SelectDevice(WindowLayout):
                     self.no_device_label.configure(text="No devices found")
                 self.set_state()
                 self.process_stop()
-                self.restore_input_states()
             elif self.process_status == "error":
                 self.process_error(self.process_topic)
-                self.restore_input_states()
 
     def update_board(self, name, index):
         if name != "Select the correct device":

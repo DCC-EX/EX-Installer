@@ -194,11 +194,13 @@ class ArduinoCLI:
     """
 
     # Dictionary of Arduino CLI archives for the appropriate platform
+    # Currently force usage of 0.35.3 due to changes in 1.0.x output that have not been fully tested yet.
+    urlbase = "https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_"
     arduino_downloads = {
-        "Linux64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_64bit.tar.gz",
-        "Darwin64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_macOS_64bit.tar.gz",
-        "Windows32": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_32bit.zip",
-        "Windows64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip"
+        "Linux64":   urlbase + "Linux_64bit.tar.gz",
+        "Darwin64":  urlbase + "macOS_64bit.tar.gz",
+        "Windows32": urlbase + "Windows_32bit.zip",
+        "Windows64": urlbase + "Windows_64bit.zip"
     }
 
     """

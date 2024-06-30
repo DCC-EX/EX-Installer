@@ -248,7 +248,6 @@ class ManageArduinoCLI(WindowLayout):
         self.log.debug(f"_check_cli_version() {self.process_status}")
         if self.process_status == "start":
             self.process_start("check_arduino_cli", "Checking Arduino CLI version", "Check_Arduino_CLI")
-            self.disable_input_states(self)
             self.acli.get_version(self.acli.cli_file_path(), self.queue)
         elif self.process_status == "success":
             if "VersionString" in self.process_data:
@@ -258,7 +257,6 @@ class ManageArduinoCLI(WindowLayout):
             self._get_installed_platforms()
         elif self.process_status == "error":
             self.process_error("Failed to check if the Arduino CLI is installed")
-            self.restore_input_states()
         else:
             self.process_error("An unknown error occurred")
 
@@ -329,8 +327,8 @@ class ManageArduinoCLI(WindowLayout):
                                         self.log.debug(f"Must update {platformid} from {installed} to {latest}")
                                     self.update_package_list(child)
 
-            self.restore_input_states()
             self.process_stop()
+            self.next_back.enable_next()
         else:
             self.process_error("An unknown error occurred")
 
@@ -381,11 +379,9 @@ class ManageArduinoCLI(WindowLayout):
             match self.process_phase:
                 case "install_cli":
                     self.process_status = "start"
-                    self.disable_input_states(self)
                     self._download_cli()
                 case "refresh_cli":
                     self.process_status = "start"
-                    self.disable_input_states(self)
                     self._update_core_index()
                 case "download_cli":
                     self._download_cli()
@@ -411,7 +407,6 @@ class ManageArduinoCLI(WindowLayout):
         Method to deal with an error in the process.
         """
         self.process_error(self.process_topic)
-        self.restore_input_states()
         self.log.error(f"Error encountered in process phase {self.process_phase}")
         self.log.error(self.process_data)
 
@@ -427,7 +422,6 @@ class ManageArduinoCLI(WindowLayout):
         """
         self.log.debug(f"_download_cli() {self.process_status}")
         if self.process_status == "start":
-            self.disable_input_states(self)
             self.process_start("download_cli", "Downloading the Arduino CLI", "Manage_CLI")
             self.acli.download_cli(self.queue)
         elif self.process_status == "success":
@@ -613,5 +607,4 @@ class ManageArduinoCLI(WindowLayout):
         """
         self.log.debug("_process_finished()")
         self.process_stop()
-        self.restore_input_states()
         self.set_state()
