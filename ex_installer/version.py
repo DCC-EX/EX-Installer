@@ -14,7 +14,8 @@ Version history:
 
 0.0.19      - Version updates, requests==2.32.2, aiohttp==3.9.4, idna==3.7, Pillow==10.3.0
             - Adjust Arduino platform installation process
-            - Ensure ESP32 platform version is 2.0.17
+            - Enforce specific versions of CLI (0.35.3), AVR (1.8.6), ESP32 (2.0.17), and STM32 (2.8.0)
+            - Enforce specific version of Ethernet (2.0.2)
             - Enable fake Arduino to be selected for demo purposes using -F|--fake command line argument
             - Fix debug command line argument to update menu selection
             - Ensure the details pane on the Load screen auto scrolls to the bottom

@@ -46,7 +46,7 @@ product_details = {
             r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
         ],
         "arduino_libraries": [
-            "Ethernet"
+            "Ethernet@2.0.2"
         ]
     },
     "ex_ioexpander": {

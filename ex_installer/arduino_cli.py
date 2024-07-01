@@ -221,7 +221,7 @@ class ArduinoCLI:
             "url": "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
         },
         "STMicroelectronics Nucleo/STM32": {
-            "platform_id": "STMicroelectronics:stm32",
+            "platform_id": "STMicroelectronics:stm32@2.8.0",
             "url": "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
         }
     }

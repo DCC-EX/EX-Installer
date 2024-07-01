@@ -82,7 +82,7 @@ class ManageArduinoCLI(WindowLayout):
 
         # Set up dictionary to store packages to install/refresh
         self.package_dict = {
-            "Arduino AVR": "arduino:avr"
+            "Arduino AVR": "arduino:avr@1.8.6"
         }
         self.packages_to_install = self.package_dict.copy()
 
