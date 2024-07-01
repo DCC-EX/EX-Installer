@@ -184,13 +184,13 @@ class ManageArduinoCLI(WindowLayout):
 
     def get_library_list(self):
         """
-        Get list of library dependencies from product details
+        Get the list of library dependencies that are required.
+
+        Note these have moved from the product_details module to the arduino_cli module to centralise them.
         """
         self.library_list = []
-        for product in pd:
-            if "arduino_libraries" in pd[product]:
-                for library in pd[product]["arduino_libraries"]:
-                    self.library_list.append(library)
+        for library in self.acli.arduino_libraries:
+            self.library_list.append(library)
 
     def update_package_list(self, switch):
         """
@@ -391,8 +391,8 @@ class ManageArduinoCLI(WindowLayout):
                     self._init_cli()
                 case "update_index":
                     self._update_core_index()
-                case "upgrade_platforms":
-                    self._upgrade_platforms()
+                # case "upgrade_platforms":
+                #     self._upgrade_platforms()
                 case "install_packages":
                     self._install_packages()
                 case "install_libraries":
@@ -497,27 +497,7 @@ class ManageArduinoCLI(WindowLayout):
             self.acli.update_index(self.acli.cli_file_path(), self.queue)
         elif self.process_status == "success":
             self.process_status = "start"
-            self._upgrade_platforms()
-        else:
-            self._process_error()
-
-    def _upgrade_platforms(self):
-        """
-        Method to start the upgrade platforms process.
-
-        If we need to start, call the acli.upgrade_platforms() method.
-
-        If successful, call _install_packages().
-
-        Any other status is an error.
-        """
-        self.log.debug(f"_upgrade_platforms() {self.process_status}")
-        if self.process_status == "start":
-            self.process_start("upgrade_platforms", "Upgrading Arduino platforms", "Manage_CLI")
-            self.acli.upgrade_platforms(self.acli.cli_file_path(), self.queue)
-        elif self.process_status == "success":
             self.packages_to_install = self.package_dict.copy()
-            self.process_status = "start"
             self._install_packages()
         else:
             self._process_error()
@@ -549,6 +529,7 @@ class ManageArduinoCLI(WindowLayout):
         """
         Method to start installing the specified package.
         """
+        print(f"_install_single_package() {self.process_status}\npackage: {package}, packagestr: {packagestr}")
         self.log.debug(f"_install_single_package() {self.process_status}\npackage: {package}, packagestr: {packagestr}")
         self.process_start("install_packages", f"Installing package {package}", "Manage_CLI")
         self.acli.install_package(self.acli.cli_file_path(), packagestr, self.queue)
@@ -578,6 +559,7 @@ class ManageArduinoCLI(WindowLayout):
         """
         Method to start installing the specified library.
         """
+        print(f"_install_single_library() {self.process_status}\nlibrary: {library}")
         self.log.debug(f"_install_single_library() {self.process_status}\nlibrary: {library}")
         self.process_start("install_libraries", "Install Arduino library " + library, "Manage_CLI")
         self.acli.install_library(self.acli.cli_file_path(), library, self.queue)

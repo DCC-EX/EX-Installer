@@ -44,9 +44,6 @@ product_details = {
         "other_config_files": [
             r"^my.*\.[^?]*example\.cpp$|(^my.*\.cpp$)",
             r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
-        ],
-        "arduino_libraries": [
-            "Ethernet@2.0.2"
         ]
     },
     "ex_ioexpander": {

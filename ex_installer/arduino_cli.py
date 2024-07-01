@@ -206,7 +206,7 @@ class ArduinoCLI:
     """
     Dictionary for additional board/platform support for the Arduino CLI.
 
-    If a specific version is required, it must be provided with an @ after the platform ID:
+    These should ideally be tied to a specific version to avoid future unknown issues:
 
     extra_platforms = {
         "Platform Name": {
@@ -225,6 +225,21 @@ class ArduinoCLI:
             "url": "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
         }
     }
+
+    """
+    List of required Arduino libraries to be installed.
+
+    These should be tied to a specific version to avoid future unknown issues:
+
+    arduino_libraries = [
+        "<library name>@<version>"
+    ]
+
+    Note that these were previously an attribute of a product in the product_details module but are now here.
+    """
+    arduino_libraries = [
+        "Ethernet@2.0.2"
+    ]
 
     """
     Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices.
