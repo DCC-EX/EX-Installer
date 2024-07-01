@@ -28,7 +28,6 @@ import logging
 # Import local modules
 from .common_widgets import WindowLayout, CreateToolTip
 from . import images
-from .product_details import product_details as pd
 
 
 class ManageArduinoCLI(WindowLayout):
@@ -391,8 +390,6 @@ class ManageArduinoCLI(WindowLayout):
                     self._init_cli()
                 case "update_index":
                     self._update_core_index()
-                # case "upgrade_platforms":
-                #     self._upgrade_platforms()
                 case "install_packages":
                     self._install_packages()
                 case "install_libraries":
