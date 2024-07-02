@@ -345,7 +345,7 @@ class ManageArduinoCLI(WindowLayout):
             self.process_stop()
             self.next_back.enable_next()
             # Check the count of any platforms to be installed
-            install_count = len([item for item in self.packages_to_install.values() if item['state'] == 'not_installed'])
+            install_count = self._get_package_install_count()
             # If any need to be installed or updated, force a refresh to do this without user interaction
             if install_count > 0:
                 self._generate_refresh_cli()
@@ -484,12 +484,6 @@ class ManageArduinoCLI(WindowLayout):
         self.log.debug(f"_init_cli() {self.process_status}")
         if self.process_status == "start":
             self.process_start("init_cli", "Configuring the Arduino CLI", "Manage_CLI")
-            for widget in self.extra_platforms_frame.winfo_children():
-                if isinstance(widget, ctk.CTkSwitch):
-                    if not widget.cget("text") in self.package_dict and widget.cget("variable").get() == "on":
-                        self.package_dict[widget.cget("text")] = (
-                            self.acli.extra_platforms[widget.cget("text")["platform_id"]]
-                            )
             self.acli.initialise_config(self.acli.cli_file_path(), self.queue)
         elif self.process_status == "success":
             self.process_status = "start"
@@ -517,6 +511,19 @@ class ManageArduinoCLI(WindowLayout):
         else:
             self._process_error()
 
+    def _get_package_install_count(self):
+        """
+        Get the number of packages that need to be installed.
+
+        This is all packages with state "not_installed" and selection "on".
+        """
+        count = len(
+            [item for item in self.packages_to_install.values() if (
+                item["state"] == "not_installed" and item["selection"] == "on"
+            )]
+        )
+        return count
+
     def _install_packages(self):
         """
         Method to process installing all required packages.
@@ -529,7 +536,7 @@ class ManageArduinoCLI(WindowLayout):
         """
         self.log.debug(f"_install_packages() {self.process_status}")
         # Get the number of packages still to be installed
-        install_count = len([item for item in self.packages_to_install.values() if item['state'] == 'not_installed'])
+        install_count = self._get_package_install_count()
         # We only actually need to start if we have any to install, or if the previous was successful with more to go
         if (
             (self.process_status == "start" and install_count > 0) or
@@ -537,7 +544,7 @@ class ManageArduinoCLI(WindowLayout):
         ):
             # Iterate through the list of platform packages to get the next to install
             for platform_name, platform_details in self.packages_to_install.items():
-                if platform_details["state"] == "not_installed":
+                if platform_details["state"] == "not_installed" and platform_details["selection"] == "on":
                     package_name = platform_name
                     platform_id = platform_details["platform_id"]
                     version = platform_details["version"]
