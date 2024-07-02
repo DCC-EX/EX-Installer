@@ -58,6 +58,18 @@ class ManageArduinoCLI(WindowLayout):
 
         - <<Check_Arduino_CLI>> - used to check if the Arduino is installed and if so, which version
         - <<Manage_CLI>> - used to manage installation and updates of the Arduino CLI
+
+    Workflow for this module:
+
+    - Object creation and set initial widget states
+    - If CLI not installed, disable next and main button triggers install CLI
+    - If CLI is installed:
+
+        - Enable next, and main button triggers refresh CLI
+        - Check installed package versions and if not at correct version, flag install
+        - Check installed library versions and if not at correct version, flag install
+
+    - When enabling a platform type, trigger installation of that package
     """
     def __init__(self, parent, *args, **kwargs):
         """
@@ -79,11 +91,26 @@ class ManageArduinoCLI(WindowLayout):
         new_tags = self.bindtags() + ("bind_events",)
         self.bindtags(new_tags)
 
-        # Set up dictionary to store packages to install/refresh
-        self.package_dict = {
-            "Arduino AVR": "arduino:avr@1.8.6"
-        }
-        self.packages_to_install = self.package_dict.copy()
+        """
+        Set up dictionary to store platform packages to install/refresh.
+
+        This tracks whether the platform package is to be installed or not, and if it is.
+
+        This should include base and optional platforms so all are managed consistently.
+        """
+        self.packages_to_install = {}
+        for platform, package in self.acli.base_platforms.items():
+            self.packages_to_install[platform] = {
+                "package": package,
+                "selection": "on",
+                "state": "unknown"
+            }
+        for platform, package_details in self.acli.extra_platforms.items():
+            self.packages_to_install[platform] = {
+                "package": package_details["platform_id"],
+                "selection": "off",
+                "state": "unknown"
+            }
 
         # Set up list for library installs
         self.library_list = []
@@ -193,17 +220,14 @@ class ManageArduinoCLI(WindowLayout):
 
     def update_package_list(self, switch):
         """
-        Maintain the list of packages to install/refresh when switches updated
+        Maintain the list of packages to install/refresh when switches are turned on/off.
+
+        This must cause a platform to be installed if it isn't already so a user doesn't need to click refresh.
         """
-        if switch.cget("variable").get() == "on":
-            if not switch.cget("text") in self.package_dict:
-                self.package_dict[switch.cget("text")] = self.acli.extra_platforms[switch.cget("text")]["platform_id"]
-                self.log.debug("Enable package and install %s",
-                               self.acli.extra_platforms[switch.cget("text")]["platform_id"])
-        elif switch.cget("variable").get() == "off":
-            if switch.cget("text") in self.package_dict:
-                del self.package_dict[switch.cget("text")]
-                self.log.debug("Disable package %s", switch.cget("text"))
+        platform_name = switch.cget("text")
+        selection = switch.cget("variable").get()
+        self.packages_to_install[platform_name]["selection"] = selection
+        self.log.debug("Change select state for %s to %s", platform_name, selection)
 
     def _generate_check_cli(self):
         """
@@ -272,6 +296,7 @@ class ManageArduinoCLI(WindowLayout):
         - If a package is installed but not the explicit version, add to the list
         - If a package is installed without an explicit version but not latest, add to the list
         - If a package is not installed but should be, add to the list
+        - Note that Arduino AVR is always in the list.
 
         Any other status is an error.
         """
@@ -280,11 +305,15 @@ class ManageArduinoCLI(WindowLayout):
             self.process_start("get_platforms", "Obtaining list of installed platforms", "Check_Arduino_CLI")
             self.acli.get_platforms(self.acli.cli_file_path(), self.queue)
         elif self.process_status == "success":
+            # Arduino CLI 1.0.x moves output from a list of platforms to a key/value pair
+            # If this is the case, set process_data to the value not the key/value pair
             if len(self.process_data) > 0 and "platforms" in self.process_data:
                 if isinstance(self.process_data["platforms"], list):
                     self.process_data = self.process_data["platforms"]
             if isinstance(self.process_data, list):
+                # Iterate through the extra platform widgets
                 for child in self.extra_platforms_frame.winfo_children():
+                    # If it's a switch, check if the associated platform is installed
                     if isinstance(child, ctk.CTkSwitch):
                         # Need to compare against the platform ID and version
                         if "@" in self.acli.extra_platforms[child.cget("text")]["platform_id"]:
@@ -296,7 +325,9 @@ class ManageArduinoCLI(WindowLayout):
                             required_version = None
                         for platform in self.process_data:
                             if platformid == platform["id"]:
+                                # Turn switch on if platform is in our list
                                 child.cget("variable").set("on")
+                                # CLI versions differ with labels, set version installed as appropriate
                                 if "installed" in platform:
                                     installed = platform["installed"]
                                 elif "installed_version":
@@ -304,6 +335,7 @@ class ManageArduinoCLI(WindowLayout):
                                 else:
                                     self.log.error(f"Arduino CLI output unknown:\n{platform}")
                                     installed = None
+                                # CLI versions differ with labels, set latest version as appropriate
                                 if "latest" in platform:
                                     latest = platform["latest"]
                                 elif "latest_version" in platform:

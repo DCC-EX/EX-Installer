@@ -204,9 +204,20 @@ class ArduinoCLI:
     }
 
     """
+    Dictionary for the base board/platform support for the Arduino CLI.
+
+    This should really just be Arduino AVR, and must specify the version.
+
+    Note this used to be defined in the manage_arduino_cli module but is now centralised here.
+    """
+    base_platforms = {
+        "Arduino AVR": "arduino:avr@1.8.6"
+    }
+
+    """
     Dictionary for additional board/platform support for the Arduino CLI.
 
-    These should ideally be tied to a specific version to avoid future unknown issues:
+    These must be tied to a specific version to avoid future unknown issues:
 
     extra_platforms = {
         "Platform Name": {
@@ -229,7 +240,7 @@ class ArduinoCLI:
     """
     List of required Arduino libraries to be installed.
 
-    These should be tied to a specific version to avoid future unknown issues:
+    These must be tied to a specific version to avoid future unknown issues:
 
     arduino_libraries = [
         "<library name>@<version>"
