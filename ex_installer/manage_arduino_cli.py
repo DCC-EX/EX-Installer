@@ -96,20 +96,26 @@ class ManageArduinoCLI(WindowLayout):
 
         This tracks whether the platform package is to be installed or not, and if it is.
 
-        This should include base and optional platforms so all are managed consistently.
+        This includes base and optional platforms so all are managed consistently.
+
+        Set "selection" to "on" for all base packages, and initially "off" to extras, as switches control this.
+
+        Set "state" to "not_installed" for all so the default action will be to install the correct version.
         """
         self.packages_to_install = {}
-        for platform, package in self.acli.base_platforms.items():
+        for platform, package_details in self.acli.base_platforms.items():
             self.packages_to_install[platform] = {
-                "package": package,
+                "platform_id": package_details["platform_id"],
+                "version": package_details["version"],
                 "selection": "on",
-                "state": "unknown"
+                "state": "not_installed"
             }
         for platform, package_details in self.acli.extra_platforms.items():
             self.packages_to_install[platform] = {
-                "package": package_details["platform_id"],
+                "platform_id": package_details["platform_id"],
+                "version": package_details["version"],
                 "selection": "off",
-                "state": "unknown"
+                "state": "not_installed"
             }
 
         # Set up list for library installs
@@ -199,7 +205,6 @@ class ManageArduinoCLI(WindowLayout):
             self.instruction_label.configure(text=self.refresh_instruction_text)
             self.manage_cli_button.configure(text="Refresh Arduino CLI", command=self._generate_refresh_cli)
             self._generate_check_cli()
-            self.next_back.enable_next()
         else:
             self.cli_state_label.configure(text=self.not_installed_text,
                                            text_color="#FF5C00",
@@ -292,11 +297,9 @@ class ManageArduinoCLI(WindowLayout):
         If successful:
 
         - Set the extra_platforms_frame CTKSwitch widgets to the correct state
-        - If a package is installed and an explicit version is defined, compare these
-        - If a package is installed but not the explicit version, add to the list
-        - If a package is installed without an explicit version but not latest, add to the list
+        - If a package is installed at the specified version, mark installed
+        - If a package is installed but not the specified version, mark as not_installed
         - If a package is not installed but should be, add to the list
-        - Note that Arduino AVR is always in the list.
 
         Any other status is an error.
         """
@@ -311,55 +314,41 @@ class ManageArduinoCLI(WindowLayout):
                 if isinstance(self.process_data["platforms"], list):
                     self.process_data = self.process_data["platforms"]
             if isinstance(self.process_data, list):
-                # Iterate through the extra platform widgets
-                for child in self.extra_platforms_frame.winfo_children():
-                    # If it's a switch, check if the associated platform is installed
-                    if isinstance(child, ctk.CTkSwitch):
-                        # Need to compare against the platform ID and version
-                        if "@" in self.acli.extra_platforms[child.cget("text")]["platform_id"]:
-                            result = (self.acli.extra_platforms[child.cget("text")]["platform_id"]).split("@", 2)
-                            platformid = result[0]
-                            required_version = result[1]
+                # Iterate through the list of platform packages that should be installed
+                for platform_name, platform_package in self.packages_to_install.items():
+                    platform_id = platform_package["platform_id"]
+                    version = platform_package["version"]
+                    state = "not_installed"
+                    # Iterate through the installed platform packages to check the state
+                    for installed_platform in self.process_data:
+                        installed_platform_id = installed_platform["id"]
+                        # Output changed in CLI 1.0.1 so must check both installed and installed_version
+                        if "installed" in installed_platform:
+                            installed_version = installed_platform["installed"]
+                        elif "installed_version":
+                            installed_version = installed_platform["installed_version"]
                         else:
-                            platformid = self.acli.extra_platforms[child.cget("text")]["platform_id"]
-                            required_version = None
-                        for platform in self.process_data:
-                            if platformid == platform["id"]:
-                                # Turn switch on if platform is in our list
+                            self.log.error(f"Arduino CLI output unknown:\n{installed_platform}")
+                            installed_version = None
+                        # Only if the ID and installed versions match do we mark them as installed
+                        if installed_platform_id == platform_id and installed_version == version:
+                            state = "installed"
+                    self.packages_to_install[platform_name]["state"] = state
+                    # Iterate through the extra_platforms switches to set the state correctly
+                    for child in self.extra_platforms_frame.winfo_children():
+                        # Only care if it's a switch
+                        if isinstance(child, ctk.CTkSwitch):
+                            switch_platform = child.cget("text")
+                            # If it's installed, turn the switch on
+                            if switch_platform == platform_name and state == "installed":
                                 child.cget("variable").set("on")
-                                # CLI versions differ with labels, set version installed as appropriate
-                                if "installed" in platform:
-                                    installed = platform["installed"]
-                                elif "installed_version":
-                                    installed = platform["installed_version"]
-                                else:
-                                    self.log.error(f"Arduino CLI output unknown:\n{platform}")
-                                    installed = None
-                                # CLI versions differ with labels, set latest version as appropriate
-                                if "latest" in platform:
-                                    latest = platform["latest"]
-                                elif "latest_version" in platform:
-                                    latest = platform["latest_version"]
-                                else:
-                                    self.log.error(f"Arduino CLI output unknown:\n{platform}")
-                                    latest = None
-                                # Don't update if our installed platform the right version
-                                if required_version is not None and installed == required_version:
-                                    break
-                                # Don't update if we already have the latest
-                                elif required_version is None and installed == latest:
-                                    break
-                                # Anything else means we must update
-                                else:
-                                    if required_version is not None:
-                                        self.log.debug(f"Must update {platformid} from {installed} to " +
-                                                       f"{required_version}")
-                                    else:
-                                        self.log.debug(f"Must update {platformid} from {installed} to {latest}")
-                                    self.update_package_list(child)
-
             self.process_stop()
             self.next_back.enable_next()
+            # Check the count of any platforms to be installed
+            install_count = len([item for item in self.packages_to_install.values() if item['state'] == 'not_installed'])
+            # If any need to be installed or updated, force a refresh to do this without user interaction
+            if install_count > 0:
+                self._generate_refresh_cli()
         else:
             self.process_error("An unknown error occurred")
 
@@ -389,17 +378,15 @@ class ManageArduinoCLI(WindowLayout):
         - Extract the CLI
         - Initialise the CLI config with the selected platform types
         - Update the CLI core index
-        - Upgrade platforms
-        - Install required packages (this should match any specific version and not just upgrade)
-        - Install any required libraries
+        - Install required packages to the specified version
+        - Install required libraries to the specified version
         - Refresh the list of attached boards
 
         If already installed, it must:
 
         - Update the CLI core index
-        - Upgrade platforms
-        - Upgrade required packages (this should match any specific version and not just upgrade)
-        - Install any required libraries
+        - Install required packages to the specified version
+        - Install required libraries to the specified version
         - Refresh the list of attached boards
         """
         self.log.debug(f"manage_cli() called\nprocess_phase: {self.process_phase}\nprocess_status: " +
@@ -526,7 +513,6 @@ class ManageArduinoCLI(WindowLayout):
             self.acli.update_index(self.acli.cli_file_path(), self.queue)
         elif self.process_status == "success":
             self.process_status = "start"
-            self.packages_to_install = self.package_dict.copy()
             self._install_packages()
         else:
             self._process_error()
@@ -542,26 +528,40 @@ class ManageArduinoCLI(WindowLayout):
         Any other status is an error.
         """
         self.log.debug(f"_install_packages() {self.process_status}")
-        if self.process_status == "start" or (len(self.packages_to_install) > 0 and self.process_status == "success"):
-            package = next(iter(self.packages_to_install))
-            packagestr = self.packages_to_install[package]
-            del self.packages_to_install[package]
-            self._install_single_package(package, packagestr)
-        elif self.process_status == "success":
+        # Get the number of packages still to be installed
+        install_count = len([item for item in self.packages_to_install.values() if item['state'] == 'not_installed'])
+        # We only actually need to start if we have any to install, or if the previous was successful with more to go
+        if (
+            (self.process_status == "start" and install_count > 0) or
+            (install_count > 0 and self.process_status == "success")
+        ):
+            # Iterate through the list of platform packages to get the next to install
+            for platform_name, platform_details in self.packages_to_install.items():
+                if platform_details["state"] == "not_installed":
+                    package_name = platform_name
+                    platform_id = platform_details["platform_id"]
+                    version = platform_details["version"]
+                    break
+            self._install_single_package(package_name, platform_id, version)
+        elif self.process_status == "success" or (self.process_status == "start" and install_count == 0):
             self.process_status = "start"
             self.libraries_to_install = self.library_list.copy()
             self._install_libraries()
         else:
             self._process_error()
 
-    def _install_single_package(self, package, packagestr):
+    def _install_single_package(self, package_name, platform_id, version):
         """
         Method to start installing the specified package.
+
+        We flag the package as installed here to prevent an endless loop, but this should be improved in future.
         """
-        print(f"_install_single_package() {self.process_status}\npackage: {package}, packagestr: {packagestr}")
-        self.log.debug(f"_install_single_package() {self.process_status}\npackage: {package}, packagestr: {packagestr}")
-        self.process_start("install_packages", f"Installing package {package}", "Manage_CLI")
-        self.acli.install_package(self.acli.cli_file_path(), packagestr, self.queue)
+        package = platform_id + "@" + version
+        self.packages_to_install[package_name]["state"] = "installed"
+        print(f"_install_single_package() {self.process_status}\npackage_name: {package_name}, package: {package}")
+        self.log.debug(f"_install_single_package() {self.process_status}\npackage_name: {package}, package: {package}")
+        self.process_start("install_packages", f"Installing package {package_name}", "Manage_CLI")
+        self.acli.install_package(self.acli.cli_file_path(), package, self.queue)
 
     def _install_libraries(self):
         """

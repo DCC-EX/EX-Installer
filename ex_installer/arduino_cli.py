@@ -209,9 +209,21 @@ class ArduinoCLI:
     This should really just be Arduino AVR, and must specify the version.
 
     Note this used to be defined in the manage_arduino_cli module but is now centralised here.
+
+    This format is consistent with extra_platforms, but without the URL.
+
+    base_platforms = {
+        "Platform Name": {
+            "platform_id": "<packager>:<arch>",
+            "version": "<version>"
+        }
+    }
     """
     base_platforms = {
-        "Arduino AVR": "arduino:avr@1.8.6"
+        "Arduino AVR": {
+            "platform_id": "arduino:avr",
+            "version": "1.8.6"
+        }
     }
 
     """
@@ -221,36 +233,39 @@ class ArduinoCLI:
 
     extra_platforms = {
         "Platform Name": {
-            "platform_id": "<packager>:<arch>@<version>",
+            "platform_id": "<packager>:<arch>",
+            "version": "<version>",
             "url": "<url>"
         }
     }
     """
     extra_platforms = {
         "Espressif ESP32": {
-            "platform_id": "esp32:esp32@2.0.17",
+            "platform_id": "esp32:esp32",
+            "version": "2.0.17",
             "url": "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
         },
         "STMicroelectronics Nucleo/STM32": {
-            "platform_id": "STMicroelectronics:stm32@2.8.0",
+            "platform_id": "STMicroelectronics:stm32",
+            "version": "2.8.0",
             "url": "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
         }
     }
 
     """
-    List of required Arduino libraries to be installed.
+    Dictionary of required Arduino libraries to be installed.
 
     These must be tied to a specific version to avoid future unknown issues:
 
-    arduino_libraries = [
-        "<library name>@<version>"
-    ]
+    arduino_libraries = {
+        "<library name>": "<version>"
+    }
 
     Note that these were previously an attribute of a product in the product_details module but are now here.
     """
-    arduino_libraries = [
-        "Ethernet@2.0.2"
-    ]
+    arduino_libraries = {
+        "Ethernet": "2.0.2"
+    }
 
     """
     Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices.
