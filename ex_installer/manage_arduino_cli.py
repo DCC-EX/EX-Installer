@@ -234,6 +234,7 @@ class ManageArduinoCLI(WindowLayout):
         selection = switch.cget("variable").get()
         self.packages_to_install[platform_name]["selection"] = selection
         self.log.debug("Change select state for %s to %s", platform_name, selection)
+        self._generate_refresh_cli()
 
     def _generate_check_cli(self):
         """
@@ -322,6 +323,10 @@ class ManageArduinoCLI(WindowLayout):
                     platform_id = platform_package["platform_id"]
                     version = platform_package["version"]
                     state = "not_installed"
+                    selection = "off"
+                    if platform_id == "arduino:avr":
+                        selection = "on"
+                    force_install = False
                     # Iterate through the installed platform packages to check the state
                     for installed_platform in self.process_data:
                         installed_platform_id = installed_platform["id"]
@@ -336,6 +341,9 @@ class ManageArduinoCLI(WindowLayout):
                         # Only if the ID and installed versions match do we mark them as installed
                         if installed_platform_id == platform_id and installed_version == version:
                             state = "installed"
+                        elif installed_platform_id == platform_id and installed_version != version:
+                            self.log.debug(f"Incorrect version of {platform_id} installed: {installed_version}")
+                            force_install = True
                     self.packages_to_install[platform_name]["state"] = state
                     # Iterate through the extra_platforms switches to set the state correctly
                     for child in self.extra_platforms_frame.winfo_children():
@@ -343,8 +351,13 @@ class ManageArduinoCLI(WindowLayout):
                         if isinstance(child, ctk.CTkSwitch):
                             switch_platform = child.cget("text")
                             # If it's installed, turn the switch on
-                            if switch_platform == platform_name and state == "installed":
+                            if (
+                                (switch_platform == platform_name and state == "installed") or
+                                (switch_platform == platform_name and force_install is True)
+                            ):
                                 child.cget("variable").set("on")
+                                selection = "on"
+                            self.packages_to_install[platform_name]["selection"] = selection
             # Check the count of any platforms to be installed
             install_count = self._get_package_install_count()
             # If any need to be installed or updated, force a refresh to do this without user interaction
