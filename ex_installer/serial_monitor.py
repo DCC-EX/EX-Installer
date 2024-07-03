@@ -218,9 +218,11 @@ class SerialMonitor(ctk.CTkToplevel):
         # Create device frame widgets and layout
         self.device_label = ctk.CTkLabel(self.device_frame, text=None, font=self.instruction_font)
         self.device_label.grid(column=0, row=0, sticky="ew", padx=5, pady=5)
-
+        
         # Start serial monitor process
         self.monitor()
+        
+        self.log.debug("Open window ok")
 
     def close_monitor(self):
         """
@@ -232,10 +234,10 @@ class SerialMonitor(ctk.CTkToplevel):
         """
         self.close_clicked = True
         if hasattr(self, "serial_port") and self.serial_port:
-            if self.serial_port is not None:
-                self.serial_port.close()
-            if self.read_thread is not None:
-                self.read_thread.join()
+            if self.serial_port is not None:                
+                self.serial_port.close()                
+            if self.read_thread is not None:                
+                self.read_thread.join()                
         self.destroy()
 
     def monitor(self, event=None):
@@ -254,7 +256,7 @@ class SerialMonitor(ctk.CTkToplevel):
                     f" on {port}")
             self.device_label.configure(text=text)
             try:
-                self.serial_port = serial.Serial(port, 115200)
+                self.serial_port = serial.Serial(port, 115200)                
             except serial.SerialException as e:
                 self.log.error(f"Failed to open serial connection: {e}")
                 self.output_textbox.configure(state="normal")
@@ -273,11 +275,18 @@ class SerialMonitor(ctk.CTkToplevel):
         Function to read serial output
         """
         while True:
-            try:
-                if self.serial_port.in_waiting > 0:
-                    output = self.serial_port.readline().decode().strip()
+            try:                                
+                if self.serial_port.in_waiting > 0:                                        
+                    output = self.serial_port.readline()                    
+                    """ 
+                    if closing the window, the serial port was closed and it may have garbage, ignore it
+                    """
+                    if self.close_clicked:
+                        return
+                    
+                    output = output.decode().strip()                                        
                     self.update_textbox(output)
-            except OSError as e:
+            except OSError as e:                
                 if not self.close_clicked:
                     self.log.error(f"Error accessing serial port: {e}")
                 break
