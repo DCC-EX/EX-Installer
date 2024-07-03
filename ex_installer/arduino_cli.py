@@ -386,6 +386,22 @@ class ArduinoCLI:
             )
             self.log.debug("Arduino CLI not installed")
 
+    def get_libraries(self, file_path, queue):
+        """
+        Function to retrieve the current libraries installed with the Arduino CLI
+
+        If successful, the list will be in the queue's "data" field
+        """
+        if self.is_installed(file_path):
+            params = ["lib", "list", "--format", "jsonmini"]
+            acli = ThreadedArduinoCLI(file_path, params, queue)
+            acli.start()
+        else:
+            queue.put(
+                QueueMessage("error", "Arduino CLI is not installed", "Arduino CLI is not installed")
+            )
+            self.log.debug("Arduino CLI not installed")
+
     def download_cli(self, queue):
         """
         Download the Arduino CLI

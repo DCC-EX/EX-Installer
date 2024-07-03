@@ -123,13 +123,15 @@ class ManageArduinoCLI(WindowLayout):
 
         This tracks all libraries in the same manner as platform packages.
         """
-        # self.library_list = []
         self.libraries_to_install = {}
         for library, version in self.acli.arduino_libraries.items():
             self.libraries_to_install[library] = {
                 "version": version,
                 "state": "not_installed"
             }
+
+        # Flag to ensure the CLI is refreshed if necessary
+        self.cli_needs_refresh = False
 
         # Set title and logo
         self.set_title_logo(images.EX_INSTALLER_LOGO)
@@ -207,7 +209,6 @@ class ManageArduinoCLI(WindowLayout):
 
     def set_state(self):
         self.next_back.hide_log_button()
-        # self.get_library_list()
         if self.acli.is_installed(self.acli.cli_file_path()):
             self.cli_state_label.configure(text=self.installed_text,
                                            text_color="#00353D",
@@ -222,16 +223,6 @@ class ManageArduinoCLI(WindowLayout):
             self.instruction_label.configure(text=self.install_instruction_text)
             self.manage_cli_button.configure(text="Install Arduino CLI", command=self._generate_install_cli)
             self.next_back.disable_next()
-
-    # def get_library_list(self):
-    #     """
-    #     Get the list of library dependencies that are required.
-
-    #     Note these have moved from the product_details module to the arduino_cli module to centralise them.
-    #     """
-    #     self.library_list = []
-    #     for library in self.acli.arduino_libraries:
-    #         self.library_list.append(library)
 
     def update_package_list(self, switch):
         """
@@ -270,6 +261,8 @@ class ManageArduinoCLI(WindowLayout):
                     self._check_cli_version()
                 case "get_platforms":
                     self._get_installed_platforms()
+                case "get_libraries":
+                    self._get_installed_libraries()
                 case _:
                     self._process_error()
 
@@ -309,7 +302,7 @@ class ManageArduinoCLI(WindowLayout):
         - Set the extra_platforms_frame CTKSwitch widgets to the correct state
         - If a package is installed at the specified version, mark installed
         - If a package is installed but not the specified version, mark as not_installed
-        - If a package is not installed but should be, add to the list
+        - If a package is not installed but should be, mark as not_installed
 
         Any other status is an error.
         """
@@ -352,12 +345,58 @@ class ManageArduinoCLI(WindowLayout):
                             # If it's installed, turn the switch on
                             if switch_platform == platform_name and state == "installed":
                                 child.cget("variable").set("on")
-            self.process_stop()
-            self.next_back.enable_next()
             # Check the count of any platforms to be installed
             install_count = self._get_package_install_count()
             # If any need to be installed or updated, force a refresh to do this without user interaction
             if install_count > 0:
+                self.cli_needs_refresh = True
+            self.process_status = "start"
+            self._get_installed_libraries()
+        else:
+            self.process_error("An unknown error occurred")
+
+    def _get_installed_libraries(self):
+        """
+        Method to obtain the currently installed Arduino libraries.
+
+        If we need to start call the acli.get_libraries() method.
+
+        If successful:
+
+        - If a library is installed at the specified version, mark installed
+        - If a library is installed but not the specified version, mark as not_installed
+        - If a library is not installed but should be, mark as not_installed
+
+        Any other status is an error.
+        """
+        self.log.debug(f"_get_installed_libraries() {self.process_status}")
+        if self.process_status == "start":
+            self.process_start("get_libraries", "Obtaining list of installed libraries", "Check_Arduino_CLI")
+            self.acli.get_libraries(self.acli.cli_file_path(), self.queue)
+        elif self.process_status == "success":
+            # Arduino CLI 1.0.x moves output from a list of platforms to a key/value pair
+            # If this is the case, set process_data to the value not the key/value pair
+            if len(self.process_data) > 0 and "installed_libraries" in self.process_data:
+                if isinstance(self.process_data["installed_libraries"], list):
+                    self.process_data = self.process_data["installed_libraries"]
+            if isinstance(self.process_data, list):
+                # Iterate through the list of platform packages that should be installed
+                for library, library_details in self.libraries_to_install.items():
+                    version = library_details["version"]
+                    state = "not_installed"
+                    for installed_library in self.process_data:
+                        library_name = installed_library["library"]["name"]
+                        library_version = installed_library["library"]["version"]
+                        if library_name == library and library_version == version:
+                            state = "installed"
+                    self.libraries_to_install[library]["state"] = state
+            self.process_stop()
+            self.next_back.enable_next()
+            # Check count of libraries to install
+            install_count = self._get_library_install_count()
+            # If we have more to install, or if a refresh has been flagged, trigger a CLI refresh
+            if install_count > 0 or self.cli_needs_refresh is True:
+                self.cli_needs_refresh = False
                 self._generate_refresh_cli()
         else:
             self.process_error("An unknown error occurred")
@@ -562,7 +601,6 @@ class ManageArduinoCLI(WindowLayout):
             self._install_single_package(package_name, platform_id, version)
         elif self.process_status == "success" or (self.process_status == "start" and install_count == 0):
             self.process_status = "start"
-            # self.libraries_to_install = self.library_list.copy()
             self._install_libraries()
         else:
             self._process_error()
@@ -575,7 +613,6 @@ class ManageArduinoCLI(WindowLayout):
         """
         package = platform_id + "@" + version
         self.packages_to_install[package_name]["state"] = "installed"
-        print(f"_install_single_package() {self.process_status}\npackage_name: {package_name}, package: {package}")
         self.log.debug(f"_install_single_package() {self.process_status}\npackage_name: {package}, package: {package}")
         self.process_start("install_packages", f"Installing package {package_name}", "Manage_CLI")
         self.acli.install_package(self.acli.cli_file_path(), package, self.queue)
@@ -632,7 +669,6 @@ class ManageArduinoCLI(WindowLayout):
         """
         library = library_name + "@" + version
         self.libraries_to_install[library_name]["state"] = "installed"
-        print(f"_install_single_library() {self.process_status}\nlibrary: {library_name}, version: {version}")
         self.log.debug(f"_install_single_library() {self.process_status}\nlibrary: {library}, version: {version}")
         self.process_start("install_libraries", "Install Arduino library " + library, "Manage_CLI")
         self.acli.install_library(self.acli.cli_file_path(), library, self.queue)
