@@ -275,7 +275,13 @@ class SerialMonitor(ctk.CTkToplevel):
         while True:
             try:
                 if self.serial_port.in_waiting > 0:
-                    output = self.serial_port.readline().decode().strip()
+                    output = self.serial_port.readline()
+                    """
+                    if closing the window, the serial port was closed and it may have garbage, ignore it
+                    """
+                    if self.close_clicked:
+                        return
+                    output = output.decode().strip()
                     self.update_textbox(output)
             except OSError as e:
                 if not self.close_clicked:
