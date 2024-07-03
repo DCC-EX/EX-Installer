@@ -655,7 +655,7 @@ class ManageArduinoCLI(WindowLayout):
                     version = library_details["version"]
                     break
             self._install_single_library(library_name, version)
-        elif self.process_status == "success":
+        elif self.process_status == "success" or (self.process_status == "start" and install_count == 0):
             self.process_status = "start"
             self._refresh_boards()
         else:
