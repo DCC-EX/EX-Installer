@@ -333,7 +333,7 @@ class ManageArduinoCLI(WindowLayout):
                         # Output changed in CLI 1.0.1 so must check both installed and installed_version
                         if "installed" in installed_platform:
                             installed_version = installed_platform["installed"]
-                        elif "installed_version":
+                        elif "installed_version" in installed_platform:
                             installed_version = installed_platform["installed_version"]
                         else:
                             self.log.error(f"Arduino CLI output unknown:\n{installed_platform}")
