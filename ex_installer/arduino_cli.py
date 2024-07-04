@@ -238,6 +238,9 @@ class ArduinoCLI:
             "url": "<url>"
         }
     }
+
+    - ESP32 locked to 2.0.17 as 3.x causes compile errors for EX-CommandStation
+    - STM32 locked to 2.7.1 because 2.8.0 introduces new output that needs logic to deal with
     """
     extra_platforms = {
         "Espressif ESP32": {
@@ -247,7 +250,7 @@ class ArduinoCLI:
         },
         "STMicroelectronics Nucleo/STM32": {
             "platform_id": "STMicroelectronics:stm32",
-            "version": "2.8.0",
+            "version": "2.7.1",
             "url": "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
         }
     }
