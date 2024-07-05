@@ -234,6 +234,7 @@ class SelectDevice(WindowLayout):
                             text += " on " + self.acli.detected_devices[index]["port"]
                             self.log.debug("%s on %s", self.acli.detected_devices[index]["matching_boards"][0]["name"],
                                            self.acli.detected_devices[index]["port"])
+                            self.select_device()
                         radio_button = ctk.CTkRadioButton(self.device_list_frame, text=text,
                                                           variable=self.selected_device, value=index,
                                                           command=self.select_device)

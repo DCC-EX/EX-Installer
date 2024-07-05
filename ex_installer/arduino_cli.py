@@ -35,6 +35,7 @@ from threading import Thread, Lock
 from collections import namedtuple
 import logging
 from datetime import datetime, timedelta
+import shutil
 
 from .file_manager import ThreadedDownloader, ThreadedExtractor
 
@@ -184,13 +185,14 @@ class ArduinoCLI:
     - get_platforms() - gets the list of installed platforms
     - download_cli() - downloads the appropriate CLI for the operating system, returns the file path
     - install_cli() - extracts the CLI to the specified file path from download file path
+    - delete_cli() - deletes the CLI, returns True|False
     - initialise_config() - adds additional URLs to the CLI config
     - update_index() - performs the core update-index and initial board list
-    - get_package_list() - gets the list of platform packages to install
     - install_package() - installs the provided packages
     - upgrade_platforms() - performs the core upgrade to ensure all are up to date
     - list_boards() - lists all connected boards, returns list of dictionaries for boards
-    - upload_sketch() - compiles and uploads the provided sketch to the provided device
+    - compile_sketch() - compiles the sketch in the provided directory ready for upload
+    - upload_sketch() - uploads the sketch in the provided directory to the provided device
     """
 
     # Dictionary of Arduino CLI archives for the appropriate platform
@@ -202,6 +204,11 @@ class ArduinoCLI:
         "Windows32": urlbase + "Windows_32bit.zip",
         "Windows64": urlbase + "Windows_64bit.zip"
     }
+
+    """
+    Expose the currently supported version of the Arduino CLI to use.
+    """
+    arduino_cli_version = "0.35.3"
 
     """
     Dictionary for the base board/platform support for the Arduino CLI.
@@ -456,6 +463,22 @@ class ArduinoCLI:
         extract = ThreadedExtractor(download_file, cli_directory, queue)
         extract.start()
 
+    def delete_cli(self):
+        """
+        Deletes all files in the provided directory.
+
+        This is required to remove an unsupported version of the Arduino CLI.
+        """
+        _result = False
+        cli_directory = os.path.dirname(self.cli_file_path())
+        if os.path.isdir(cli_directory):
+            try:
+                shutil.rmtree(cli_directory)
+                _result = True
+            except Exception as e:
+                self.log.error(f"Unable to delete {cli_directory}: {e}")
+        return _result
+
     def initialise_config(self, file_path, queue):
         """
         Initialises the Arduino CLI configuration with the provided additional boards.
@@ -477,14 +500,6 @@ class ArduinoCLI:
         Update the Arduino CLI core index
         """
         params = ["core", "update-index", "--format", "jsonmini"]
-        acli = ThreadedArduinoCLI(file_path, params, queue)
-        acli.start()
-
-    def get_package_list(self, file_path, queue):
-        """
-        Get list of Arduino packages to install
-        """
-        params = ["core", "list", "--format", "jsonmini"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
 

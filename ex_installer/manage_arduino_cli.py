@@ -103,15 +103,15 @@ class ManageArduinoCLI(WindowLayout):
         Set "state" to "not_installed" for all so the default action will be to install the correct version.
         """
         self.packages_to_install = {}
-        for platform, package_details in self.acli.base_platforms.items():
-            self.packages_to_install[platform] = {
+        for platform_package, package_details in self.acli.base_platforms.items():
+            self.packages_to_install[platform_package] = {
                 "platform_id": package_details["platform_id"],
                 "version": package_details["version"],
                 "selection": "on",
                 "state": "not_installed"
             }
-        for platform, package_details in self.acli.extra_platforms.items():
-            self.packages_to_install[platform] = {
+        for platform_package, package_details in self.acli.extra_platforms.items():
+            self.packages_to_install[platform_package] = {
                 "platform_id": package_details["platform_id"],
                 "version": package_details["version"],
                 "selection": "off",
@@ -187,13 +187,14 @@ class ManageArduinoCLI(WindowLayout):
         To add additional supported platforms, these must be added to the extra_platforms dictionary in the arduino_cli
         module.
         """
-        for index, platform in enumerate(self.acli.extra_platforms):
-            platform_tip = (f"Support for {platform} devices is not included with the Arduino CLI by default. " +
-                            "In order to be able to load any of our software on to these devices, you must " +
+        for index, platform_package in enumerate(self.acli.extra_platforms):
+            platform_tip = (f"Support for {platform_package} devices is not included with the Arduino CLI by " +
+                            "default. In order to be able to load any of our software on to these devices, you must " +
                             "enable this option.")
             self.extra_platforms_frame.grid_rowconfigure(index+1, weight=1)
             switch_var = ctk.StringVar(value="off")
-            switch = ctk.CTkSwitch(self.extra_platforms_frame, variable=switch_var, text=platform, **switch_options)
+            switch = ctk.CTkSwitch(self.extra_platforms_frame, variable=switch_var, text=platform_package,
+                                   **switch_options)
             switch.configure(command=lambda object=switch: self.update_package_list(object))
             CreateToolTip(switch, platform_tip)
             switch.grid(column=0, row=index+1, sticky="w", **grid_options)
@@ -260,6 +261,8 @@ class ManageArduinoCLI(WindowLayout):
             match self.process_phase:
                 case "check_arduino_cli":
                     self._check_cli_version()
+                case "delete_arduino_cli":
+                    self._delete_cli()
                 case "get_platforms":
                     self._get_installed_platforms()
                 case "get_libraries":
@@ -283,14 +286,39 @@ class ManageArduinoCLI(WindowLayout):
             self.acli.get_version(self.acli.cli_file_path(), self.queue)
         elif self.process_status == "success":
             if "VersionString" in self.process_data:
-                text = self.cli_state_label.cget("text") + f" (version {self.process_data['VersionString']})"
-                self.cli_state_label.configure(text=text)
-            self.process_status = "start"
-            self._get_installed_platforms()
+                if self.process_data["VersionString"] == self.acli.arduino_cli_version:
+                    text = self.cli_state_label.cget("text") + f" (version {self.process_data['VersionString']})"
+                    self.cli_state_label.configure(text=text)
+                    self.process_status = "start"
+                    self._get_installed_platforms()
+                else:
+                    text = f"Unsupported Arduino CLI version found ({self.process_data['VersionString']})"
+                    self.cli_state_label.configure(text=text,
+                                                   text_color="#FF5C00",
+                                                   font=self.bold_instruction_font)
+                    self.manage_cli_button.configure(text="Install Arduino CLI", command=self._delete_cli)
+                    self.process_stop()
+                    self.next_back.disable_next()
         elif self.process_status == "error":
             self.process_error("Failed to check if the Arduino CLI is installed")
         else:
             self.process_error("An unknown error occurred")
+
+    def _delete_cli(self):
+        """
+        Method to delete an unsupported version of the CLI if detected.
+
+        To enforce users only using the correct version of the CLI, old or newer versions must be deleted.
+
+        If successful, this must trigger the install process.
+
+        If unsuccessful, we must tell the users to close everything and try again, otherwise delete manually.
+        """
+        self.log.debug(f"_delete_cli() {self.process_status}")
+        if self.acli.delete_cli():
+            self._generate_install_cli()
+        else:
+            self.process_error("Could not remove the unsupported Arduino CLI version, click Show Log for details")
 
     def _get_installed_platforms(self):
         """
