@@ -12,7 +12,7 @@ ex_installer_version = "0.0.19"
 """
 Version history:
 
-0.0.19      - Version updates, requests==2.32.2, aiohttp==3.9.4, idna==3.7, Pillow==10.3.0
+0.0.19      - Numerous Python module updates to resolve security issues and a GUI bug on macOS
             - Adjust Arduino platform installation process
             - Enforce specific versions of CLI (0.35.3), AVR (1.8.6), ESP32 (2.0.17), and STM32 (2.7.1)
             - Enforce specific version of Ethernet (2.0.2)
