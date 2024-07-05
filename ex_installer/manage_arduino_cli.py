@@ -426,8 +426,13 @@ class ManageArduinoCLI(WindowLayout):
                     version = library_details["version"]
                     state = "not_installed"
                     for installed_library in self.process_data:
-                        library_name = installed_library["library"]["name"]
-                        library_version = installed_library["library"]["version"]
+                        # Not all libs report name/version correctly, so validate first
+                        library_name = ""
+                        if "name" in installed_library["library"]:
+                            library_name = installed_library["library"]["name"]
+                        library_version = ""
+                        if "version" in installed_library["library"]:
+                            library_version = installed_library["library"]["version"]
                         if library_name == library and library_version == version:
                             state = "installed"
                     self.libraries_to_install[library]["state"] = state
