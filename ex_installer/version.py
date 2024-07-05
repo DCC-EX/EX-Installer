@@ -12,7 +12,9 @@ ex_installer_version = "0.0.19"
 """
 Version history:
 
-0.0.19      - Numerous Python module updates to resolve security issues and a GUI bug on macOS
+0.0.19      - NOTE: Support for Windows 32bit is deprecated in this release
+            - Building STM32 platforms on Windows 32bit is no longer possible
+            - Numerous Python module updates to resolve security issues and a GUI bug on macOS
             - Adjust Arduino platform installation process
             - Enforce specific versions of CLI (0.35.3), AVR (1.8.6), ESP32 (2.0.17), and STM32 (2.7.1)
             - Enforce specific version of Ethernet (2.0.2)
