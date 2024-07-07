@@ -1,6 +1,7 @@
 """
 Main application controller
 
+© 2024, Peter Cole.
 © 2023, Peter Cole.
 © 2023, Harald Barth.
 All rights reserved.
@@ -33,9 +34,13 @@ from ex_installer.ex_installer import EXInstaller
 from ex_installer.file_manager import FileManager as fm
 
 
-def main(debug):
+def main(debug, fake):
     """
-    Main function to start the application
+    Main method to start the application.
+
+    Arguments:
+        debug (boolean) - Accept command line option -D|--debug to enable debug logging
+        fake (boolean) - Accept command line option -F|--fake to enable a fake Arduino USB device for testing/demo
     """
 
     # Set up logger
@@ -91,6 +96,8 @@ def main(debug):
             customtkinter.set_window_scaling(scaling)
     # switch to first view _after_ the scaling because of a bug in Linux that would unhide all hidden buttons
     app.switch_view("welcome")
+    if fake is True:
+        app.enable_fake_device()
     app.mainloop()
     _log.debug("EX-Installer closed")
 
@@ -99,6 +106,7 @@ if __name__ == "__main__":
     # Setup command line parser with debug argument
     parser = argparse.ArgumentParser()
     parser.add_argument("-D", "--debug", action="store_true", help="Set debug log level")
+    parser.add_argument("-F", "--fake", action="store_true", help="Enable fake Arduino device for demo purposes")
 
     # Read arguments
     args = parser.parse_args()
@@ -109,5 +117,11 @@ if __name__ == "__main__":
     else:
         debug = False
 
+    # If fake supplied, pass it also
+    if args.fake:
+        fake = True
+    else:
+        fake = False
+
     # Start the app
-    main(debug)
+    main(debug, fake)

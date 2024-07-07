@@ -7,11 +7,30 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.18"
+ex_installer_version = "0.0.19"
 
 """
 Version history:
 
+0.0.19      - NOTE: Support for Windows 32bit is deprecated in this release
+            - Building STM32 platforms on Windows 32bit is no longer possible
+            - Numerous Python module updates to resolve security issues and a GUI bug on macOS
+            - Adjust Arduino platform installation process
+            - Enforce specific versions of CLI (0.35.3), AVR (1.8.6), ESP32 (2.0.17), and STM32 (2.7.1)
+            - Enforce specific version of Ethernet (2.0.2)
+            - Enable fake Arduino to be selected for demo purposes using -F|--fake command line argument
+            - Fix debug command line argument to update menu selection
+            - Ensure the details pane on the Load screen auto scrolls to the bottom
+            - Optimise myAutomation.h for Track Manager and/or auto track power on to use single sequence
+            - Add user preferences file to store user settings, starting with screen scaling only
+            - Update EX-CommandStation defaults for ESP32 to force enable WiFi and prevent disabling
+            - Add 132 x 64 OLED
+            - Add support for new DCC-EX EX-CSB1 - restricts motor driver selection
+            - Fix bug where a blank myAutomation.h file cannot be disabled after being enabled
+            - Add ability to install the very latest devel branch by selecting v9.9.9-Devel
+            - Refactor the manage_cli() method of the manage_arduino_cli module to make it more maintainable
+            - Updates to work with Arduino CLI 1.0.x as the board list output has changed
+            - Revise platform and library management logic to ensure required versions only are installed
 0.0.18      - Update EX-Turntable configuration options to suit changes in 0.7.0
             - Dependabot update for cryptography to 42.0.4
             - Add link to DCC-EX News articles about EX-Installer to the Info menu

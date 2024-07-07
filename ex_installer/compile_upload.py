@@ -1,7 +1,9 @@
 """
 Module for the Compile and Upload page view
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 
@@ -156,7 +158,6 @@ class CompileUpload(WindowLayout):
         fqbn = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"]
         port = self.acli.detected_devices[self.acli.selected_device]["port"]
         if event == "upload_software":
-            self.disable_input_states(self)
             self.set_details("")
             self.process_start("compiling",
                                f"Compiling {pd[self.product]['product_name']} for your {device}",
@@ -165,14 +166,21 @@ class CompileUpload(WindowLayout):
         elif self.process_phase == "compiling":
             if self.process_status == "success":
                 self.set_details(self.process_data)
-                self.process_start("uploading",
-                                   f"Loading {pd[self.product]['product_name']} on to your {device}",
-                                   "Upload_Software")
-                self.acli.upload_sketch(self.acli.cli_file_path(), fqbn, port, self.install_dir, self.queue)
+                if self.parent.fake is True:
+                    self.process_phase = "uploading"
+                    self.process_status = "success"
+                    self.process_start("uploading",
+                                       f"Loading {pd[self.product]['product_name']} on to your {device}",
+                                       "Upload_Software")
+                    self.upload_software("Upload_Software")
+                else:
+                    self.process_start("uploading",
+                                       f"Loading {pd[self.product]['product_name']} on to your {device}",
+                                       "Upload_Software")
+                    self.acli.upload_sketch(self.acli.cli_file_path(), fqbn, port, self.install_dir, self.queue)
             elif self.process_status == "error":
                 self.set_details(self.process_data)
                 self.process_error(self.process_topic)
-                self.restore_input_states()
                 self.next_back.hide_monitor_button()
                 self.next_back.show_next()
                 self.next_back.show_log_button()
@@ -180,14 +188,12 @@ class CompileUpload(WindowLayout):
         elif self.process_phase == "uploading":
             if self.process_status == "success":
                 self.process_stop()
-                self.restore_input_states()
                 self.set_details(self.process_data)
                 self.upload_success()
                 self.next_back.hide_log_button()
                 self.next_back.show_monitor_button()
             elif self.process_status == "error":
                 self.process_error(self.process_topic)
-                self.restore_input_states()
                 self.set_details(self.process_data)
                 self.upload_error()
                 self.next_back.hide_monitor_button()
@@ -228,6 +234,8 @@ class CompileUpload(WindowLayout):
         self.details_textbox.configure(state="normal")
         self.details_textbox.delete("0.0", "end")
         self.details_textbox.insert("0.0", text)
+        self.details_textbox.see("end")
+        self.details_textbox.update_idletasks()
         self.details_textbox.configure(state="disabled")
 
     def show_backup_popup(self):

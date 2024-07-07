@@ -8,13 +8,17 @@ Binaries will be made available to allow EX-Installer to be run on:
 - Linux graphical environments
 - macOS
 
-It is possible that it will also be able to run on Raspberry Pi.
-
 ## What's in this repository?
 
 This repository includes all source code of EX-Installer, along with related documentation and screen captures of the initial design ideas.
 
 The binaries are kept in the /dist directory of the repository, and will also be hosted on the [DCC-EX website](https://dcc-ex.com).
+
+### EX-Installer-Configs repository
+
+In addition to this EX-Installer repository, there is a separate repository [EX-Installer-Configs](https://github.com/DCC-EX/EX-Installer-Configs) which contains various configuration information that EX-Installer relies on.
+
+This enables product and device configuration information to be updated without necessarily needing to build a new release of EX-Installer binaries.
 
 ## Operating principles and modules
 
@@ -44,8 +48,6 @@ Initially, EX-Installer will be focused on basic configuration and installation 
 Once stable, it will be expanded to be able to configure and install all of our Arduino based products including:
 
 - EX-CommandStation
-- EX-DCCInspector
-- EX-FastClock
 - EX-IOExpander
 - EX-Turntable
 

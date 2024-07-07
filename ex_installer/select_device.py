@@ -1,7 +1,9 @@
 """
 Module for the Select Device page view
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 
@@ -23,6 +25,7 @@ along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 import customtkinter as ctk
 import logging
 import serial.tools.list_ports
+import platform
 
 # Import local modules
 from .common_widgets import WindowLayout, CreateToolTip
@@ -154,11 +157,23 @@ class SelectDevice(WindowLayout):
             self.acli.selected_device = None
             for widget in self.device_list_frame.winfo_children():
                 widget.destroy()
-            self.disable_input_states(self)
             self.process_start("refresh_list", "Scanning for attached devices", "List_Devices")
             self.acli.list_boards(self.acli.cli_file_path(), self.queue)
         elif self.process_phase == "refresh_list":
             if self.process_status == "success":
+                # Arduino CLI 1.0.0 adds the list as a value to a dict, need to reset that to just a list
+                if len(self.process_data) > 0 and "detected_ports" in self.process_data:
+                    if isinstance(self.process_data["detected_ports"], list):
+                        self.process_data = self.process_data["detected_ports"]
+                # If no boards found, but fake enabled, add a dummy discovered port
+                elif len(self.process_data) == 0 and self.parent.fake is True:
+                    if platform.system() == "Windows":
+                        fake_port = "COM10"
+                    else:
+                        fake_port = "/dev/ttyUSB10"
+                    fake_data = [{'port': {'address': fake_port, 'label': fake_port, 'protocol': 'serial',
+                                  'protocol_label': 'Serial Port (USB)'}}]
+                    self.process_data = fake_data
                 if isinstance(self.process_data, list) and len(self.process_data) > 0:
                     supported_boards = []
                     for board in self.acli.supported_devices:
@@ -219,6 +234,7 @@ class SelectDevice(WindowLayout):
                             text += " on " + self.acli.detected_devices[index]["port"]
                             self.log.debug("%s on %s", self.acli.detected_devices[index]["matching_boards"][0]["name"],
                                            self.acli.detected_devices[index]["port"])
+                            self.select_device()
                         radio_button = ctk.CTkRadioButton(self.device_list_frame, text=text,
                                                           variable=self.selected_device, value=index,
                                                           command=self.select_device)
@@ -229,13 +245,18 @@ class SelectDevice(WindowLayout):
                     self.no_device_label.configure(text="No devices found")
                 self.set_state()
                 self.process_stop()
-                self.restore_input_states()
             elif self.process_status == "error":
                 self.process_error(self.process_topic)
-                self.restore_input_states()
 
     def update_board(self, name, index):
         if name != "Select the correct device":
+            if name.startswith("DCC-EX"):
+                if name in self.acli.dccex_devices:
+                    self.acli.dccex_device = self.acli.dccex_devices[name]
+                else:
+                    self.acli.dccex_device = None
+            else:
+                self.acli.dccex_device = None
             self.acli.detected_devices[index]["matching_boards"][0]["name"] = name
             self.acli.detected_devices[index]["matching_boards"][0]["fqbn"] = self.acli.supported_devices[name]
             self.selected_device.set(index)

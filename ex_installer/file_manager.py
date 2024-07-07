@@ -3,7 +3,9 @@ Module for file management
 
 Downloading, extracting
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 
@@ -33,6 +35,7 @@ from collections import namedtuple
 import re
 import shutil
 import logging
+import json
 
 
 QueueMessage = namedtuple("QueueMessage", ["status", "topic", "data"])
@@ -148,6 +151,10 @@ class FileManager:
     """
     # Set up logger
     log = logging.getLogger(__name__)
+
+    # User preferences directory and file name
+    user_preference_dir = "user-config"
+    user_preference_file = "ex-installer-preferences.json"
 
     def __init__(self):
         super().__init__()
@@ -384,3 +391,47 @@ class FileManager:
             return True
         else:
             return False
+
+    @staticmethod
+    def save_user_preferences(preferences):
+        """
+        Method to save user preferences to the user preference file
+
+        Call this method with the user preferences dictionary, which will save these
+        """
+        user_dir = os.path.join(FileManager.get_base_dir(), FileManager.user_preference_dir)
+        if not os.path.isdir(user_dir):
+            try:
+                os.mkdir(user_dir)
+            except Exception as dir_error:
+                FileManager.log.error(f"Could not create user preferences directory {user_dir}")
+                FileManager.log.error(dir_error)
+        if isinstance(preferences, dict):
+            user_file = os.path.join(FileManager.get_base_dir(), FileManager.user_preference_dir,
+                                     FileManager.user_preference_file)
+            try:
+                with open(user_file, "w") as file_handle:
+                    json.dump(preferences, file_handle)
+            except Exception as file_error:
+                FileManager.log.error(f"Unable to write to user preferences file {user_file}")
+                FileManager.log.error(preferences)
+                FileManager.log.error(file_error)
+
+    @staticmethod
+    def get_user_preferences():
+        """
+        Method to the dictionary of user preferences
+
+        Reads the JSON user preference file and returns the dictionary
+        """
+        preferences = {}
+        user_file = os.path.join(FileManager.get_base_dir(), FileManager.user_preference_dir,
+                                 FileManager.user_preference_file)
+        if os.path.isfile(user_file):
+            try:
+                with open(user_file, "r") as file_handle:
+                    preferences = json.load(file_handle)
+            except Exception as file_error:
+                FileManager.log.error(f"Unable to read user preferences from file {user_file}")
+                FileManager.log.error(file_error)
+        return preferences

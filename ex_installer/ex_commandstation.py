@@ -1,6 +1,7 @@
 """
 Module for the EX-CommandStation page view
 
+© 2024, Peter Cole. All rights reserved.
 © 2023, Peter Cole. All rights reserved.
 © 2023, M Steve Todd. All rights reserved.
 
@@ -46,7 +47,8 @@ class EXCommandStation(WindowLayout):
         "LCD 16 columns x 2 rows": "#define LCD_DRIVER 0x27,16,2\n",
         "LCD 20 columns x 4 rows": "#define LCD_DRIVER 0x27,20,4\n",
         "OLED 128 x 32": "#define OLED_DRIVER 128,32\n",
-        "OLED 128 x 64": "#define OLED_DRIVER 128,64\n"
+        "OLED 128 x 64": "#define OLED_DRIVER 128,64\n",
+        "OLED 132 x 64": "#define OLED_DRIVER 132,64\n"
     }
 
     # List of default config options to include in config.h
@@ -155,6 +157,7 @@ class EXCommandStation(WindowLayout):
         self.set_track_modes()
         self.current_override()
         self.check_selected_device()
+        self.get_motor_drivers()
 
     def setup_config_frame(self):
         """
@@ -476,12 +479,14 @@ class EXCommandStation(WindowLayout):
         """
         device = self.acli.selected_device
         device_fqbn = self.acli.detected_devices[device]["matching_boards"][0]["fqbn"]
+        # EEPROM disabled on ESP32 and Nucleo
         if device_fqbn.startswith("esp32") or device_fqbn.startswith("STMicroelectronics:stm32"):
             self.disable_eeprom_switch.select()
             self.disable_eeprom_switch.configure(state="disabled")
         else:
             self.disable_eeprom_switch.deselect()
             self.disable_eeprom_switch.configure(state="normal")
+        # Track Manager not supported on Uno/Nano, EEPROM default off and WiFi disabled
         if device_fqbn.startswith("arduino:avr:nano") or device_fqbn == "arduino:avr:uno":
             self.track_modes_switch.deselect()
             self.track_modes_switch.configure(state="disabled")
@@ -496,6 +501,16 @@ class EXCommandStation(WindowLayout):
             self.disable_prog_switch.deselect()
             self.low_mem_label.grid_remove()
             self.wifi_switch.deselect()
+            self.wifi_switch.configure(state="enabled")
+        # Enable WiFi by default for ESP32 and disable control
+        if device_fqbn.startswith("esp32") and not (device_fqbn.startswith("arduino:avr:nano") or
+                                                    device_fqbn == "arduino:avr:uno"):
+            if self.wifi_switch.get() == "off":
+                self.wifi_switch.toggle()
+            self.wifi_switch.configure(state="disabled")
+        elif not (device_fqbn.startswith("arduino:avr:nano") or device_fqbn == "arduino:avr:uno"):
+            if self.wifi_switch.get() == "on":
+                self.wifi_switch.toggle()
             self.wifi_switch.configure(state="enabled")
 
     def set_display(self):
@@ -635,7 +650,6 @@ class EXCommandStation(WindowLayout):
         self.set_wifi()
         self.set_track_modes()
         self.set_advanced_config()
-        self.get_motor_drivers()
         self.check_motor_driver(self.motor_driver_combo.get())
         self.next_back.set_next_text("Compile and load")
         self.next_back.set_next_command(self.create_config_files)
@@ -645,18 +659,54 @@ class EXCommandStation(WindowLayout):
 
     def get_motor_drivers(self):
         """
-        Function to read the defined motor driver definition from MotorDrivers.h
+        Method to read the defined motor driver definition from MotorDrivers.h and populate the pulldown options.
+
+        If a DCC-EX specific Arduino device is selected, this list will be limited to matching motor driver
+        definitions only, otherwise all DCC-EX specific definitions will be removed, presenting only generic
+        driver options to select.
         """
         self.motordriver_list = []
         match = r'^.+?\s(.+?)\sF\(".+?"\).*$'
         definition_file = fm.get_filepath(self.ex_commandstation_dir, "MotorDrivers.h")
         def_list = fm.get_list_from_file(definition_file, match)
         if def_list:
-            self.motordriver_list += def_list
-            self.log.debug("Found motor driver list %s", def_list)
+            if self.acli.dccex_device is not None:
+                driver_list = self.restrict_dccex_motor_drivers(def_list)
+            else:
+                driver_list = self.remove_all_dccex_motor_drivers(def_list)
+            self.motordriver_list += driver_list
+            self.log.debug("Found motor driver list %s", driver_list)
         else:
             self.log.error("Could not get list of motor drivers")
         self.motor_driver_combo.configure(values=self.motordriver_list)
+
+    def remove_all_dccex_motor_drivers(self, driver_list):
+        """
+        Method to remove all DCC-EX specific motor driver definitions from the provided list.
+
+        This provides an appropriate driver list for generic Arduino devices. Any driver definition starting with
+        a device name in the dccex_devices dictionary will be removed from the available list when selecting a
+        generic Arduino device.
+        """
+        restricted_list = []
+        for driver in driver_list:
+            add_driver = driver
+            for device in self.acli.dccex_devices:
+                if self.acli.dccex_devices[device].split("_")[0] == driver.split("_")[0]:
+                    add_driver = None
+            if add_driver is not None:
+                restricted_list.append(add_driver)
+        return restricted_list
+
+    def restrict_dccex_motor_drivers(self, driver_list):
+        """
+        Method to remove generic motor driver definitions from the provided list.
+
+        Utilises the class attribute dccex_device to limit the available selections. Only driver definitions
+        starting with the device name of a selected DCC-EX specific Arduino device will be available to select.
+        """
+        restricted_list = [driver for driver in driver_list if driver.split("_")[0] == self.acli.dccex_device]
+        return restricted_list
 
     def check_motor_driver(self, value):
         """
@@ -707,6 +757,29 @@ class EXCommandStation(WindowLayout):
             self.current_limit_label.grid_remove()
             self.current_limit_entry.grid_remove()
 
+    def delete_config_files(self):
+        """
+        Function to delete config files from product directory
+          needed on subsequent passes thru the logic
+        """
+        file_list = []
+        local_repo_dir = pd[self.product]["repo_name"].split("/")[1]
+        product_dir = fm.get_install_dir(local_repo_dir)
+        min_list = fm.get_config_files(product_dir, pd[self.product]["minimum_config_files"])
+        if min_list:
+            file_list += min_list
+        other_list = None
+        if "other_config_files" in pd[self.product]:
+            other_list = fm.get_config_files(product_dir, pd[self.product]["other_config_files"])
+        if other_list:
+            file_list += other_list
+        self.log.debug("Deleting files: %s", file_list)
+        error_list = fm.delete_config_files(product_dir, file_list)
+        if error_list:
+            file_list = ", ".join(error_list)
+            self.process_error(f"Failed to delete one or more files: {file_list}")
+            self.log.error("Failed to delete: %s", file_list)
+
     def generate_config(self):
         """
         Function to validate options and return any errors
@@ -715,6 +788,7 @@ class EXCommandStation(WindowLayout):
 
         Returns a tuple of (True|False, error_list|config_list)
         """
+        self.delete_config_files()
         param_errors = []
         config_list = []
         if self.motor_driver_combo.get() == "Select motor driver":
@@ -792,12 +866,15 @@ class EXCommandStation(WindowLayout):
         """
         param_errors = []
         config_list = []
+        roster_lines = []
+
+        # Single AUTOSTART if either option enabled
+        if self.power_on_switch.get() == "on" or self.track_modes_enabled.get() == "on":
+            config_list.append("AUTOSTART\n")
 
         # Enable join on startup if enabled
         if self.power_on_switch.get() == "on":
-            config_list.append("AUTOSTART\n")
             config_list.append("POWERON\n")
-            config_list.append("DONE\n\n")
 
         # write out trackmanager config, including roster entries if DCx
         if self.track_modes_enabled.get() == "on":
@@ -816,19 +893,22 @@ class EXCommandStation(WindowLayout):
                 if int(self.track_b_id.get()) < 1 or int(self.track_b_id.get()) > 10293:
                     param_errors.append("Track B loco/cab ID must be from 1 to 10293")
             if (self.track_a_combo.get().startswith("DC")):
-                line = (f"AUTOSTART SETLOCO({self.track_a_id.get()}) SET_TRACK(A," + self.track_a_combo.get() + ") " +
-                        "DONE\n")
-                line += f"ROSTER({self.track_a_id.get()},\"DC TRACK A\",\"/* /\")\n"
+                line = (f"SETLOCO({self.track_a_id.get()}) SET_TRACK(A," + self.track_a_combo.get() + ")\n")
+                roster_lines.append(f"ROSTER({self.track_a_id.get()},\"DC TRACK A\",\"/* /\")\n")
             else:
-                line = "AUTOSTART SET_TRACK(A," + self.track_a_combo.get() + ") DONE\n"
+                line = "SET_TRACK(A," + self.track_a_combo.get() + ")\n"
             config_list.append(line)
             if (self.track_b_combo.get().startswith("DC")):
-                line = (f"AUTOSTART SETLOCO({self.track_b_id.get()}) SET_TRACK(B," + self.track_b_combo.get() + ") " +
-                        "DONE\n")
-                line += f"ROSTER({self.track_b_id.get()},\"DC TRACK B\",\"/* /\")\n"
+                line = (f"SETLOCO({self.track_b_id.get()}) SET_TRACK(B," + self.track_b_combo.get() + ")\n")
+                roster_lines.append(f"ROSTER({self.track_b_id.get()},\"DC TRACK B\",\"/* /\")\n")
             else:
-                line = "AUTOSTART SET_TRACK(B," + self.track_b_combo.get() + ") DONE\n"
+                line = "SET_TRACK(B," + self.track_b_combo.get() + ")\n"
             config_list.append(line)
+        # Single AUTOSTART if either option enabled
+        if self.power_on_switch.get() == "on" or self.track_modes_enabled.get() == "on":
+            config_list.append("DONE\n\n")
+        if self.track_modes_enabled.get() == "on" and len(roster_lines) > 0:
+            config_list += roster_lines
 
         if len(param_errors) > 0:
             self.log.error("Missing parameters: %s", param_errors)

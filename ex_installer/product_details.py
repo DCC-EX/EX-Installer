@@ -1,7 +1,9 @@
 """
 Module containing details for each product able to be installed with EX-Installer
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 
@@ -42,9 +44,6 @@ product_details = {
         "other_config_files": [
             r"^my.*\.[^?]*example\.cpp$|(^my.*\.cpp$)",
             r"^my.*\.[^?]*example\.h$|(^my.*\.h$)"
-        ],
-        "arduino_libraries": [
-            "Ethernet"
         ]
     },
     "ex_ioexpander": {

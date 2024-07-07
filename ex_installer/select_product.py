@@ -1,7 +1,9 @@
 """
 Module for the Select Product page view
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 
@@ -118,13 +120,18 @@ class SelectProduct(WindowLayout):
         self.ex_commandstation_button.grid(column=0, row=1, columnspan=2, padx=10, pady=10)
         self.ex_ioexpander_button.grid(column=0, row=2, **grid_options)
         self.ex_turntable_button.grid(column=1, row=2, **grid_options)
-        self.ex_dccinspector_button.grid(column=0, row=3, **grid_options)
-        self.ex_fastclock_button.grid(column=1, row=3, **grid_options)
+
+        # Disable these for the moment as it's misleading that they're "coming soon"
+        # self.ex_dccinspector_button.grid(column=0, row=3, **grid_options)
+        # self.ex_fastclock_button.grid(column=1, row=3, **grid_options)
 
         # Hide log button to start
         self.next_back.hide_log_button()
 
     def check_product_device(self, product):
+        """
+        Method to validate the selected device is compatible with the selected product.
+        """
         device_fqbn = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["fqbn"]
         device_name = self.acli.detected_devices[self.acli.selected_device]["matching_boards"][0]["name"]
         product_name = pd[product]["product_name"]

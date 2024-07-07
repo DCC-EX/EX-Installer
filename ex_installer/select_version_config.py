@@ -2,6 +2,25 @@
 Module for selecting the version of the software being installed
 
 Also will allow for selecting a directory containing existing config files
+
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
+
+This file is part of EX-Installer.
+
+This is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+It is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with CommandStation.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 # Import Python modules
@@ -164,7 +183,6 @@ class SelectVersionConfig(WindowLayout):
         """
         if event == "setup_local_repo":
             self.log.debug("Setting up local repository")
-            self.disable_input_states(self)
             self.delete_config_files()
             if os.path.exists(self.product_dir) and os.path.isdir(self.product_dir):
                 if self.git.dir_is_git_repo(self.product_dir):
@@ -173,20 +191,17 @@ class SelectVersionConfig(WindowLayout):
                         changes = self.git.check_local_changes(self.repo)
                         if changes:
                             self.process_error("Local changes have been detected that require resolution")
-                            self.restore_input_states()
                             self.log.error("Local repository file changes: %s", changes)
                             self.resolve_local_changes(changes)
                         else:
                             self.setup_local_repo("get_latest")
                     else:
                         self.process_error(f"{self.product_dir} appears to be a Git repository but is not")
-                        self.restore_input_states()
                 else:
                     if fm.dir_is_empty(self.product_dir):
                         self.setup_local_repo("clone_repo")
                     else:
                         self.process_error(f"{self.product_dir} contains files but is not a repo")
-                        self.restore_input_states()
             else:
                 self.log.debug("Cloning repository")
                 self.setup_local_repo("clone_repo")
@@ -203,24 +218,20 @@ class SelectVersionConfig(WindowLayout):
                 except Exception as error:
                     message = self.get_exception(error)
                     self.process_error(message)
-                    self.restore_input_states()
                     self.log.error(message)
                 else:
                     self.process_start("pull_latest", "Get latest software updates", "Setup_Local_Repo")
                     self.git.pull_latest(self.repo, self.branch_name, self.queue)
             elif self.process_status == "error":
                 self.process_error(self.process_data)
-                self.restore_input_states()
                 self.log.error(self.process_data)
         elif self.process_phase == "pull_latest":
             if self.process_status == "success":
                 self.set_versions(self.repo)
                 self.process_stop()
-                self.restore_input_states()
                 self.set_next_config()
             elif self.process_status == "error":
                 self.process_error("Could not pull latest updates from GitHub")
-                self.restore_input_states()
                 self.log.error("Could not pull updates from GitHub")
 
     def set_versions(self, repo):
@@ -241,6 +252,8 @@ class SelectVersionConfig(WindowLayout):
         else:
             self.latest_devel_radio.grid_remove()
         self.version_list = self.git.get_repo_versions(self.repo)
+        self.version_list.update({'v9.9.9-Devel devel branch':
+                                  {'major': 9, 'minor': 9, 'patch': 9, 'type': 'Devel', 'ref': 'origin/devel'}})
         if self.version_list:
             version_select = list(self.version_list.keys())
             self.select_version_combo.configure(values=version_select)
@@ -260,7 +273,13 @@ class SelectVersionConfig(WindowLayout):
             self.set_next_config()
         elif self.select_version.get() == 2:
             if self.select_version_combo.get() != "Select a version":
-                self.repo.checkout(refname=self.version_list[self.select_version_combo.get()]["ref"])
+                # self.repo.checkout(refname=self.version_list[self.select_version_combo.get()]["ref"])
+                rname = self.version_list[self.select_version_combo.get()]["ref"]
+                try:
+                    self.repo.checkout(refname=rname)
+                except Exception:
+                    _, ref = self. repo.resolve_refish(refish=rname)
+                    self.repo.checkout(refname=ref)
                 self.log.debug("Version selected: %s", self.version_list[self.select_version_combo.get()]["ref"])
                 self.set_next_config()
             else:

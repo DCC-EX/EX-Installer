@@ -5,7 +5,9 @@ This model can be used to download, install, configure, and update the Arduino C
 
 This module uses threads and queues
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 
@@ -33,6 +35,7 @@ from threading import Thread, Lock
 from collections import namedtuple
 import logging
 from datetime import datetime, timedelta
+import shutil
 
 from .file_manager import ThreadedDownloader, ThreadedExtractor
 
@@ -164,6 +167,7 @@ class ThreadedArduinoCLI(Thread):
                 else:
                     status = "error"
                     self.log.error(data)
+                self.log.debug(f"Thread output, status: {status}\ntopic: {topic}\ndata: {data}\nparams: {self.params}")
                 self.queue.put(
                     QueueMessage(status, topic, data)
                 )
@@ -181,44 +185,121 @@ class ArduinoCLI:
     - get_platforms() - gets the list of installed platforms
     - download_cli() - downloads the appropriate CLI for the operating system, returns the file path
     - install_cli() - extracts the CLI to the specified file path from download file path
+    - delete_cli() - deletes the CLI, returns True|False
     - initialise_config() - adds additional URLs to the CLI config
     - update_index() - performs the core update-index and initial board list
-    - get_package_list() - gets the list of platform packages to install
     - install_package() - installs the provided packages
     - upgrade_platforms() - performs the core upgrade to ensure all are up to date
     - list_boards() - lists all connected boards, returns list of dictionaries for boards
-    - upload_sketch() - compiles and uploads the provided sketch to the provided device
+    - compile_sketch() - compiles the sketch in the provided directory ready for upload
+    - upload_sketch() - uploads the sketch in the provided directory to the provided device
     """
 
     # Dictionary of Arduino CLI archives for the appropriate platform
+    # Currently force usage of 0.35.3 due to changes in 1.0.x output that have not been fully tested yet.
+    urlbase = "https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_"
     arduino_downloads = {
-        "Linux32": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_32bit.tar.gz",
-        "Linux64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_64bit.tar.gz",
-        "Darwin64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_macOS_64bit.tar.gz",
-        "Windows32": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_32bit.zip",
-        "Windows64": "https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip"
+        "Linux64":   urlbase + "Linux_64bit.tar.gz",
+        "Darwin64":  urlbase + "macOS_64bit.tar.gz",
+        "Windows32": urlbase + "Windows_32bit.zip",
+        "Windows64": urlbase + "Windows_64bit.zip"
     }
 
-    # Dictionary for additional board/platform support for the Arduino CLI
+    """
+    Expose the currently supported version of the Arduino CLI to use.
+    """
+    arduino_cli_version = "0.35.3"
+
+    """
+    Dictionary for the base board/platform support for the Arduino CLI.
+
+    This should really just be Arduino AVR, and must specify the version.
+
+    Note this used to be defined in the manage_arduino_cli module but is now centralised here.
+
+    This format is consistent with extra_platforms, but without the URL.
+
+    base_platforms = {
+        "Platform Name": {
+            "platform_id": "<packager>:<arch>",
+            "version": "<version>"
+        }
+    }
+    """
+    base_platforms = {
+        "Arduino AVR": {
+            "platform_id": "arduino:avr",
+            "version": "1.8.6"
+        }
+    }
+
+    """
+    Dictionary for additional board/platform support for the Arduino CLI.
+
+    These must be tied to a specific version to avoid future unknown issues:
+
+    extra_platforms = {
+        "Platform Name": {
+            "platform_id": "<packager>:<arch>",
+            "version": "<version>",
+            "url": "<url>"
+        }
+    }
+
+    - ESP32 locked to 2.0.17 as 3.x causes compile errors for EX-CommandStation
+    - STM32 locked to 2.7.1 because 2.8.0 introduces new output that needs logic to deal with
+    """
     extra_platforms = {
         "Espressif ESP32": {
             "platform_id": "esp32:esp32",
+            "version": "2.0.17",
             "url": "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
         },
         "STMicroelectronics Nucleo/STM32": {
             "platform_id": "STMicroelectronics:stm32",
+            "version": "2.7.1",
             "url": "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
         }
     }
 
-    # Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices
+    """
+    Dictionary of required Arduino libraries to be installed.
+
+    These must be tied to a specific version to avoid future unknown issues:
+
+    arduino_libraries = {
+        "<library name>": "<version>"
+    }
+
+    Note that these were previously an attribute of a product in the product_details module but are now here.
+    """
+    arduino_libraries = {
+        "Ethernet": "2.0.2"
+    }
+
+    """
+    Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices.
+    """
     supported_devices = {
         "Arduino Mega or Mega 2560": "arduino:avr:mega",
         "Arduino Uno": "arduino:avr:uno",
         "Arduino Nano": "arduino:avr:nano",
+        "DCC-EX EX-CSB1": "esp32:esp32:esp32",
         "ESP32 Dev Kit": "esp32:esp32:esp32",
         "STMicroelectronics Nucleo F411RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
         "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
+    }
+
+    """
+    Dictionary of DCC-EX specific devices, used to preselect or exclude motor driver definitions.
+
+    While this isn't ideal, it makes it easier with the current implementation to control what users can and
+    can't select for motor drivers.
+
+    Future additions must start with "DCC-EX" in order to be used for this purpose.
+    """
+    dccex_devices = {
+        "DCC-EX EX-CSB1": "EXCSB1"
     }
 
     def __init__(self, selected_device=None):
@@ -229,6 +310,7 @@ class ArduinoCLI:
         """
         self.selected_device = selected_device
         self.detected_devices = []
+        self.dccex_device = None
 
         # Set up logger
         self.log = logging.getLogger(__name__)
@@ -314,6 +396,22 @@ class ArduinoCLI:
             )
             self.log.debug("Arduino CLI not installed")
 
+    def get_libraries(self, file_path, queue):
+        """
+        Function to retrieve the current libraries installed with the Arduino CLI
+
+        If successful, the list will be in the queue's "data" field
+        """
+        if self.is_installed(file_path):
+            params = ["lib", "list", "--format", "jsonmini"]
+            acli = ThreadedArduinoCLI(file_path, params, queue)
+            acli.start()
+        else:
+            queue.put(
+                QueueMessage("error", "Arduino CLI is not installed", "Arduino CLI is not installed")
+            )
+            self.log.debug("Arduino CLI not installed")
+
     def download_cli(self, queue):
         """
         Download the Arduino CLI
@@ -365,11 +463,27 @@ class ArduinoCLI:
         extract = ThreadedExtractor(download_file, cli_directory, queue)
         extract.start()
 
+    def delete_cli(self):
+        """
+        Deletes all files in the provided directory.
+
+        This is required to remove an unsupported version of the Arduino CLI.
+        """
+        _result = False
+        cli_directory = os.path.dirname(self.cli_file_path())
+        if os.path.isdir(cli_directory):
+            try:
+                shutil.rmtree(cli_directory)
+                _result = True
+            except Exception as e:
+                self.log.error(f"Unable to delete {cli_directory}: {e}")
+        return _result
+
     def initialise_config(self, file_path, queue):
         """
-        Initialises the Arduino CLI configuration with the provided additional boards
+        Initialises the Arduino CLI configuration with the provided additional boards.
 
-        Overwrites existing configuration options
+        Overwrites existing configuration options.
         """
         params = ["config", "init", "--format", "jsonmini", "--overwrite"]
         if len(self.extra_platforms) > 0:
@@ -389,20 +503,12 @@ class ArduinoCLI:
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
 
-    def get_package_list(self, file_path, queue):
-        """
-        Get list of Arduino packages to install
-        """
-        params = ["core", "list", "--format", "jsonmini"]
-        acli = ThreadedArduinoCLI(file_path, params, queue)
-        acli.start()
-
     def install_package(self, file_path, package, queue):
         """
         Install packages for the listed Arduino platforms
         """
         params = ["core", "install", package, "--format", "jsonmini"]
-        acli = ThreadedArduinoCLI(file_path, params, queue)
+        acli = ThreadedArduinoCLI(file_path, params, queue, 600)
         acli.start()
 
     def upgrade_platforms(self, file_path, queue):
@@ -431,9 +537,11 @@ class ArduinoCLI:
 
     def upload_sketch(self, file_path, fqbn, port, sketch_dir, queue):
         """
-        Compiles and uploads the sketch in the specified directory to the provided board/port
+        Compiles and uploads the sketch in the specified directory to the provided board/port.
         """
         params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
+        if fqbn.startswith('esp32:esp32'):
+            params = params + ["--board-options", "UploadSpeed=115200"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
 

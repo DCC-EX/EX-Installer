@@ -3,7 +3,9 @@ Module for a Git client using the pygit2 module
 
 This model enables cloning and selecting versions from GitHub repositories using threads and queues
 
-© 2023, Peter Cole. All rights reserved.
+© 2024, Peter Cole.
+© 2023, Peter Cole.
+All rights reserved.
 
 This file is part of EX-Installer.
 
@@ -241,9 +243,9 @@ class GitClient:
         Gets the ref for the named branch
         """
         branch = repo.lookup_branch(name)
-        refname = repo.lookup_reference(branch.name)
-        GitClient.log.debug("Branch %s ref is %s", name, refname)
-        return refname
+        reference = repo.lookup_reference(branch.name)
+        GitClient.log.debug("Branch %s ref is %s", name, reference)
+        return reference
 
     @staticmethod
     def get_repo_versions(repo):
