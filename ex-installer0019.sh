@@ -26,8 +26,7 @@ INSTALLER_TAG="v0.0.19-Devel"
 function need () {
     type -p $1 > /dev/null && return
     dpkg -l $1 2>&1 | egrep ^ii >/dev/null && return
-    sudo apt-get install $1
-    type -p $1 > /dev/null && return
+    sudo apt-get install $1 && return
     echo "Could not install $1, abort"
     exit 255
 }
