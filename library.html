@@ -78,10 +78,13 @@
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.about"><code class="docutils literal notranslate"><span class="pre">EXInstaller.about()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.acli"><code class="docutils literal notranslate"><span class="pre">EXInstaller.acli</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.app_version"><code class="docutils literal notranslate"><span class="pre">EXInstaller.app_version</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.enable_fake_device"><code class="docutils literal notranslate"><span class="pre">EXInstaller.enable_fake_device()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.exception_handler"><code class="docutils literal notranslate"><span class="pre">EXInstaller.exception_handler()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.git"><code class="docutils literal notranslate"><span class="pre">EXInstaller.git</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.instructions"><code class="docutils literal notranslate"><span class="pre">EXInstaller.instructions()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.news"><code class="docutils literal notranslate"><span class="pre">EXInstaller.news()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.preferences"><code class="docutils literal notranslate"><span class="pre">EXInstaller.preferences</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.save_preference"><code class="docutils literal notranslate"><span class="pre">EXInstaller.save_preference()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.set_scaling"><code class="docutils literal notranslate"><span class="pre">EXInstaller.set_scaling()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.switch_view"><code class="docutils literal notranslate"><span class="pre">EXInstaller.switch_view()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.ex_installer.EXInstaller.toggle_debug"><code class="docutils literal notranslate"><span class="pre">EXInstaller.toggle_debug()</span></code></a></li>
@@ -92,8 +95,27 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#manage-arduino-cli-manage-arduino-cli-py">Manage Arduino CLI (manage_arduino_cli.py)</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._check_cli_version"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._check_cli_version()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._delete_cli"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._delete_cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._download_cli"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._download_cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._extract_cli"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._extract_cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._generate_check_cli"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._generate_check_cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._generate_install_cli"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._generate_install_cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._generate_refresh_cli"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._generate_refresh_cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._get_installed_libraries"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._get_installed_libraries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._get_installed_platforms"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._get_installed_platforms()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._get_library_install_count"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._get_library_install_count()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._get_package_install_count"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._get_package_install_count()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._init_cli"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._init_cli()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._install_libraries"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._install_libraries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._install_packages"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._install_packages()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._install_single_library"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._install_single_library()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._install_single_package"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._install_single_package()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._process_error"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._process_error()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._process_finished"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._process_finished()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._refresh_boards"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._refresh_boards()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._update_core_index"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI._update_core_index()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.check_arduino_cli"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI.check_arduino_cli()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.get_library_list"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI.get_library_list()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.install_instruction_text"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI.install_instruction_text</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.installed_text"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI.installed_text</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.intro_text"><code class="docutils literal notranslate"><span class="pre">ManageArduinoCLI.intro_text</span></code></a></li>
@@ -151,12 +173,15 @@
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.decrement_channel"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.decrement_channel()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.default_config_options"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.default_config_options</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.default_myAutomation_options"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.default_myAutomation_options</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.delete_config_files"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.delete_config_files()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.display_config_screen"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.display_config_screen()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.generate_config"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.generate_config()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.generate_myAutomation"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.generate_myAutomation()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.get_motor_drivers"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.get_motor_drivers()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.hardware_text"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.hardware_text</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.increment_channel"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.increment_channel()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.remove_all_dccex_motor_drivers"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.remove_all_dccex_motor_drivers()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.restrict_dccex_motor_drivers"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.restrict_dccex_motor_drivers()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.set_a_mode"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.set_a_mode()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.set_advanced_config"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.set_advanced_config()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.ex_commandstation.EXCommandStation.set_b_mode"><code class="docutils literal notranslate"><span class="pre">EXCommandStation.set_b_mode()</span></code></a></li>
@@ -246,12 +271,17 @@
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.arduino_cli_version"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.arduino_cli_version</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.arduino_downloads"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.arduino_downloads</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.arduino_libraries"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.arduino_libraries</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.base_platforms"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.base_platforms</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.cli_file_path"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.cli_file_path()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.compile_sketch"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.compile_sketch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.dccex_devices"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.dccex_devices</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.delete_cli"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.delete_cli()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.download_cli"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.download_cli()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.extra_platforms"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.extra_platforms</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.get_package_list"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.get_package_list()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.get_libraries"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.get_libraries()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.get_platforms"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.get_platforms()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.get_version"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.get_version()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.initialise_config"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.initialise_config()</span></code></a></li>
@@ -264,6 +294,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.update_index"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.update_index()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.upgrade_platforms"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.upgrade_platforms()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.upload_sketch"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.upload_sketch()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#ex_installer.arduino_cli.ArduinoCLI.urlbase"><code class="docutils literal notranslate"><span class="pre">ArduinoCLI.urlbase</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -290,11 +321,15 @@
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.get_install_dir"><code class="docutils literal notranslate"><span class="pre">FileManager.get_install_dir()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.get_list_from_file"><code class="docutils literal notranslate"><span class="pre">FileManager.get_list_from_file()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.get_temp_dir"><code class="docutils literal notranslate"><span class="pre">FileManager.get_temp_dir()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.get_user_preferences"><code class="docutils literal notranslate"><span class="pre">FileManager.get_user_preferences()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.is_valid_dir"><code class="docutils literal notranslate"><span class="pre">FileManager.is_valid_dir()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.log"><code class="docutils literal notranslate"><span class="pre">FileManager.log</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.read_config_file"><code class="docutils literal notranslate"><span class="pre">FileManager.read_config_file()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.read_version"><code class="docutils literal notranslate"><span class="pre">FileManager.read_version()</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.rename_dir"><code class="docutils literal notranslate"><span class="pre">FileManager.rename_dir()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.save_user_preferences"><code class="docutils literal notranslate"><span class="pre">FileManager.save_user_preferences()</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.user_preference_dir"><code class="docutils literal notranslate"><span class="pre">FileManager.user_preference_dir</span></code></a></li>
+<li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.user_preference_file"><code class="docutils literal notranslate"><span class="pre">FileManager.user_preference_file</span></code></a></li>
 <li class="toctree-l5"><a class="reference internal" href="#ex_installer.file_manager.FileManager.write_config_file"><code class="docutils literal notranslate"><span class="pre">FileManager.write_config_file()</span></code></a></li>
 </ul>
 </li>
@@ -449,8 +484,14 @@
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ex_installer.ex_installer.EXInstaller.app_version">
-<span class="sig-name descname"><span class="pre">app_version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.0.18'</span></em><a class="headerlink" href="#ex_installer.ex_installer.EXInstaller.app_version" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">app_version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.0.19'</span></em><a class="headerlink" href="#ex_installer.ex_installer.EXInstaller.app_version" title="Link to this definition"></a></dt>
 <dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.ex_installer.EXInstaller.enable_fake_device">
+<span class="sig-name descname"><span class="pre">enable_fake_device</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_installer.EXInstaller.enable_fake_device" title="Link to this definition"></a></dt>
+<dd><p>If specified, enable a fake Arduino device</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.ex_installer.EXInstaller.exception_handler">
@@ -473,6 +514,17 @@
 <dt class="sig sig-object py" id="ex_installer.ex_installer.EXInstaller.news">
 <span class="sig-name descname"><span class="pre">news</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_installer.EXInstaller.news" title="Link to this definition"></a></dt>
 <dd><p>Link to DCC-EX News articles for EX-Installer</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ex_installer.ex_installer.EXInstaller.preferences">
+<span class="sig-name descname"><span class="pre">preferences</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{}</span></em><a class="headerlink" href="#ex_installer.ex_installer.EXInstaller.preferences" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.ex_installer.EXInstaller.save_preference">
+<span class="sig-name descname"><span class="pre">save_preference</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">key</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_installer.EXInstaller.save_preference" title="Link to this definition"></a></dt>
+<dd><p>Method to save the specified key/value pair to the user preference file</p>
 </dd></dl>
 
 <dl class="py method">
@@ -525,16 +577,181 @@ self.product_patch_version</p>
 <dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.manage_arduino_cli.</span></span><span class="sig-name descname"><span class="pre">ManageArduinoCLI</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI" title="Link to this definition"></a></dt>
 <dd><dl class="py method">
-<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI.check_arduino_cli">
-<span class="sig-name descname"><span class="pre">check_arduino_cli</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.check_arduino_cli" title="Link to this definition"></a></dt>
-<dd><p>Function to check if the Arduino CLI is installed and if so, what version it is</p>
-<p>On completion, will move to the Manage Arduino CLI screen</p>
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._check_cli_version">
+<span class="sig-name descname"><span class="pre">_check_cli_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._check_cli_version" title="Link to this definition"></a></dt>
+<dd><p>Method to check the version of CLI that is present (if installed).</p>
+<p>If we need to start, call the acli.get_version() method.</p>
+<p>If it was successful, call _get_platforms().</p>
+<p>Any other status is an error.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI.get_library_list">
-<span class="sig-name descname"><span class="pre">get_library_list</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.get_library_list" title="Link to this definition"></a></dt>
-<dd><p>Get list of library dependencies from product details</p>
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._delete_cli">
+<span class="sig-name descname"><span class="pre">_delete_cli</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._delete_cli" title="Link to this definition"></a></dt>
+<dd><p>Method to delete an unsupported version of the CLI if detected.</p>
+<p>To enforce users only using the correct version of the CLI, old or newer versions must be deleted.</p>
+<p>If successful, this must trigger the install process.</p>
+<p>If unsuccessful, we must tell the users to close everything and try again, otherwise delete manually.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._download_cli">
+<span class="sig-name descname"><span class="pre">_download_cli</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._download_cli" title="Link to this definition"></a></dt>
+<dd><p>Method to start downloading the Arduino CLI.</p>
+<p>If we need to start, call the acli.download_cli() method.</p>
+<p>If it was successful, call _extract_cli().</p>
+<p>Any other status is an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._extract_cli">
+<span class="sig-name descname"><span class="pre">_extract_cli</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._extract_cli" title="Link to this definition"></a></dt>
+<dd><p>Method to start extracting the Arduino CLI, which relies on the downloaded file being
+available in the process_data attribute.</p>
+<p>If we need to start, call the acli.install_cli() method.</p>
+<p>If it was successful, call _init_cli().</p>
+<p>Any other status is an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._generate_check_cli">
+<span class="sig-name descname"><span class="pre">_generate_check_cli</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._generate_check_cli" title="Link to this definition"></a></dt>
+<dd><p>Generates an event to start checking the state of the Arduino CLI.</p>
+<p>For some reason this doesn’t generate the event, call check_arduino_cli method with None argument for now.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._generate_install_cli">
+<span class="sig-name descname"><span class="pre">_generate_install_cli</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._generate_install_cli" title="Link to this definition"></a></dt>
+<dd><p>Generates an event to start installing the Arduino CLI.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._generate_refresh_cli">
+<span class="sig-name descname"><span class="pre">_generate_refresh_cli</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._generate_refresh_cli" title="Link to this definition"></a></dt>
+<dd><p>Generates an event to start refreshing the Arduino CLI.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._get_installed_libraries">
+<span class="sig-name descname"><span class="pre">_get_installed_libraries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._get_installed_libraries" title="Link to this definition"></a></dt>
+<dd><p>Method to obtain the currently installed Arduino libraries.</p>
+<p>If we need to start call the acli.get_libraries() method.</p>
+<p>If successful:</p>
+<ul class="simple">
+<li><p>If a library is installed at the specified version, mark installed</p></li>
+<li><p>If a library is installed but not the specified version, mark as not_installed</p></li>
+<li><p>If a library is not installed but should be, mark as not_installed</p></li>
+</ul>
+<p>Any other status is an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._get_installed_platforms">
+<span class="sig-name descname"><span class="pre">_get_installed_platforms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._get_installed_platforms" title="Link to this definition"></a></dt>
+<dd><p>Method to obtain the currently installed Arduino platforms.</p>
+<p>If we need to start call the acli.get_platforms() method.</p>
+<p>If successful:</p>
+<ul class="simple">
+<li><p>Set the extra_platforms_frame CTKSwitch widgets to the correct state</p></li>
+<li><p>If a package is installed at the specified version, mark installed</p></li>
+<li><p>If a package is installed but not the specified version, mark as not_installed</p></li>
+<li><p>If a package is not installed but should be, mark as not_installed</p></li>
+</ul>
+<p>Any other status is an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._get_library_install_count">
+<span class="sig-name descname"><span class="pre">_get_library_install_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._get_library_install_count" title="Link to this definition"></a></dt>
+<dd><p>Get the number of libraries that need to be installed.</p>
+<p>This is all libraries with state “not_installed”.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._get_package_install_count">
+<span class="sig-name descname"><span class="pre">_get_package_install_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._get_package_install_count" title="Link to this definition"></a></dt>
+<dd><p>Get the number of packages that need to be installed.</p>
+<p>This is all packages with state “not_installed” and selection “on”.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._init_cli">
+<span class="sig-name descname"><span class="pre">_init_cli</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._init_cli" title="Link to this definition"></a></dt>
+<dd><p>Method to start the CLI initialisation process.</p>
+<p>Note that this must cycle through each widget in the “extra_platforms_frame” frame to
+be able to flag each additional platform that needs to be installed.</p>
+<p>If we need to start, call the acli.initialise_config() method.</p>
+<p>If successful, call _update_core_index().</p>
+<p>Any other status is an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._install_libraries">
+<span class="sig-name descname"><span class="pre">_install_libraries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._install_libraries" title="Link to this definition"></a></dt>
+<dd><p>Method to start installing the required libraries.</p>
+<p>This needs to cycle through each library to install them.</p>
+<p>If we need to start, call _install_single_library().</p>
+<p>Any other status is an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._install_packages">
+<span class="sig-name descname"><span class="pre">_install_packages</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._install_packages" title="Link to this definition"></a></dt>
+<dd><p>Method to process installing all required packages.</p>
+<p>This needs to cycle through each package to install them.</p>
+<p>If we need to start, call _install_single_package().</p>
+<p>Any other status is an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._install_single_library">
+<span class="sig-name descname"><span class="pre">_install_single_library</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">library_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._install_single_library" title="Link to this definition"></a></dt>
+<dd><p>Method to start installing the specified library.</p>
+<p>Flag the library as installed here but that should be validated in a later version.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._install_single_package">
+<span class="sig-name descname"><span class="pre">_install_single_package</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">package_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">platform_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">version</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._install_single_package" title="Link to this definition"></a></dt>
+<dd><p>Method to start installing the specified package.</p>
+<p>We flag the package as installed here to prevent an endless loop, but this should be improved in future.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._process_error">
+<span class="sig-name descname"><span class="pre">_process_error</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._process_error" title="Link to this definition"></a></dt>
+<dd><p>Method to deal with an error in the process.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._process_finished">
+<span class="sig-name descname"><span class="pre">_process_finished</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._process_finished" title="Link to this definition"></a></dt>
+<dd><p>Method to finalise the processes on successful completion.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._refresh_boards">
+<span class="sig-name descname"><span class="pre">_refresh_boards</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._refresh_boards" title="Link to this definition"></a></dt>
+<dd><p>Method to start refreshing the list of attached boards.</p>
+<p>If we need to start, call the acli.list_boards() method.</p>
+<p>If successful, call _process_finished().</p>
+<p>Any other status is an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI._update_core_index">
+<span class="sig-name descname"><span class="pre">_update_core_index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI._update_core_index" title="Link to this definition"></a></dt>
+<dd><p>Method to start the core index update process.</p>
+<p>If we need to start, call the acli.update_index() method.</p>
+<p>If successful, call _upgrade_platforms().</p>
+<p>Any other status is an error.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI.check_arduino_cli">
+<span class="sig-name descname"><span class="pre">check_arduino_cli</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.check_arduino_cli" title="Link to this definition"></a></dt>
+<dd><p>Check the version of the Arduino CLI, and if additional platforms are installed.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -555,7 +772,24 @@ self.product_patch_version</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI.manage_cli">
 <span class="sig-name descname"><span class="pre">manage_cli</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.manage_cli" title="Link to this definition"></a></dt>
-<dd><p>Manage the Arduino CLI</p>
+<dd><p>Method to manage the state of the Arduino CLI.</p>
+<p>If not installed, it must:</p>
+<ul class="simple">
+<li><p>Download the latest CLI</p></li>
+<li><p>Extract the CLI</p></li>
+<li><p>Initialise the CLI config with the selected platform types</p></li>
+<li><p>Update the CLI core index</p></li>
+<li><p>Install required packages to the specified version</p></li>
+<li><p>Install required libraries to the specified version</p></li>
+<li><p>Refresh the list of attached boards</p></li>
+</ul>
+<p>If already installed, it must:</p>
+<ul class="simple">
+<li><p>Update the CLI core index</p></li>
+<li><p>Install required packages to the specified version</p></li>
+<li><p>Install required libraries to the specified version</p></li>
+<li><p>Refresh the list of attached boards</p></li>
+</ul>
 </dd></dl>
 
 <dl class="py attribute">
@@ -566,7 +800,30 @@ self.product_patch_version</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI.refresh_instruction_text">
 <span class="sig-name descname"><span class="pre">refresh_instruction_text</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'While</span> <span class="pre">the</span> <span class="pre">Arduino</span> <span class="pre">CLI</span> <span class="pre">is</span> <span class="pre">installed,</span> <span class="pre">it</span> <span class="pre">is</span> <span class="pre">recommended</span> <span class="pre">to</span> <span class="pre">refresh</span> <span class="pre">it</span> <span class="pre">periodically</span> <span class="pre">(eg.</span> <span class="pre">weekly)</span> <span class="pre">to</span> <span class="pre">ensure</span> <span class="pre">support</span> <span class="pre">for</span> <span class="pre">the</span> <span class="pre">various</span> <span class="pre">devices</span> <span class="pre">is</span> <span class="pre">kept</span> <span class="pre">up</span> <span class="pre">to</span> <span class="pre">date.</span> <span class="pre">To</span> <span class="pre">refresh</span> <span class="pre">the</span> <span class="pre">CLI,</span> <span class="pre">simply</span> <span class="pre">click</span> <span class="pre">the</span> <span class="pre">refresh</span> <span class="pre">button.\n\nNote</span> <span class="pre">that</span> <span class="pre">enabling</span> <span class="pre">any</span> <span class="pre">of</span> <span class="pre">the</span> <span class="pre">additional</span> <span class="pre">platforms</span> <span class="pre">is</span> <span class="pre">likely</span> <span class="pre">to</span> <span class="pre">add</span> <span class="pre">several</span> <span class="pre">minutes</span> <span class="pre">to</span> <span class="pre">the</span> <span class="pre">refresh</span> <span class="pre">process.</span> <span class="pre">Maybe</span> <span class="pre">grab</span> <span class="pre">a</span> <span class="pre">cup</span> <span class="pre">of</span> <span class="pre">tea</span> <span class="pre">or</span> <span class="pre">a</span> <span class="pre">coffee!'</span></em><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.refresh_instruction_text" title="Link to this definition"></a></dt>
-<dd><p>Class for the Manage Arduino CLI view</p>
+<dd><p>Class for the Manage Arduino CLI view.</p>
+<p>Managing the CLI should all be driven by events.</p>
+<p>There are two event callbacks:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>&lt;&lt;Check_Arduino_CLI&gt;&gt; - used to check if the Arduino is installed and if so, which version</p></li>
+<li><p>&lt;&lt;Manage_CLI&gt;&gt; - used to manage installation and updates of the Arduino CLI</p></li>
+</ul>
+</div></blockquote>
+<p>Workflow for this module:</p>
+<ul>
+<li><p>Object creation and set initial widget states</p></li>
+<li><p>If CLI not installed, disable next and main button triggers install CLI</p></li>
+<li><p>If CLI is installed:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Enable next, and main button triggers refresh CLI</p></li>
+<li><p>Check installed package versions and if not at correct version, flag install</p></li>
+<li><p>Check installed library versions and if not at correct version, flag install</p></li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>When enabling a platform type, trigger installation of that package</p></li>
+</ul>
 </dd></dl>
 
 <dl class="py method">
@@ -577,7 +834,8 @@ self.product_patch_version</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.manage_arduino_cli.ManageArduinoCLI.update_package_list">
 <span class="sig-name descname"><span class="pre">update_package_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">switch</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.manage_arduino_cli.ManageArduinoCLI.update_package_list" title="Link to this definition"></a></dt>
-<dd><p>Maintain the list of packages to install/refresh when switches updated</p>
+<dd><p>Maintain the list of packages to install/refresh when switches are turned on/off.</p>
+<p>This must cause a platform to be installed if it isn’t already so a user doesn’t need to click refresh.</p>
 </dd></dl>
 
 </dd></dl>
@@ -635,7 +893,8 @@ self.product_patch_version</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.select_product.SelectProduct.check_product_device">
 <span class="sig-name descname"><span class="pre">check_product_device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">product</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.select_product.SelectProduct.check_product_device" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Method to validate the selected device is compatible with the selected product.</p>
+</dd></dl>
 
 </dd></dl>
 
@@ -772,6 +1031,15 @@ self.product_patch_version</p>
 <dd></dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.ex_commandstation.EXCommandStation.delete_config_files">
+<span class="sig-name descname"><span class="pre">delete_config_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_commandstation.EXCommandStation.delete_config_files" title="Link to this definition"></a></dt>
+<dd><dl class="simple">
+<dt>Function to delete config files from product directory</dt><dd><p>needed on subsequent passes thru the logic</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.ex_commandstation.EXCommandStation.display_config_screen">
 <span class="sig-name descname"><span class="pre">display_config_screen</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_commandstation.EXCommandStation.display_config_screen" title="Link to this definition"></a></dt>
 <dd><p>Displays the configuration options frame</p>
@@ -796,7 +1064,10 @@ self.product_patch_version</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.ex_commandstation.EXCommandStation.get_motor_drivers">
 <span class="sig-name descname"><span class="pre">get_motor_drivers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_commandstation.EXCommandStation.get_motor_drivers" title="Link to this definition"></a></dt>
-<dd><p>Function to read the defined motor driver definition from MotorDrivers.h</p>
+<dd><p>Method to read the defined motor driver definition from MotorDrivers.h and populate the pulldown options.</p>
+<p>If a DCC-EX specific Arduino device is selected, this list will be limited to matching motor driver
+definitions only, otherwise all DCC-EX specific definitions will be removed, presenting only generic
+driver options to select.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -808,6 +1079,23 @@ self.product_patch_version</p>
 <dt class="sig sig-object py" id="ex_installer.ex_commandstation.EXCommandStation.increment_channel">
 <span class="sig-name descname"><span class="pre">increment_channel</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_commandstation.EXCommandStation.increment_channel" title="Link to this definition"></a></dt>
 <dd><p>Function to increment the WiFi channel</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.ex_commandstation.EXCommandStation.remove_all_dccex_motor_drivers">
+<span class="sig-name descname"><span class="pre">remove_all_dccex_motor_drivers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_commandstation.EXCommandStation.remove_all_dccex_motor_drivers" title="Link to this definition"></a></dt>
+<dd><p>Method to remove all DCC-EX specific motor driver definitions from the provided list.</p>
+<p>This provides an appropriate driver list for generic Arduino devices. Any driver definition starting with
+a device name in the dccex_devices dictionary will be removed from the available list when selecting a
+generic Arduino device.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.ex_commandstation.EXCommandStation.restrict_dccex_motor_drivers">
+<span class="sig-name descname"><span class="pre">restrict_dccex_motor_drivers</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">driver_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.ex_commandstation.EXCommandStation.restrict_dccex_motor_drivers" title="Link to this definition"></a></dt>
+<dd><p>Method to remove generic motor driver definitions from the provided list.</p>
+<p>Utilises the class attribute dccex_device to limit the available selections. Only driver definitions
+starting with the device name of a selected DCC-EX specific Arduino device will be available to select.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -878,7 +1166,7 @@ else:
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ex_installer.ex_commandstation.EXCommandStation.supported_displays">
-<span class="sig-name descname"><span class="pre">supported_displays</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'LCD</span> <span class="pre">16</span> <span class="pre">columns</span> <span class="pre">x</span> <span class="pre">2</span> <span class="pre">rows':</span> <span class="pre">'#define</span> <span class="pre">LCD_DRIVER</span> <span class="pre">0x27,16,2\n',</span> <span class="pre">'LCD</span> <span class="pre">20</span> <span class="pre">columns</span> <span class="pre">x</span> <span class="pre">4</span> <span class="pre">rows':</span> <span class="pre">'#define</span> <span class="pre">LCD_DRIVER</span> <span class="pre">0x27,20,4\n',</span> <span class="pre">'OLED</span> <span class="pre">128</span> <span class="pre">x</span> <span class="pre">32':</span> <span class="pre">'#define</span> <span class="pre">OLED_DRIVER</span> <span class="pre">128,32\n',</span> <span class="pre">'OLED</span> <span class="pre">128</span> <span class="pre">x</span> <span class="pre">64':</span> <span class="pre">'#define</span> <span class="pre">OLED_DRIVER</span> <span class="pre">128,64\n'}</span></em><a class="headerlink" href="#ex_installer.ex_commandstation.EXCommandStation.supported_displays" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">supported_displays</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'LCD</span> <span class="pre">16</span> <span class="pre">columns</span> <span class="pre">x</span> <span class="pre">2</span> <span class="pre">rows':</span> <span class="pre">'#define</span> <span class="pre">LCD_DRIVER</span> <span class="pre">0x27,16,2\n',</span> <span class="pre">'LCD</span> <span class="pre">20</span> <span class="pre">columns</span> <span class="pre">x</span> <span class="pre">4</span> <span class="pre">rows':</span> <span class="pre">'#define</span> <span class="pre">LCD_DRIVER</span> <span class="pre">0x27,20,4\n',</span> <span class="pre">'OLED</span> <span class="pre">128</span> <span class="pre">x</span> <span class="pre">32':</span> <span class="pre">'#define</span> <span class="pre">OLED_DRIVER</span> <span class="pre">128,32\n',</span> <span class="pre">'OLED</span> <span class="pre">128</span> <span class="pre">x</span> <span class="pre">64':</span> <span class="pre">'#define</span> <span class="pre">OLED_DRIVER</span> <span class="pre">128,64\n',</span> <span class="pre">'OLED</span> <span class="pre">132</span> <span class="pre">x</span> <span class="pre">64':</span> <span class="pre">'#define</span> <span class="pre">OLED_DRIVER</span> <span class="pre">132,64\n'}</span></em><a class="headerlink" href="#ex_installer.ex_commandstation.EXCommandStation.supported_displays" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py attribute">
@@ -1285,18 +1573,67 @@ they will be terminated</p>
 <li><p>get_platforms() - gets the list of installed platforms</p></li>
 <li><p>download_cli() - downloads the appropriate CLI for the operating system, returns the file path</p></li>
 <li><p>install_cli() - extracts the CLI to the specified file path from download file path</p></li>
+<li><p>delete_cli() - deletes the CLI, returns True|False</p></li>
 <li><p>initialise_config() - adds additional URLs to the CLI config</p></li>
 <li><p>update_index() - performs the core update-index and initial board list</p></li>
-<li><p>get_package_list() - gets the list of platform packages to install</p></li>
 <li><p>install_package() - installs the provided packages</p></li>
 <li><p>upgrade_platforms() - performs the core upgrade to ensure all are up to date</p></li>
 <li><p>list_boards() - lists all connected boards, returns list of dictionaries for boards</p></li>
-<li><p>upload_sketch() - compiles and uploads the provided sketch to the provided device</p></li>
+<li><p>compile_sketch() - compiles the sketch in the provided directory ready for upload</p></li>
+<li><p>upload_sketch() - uploads the sketch in the provided directory to the provided device</p></li>
 </ul>
 <dl class="py attribute">
+<dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.arduino_cli_version">
+<span class="sig-name descname"><span class="pre">arduino_cli_version</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'0.35.3'</span></em><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.arduino_cli_version" title="Link to this definition"></a></dt>
+<dd><p>Dictionary for the base board/platform support for the Arduino CLI.</p>
+<p>This should really just be Arduino AVR, and must specify the version.</p>
+<p>Note this used to be defined in the manage_arduino_cli module but is now centralised here.</p>
+<p>This format is consistent with extra_platforms, but without the URL.</p>
+<dl>
+<dt>base_platforms = {</dt><dd><dl class="simple">
+<dt>“Platform Name”: {</dt><dd><p>“platform_id”: “&lt;packager&gt;:&lt;arch&gt;”,
+“version”: “&lt;version&gt;”</p>
+</dd>
+</dl>
+<p>}</p>
+</dd>
+</dl>
+<p>}</p>
+</dd></dl>
+
+<dl class="py attribute">
 <dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.arduino_downloads">
-<span class="sig-name descname"><span class="pre">arduino_downloads</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Darwin64':</span> <span class="pre">'https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_macOS_64bit.tar.gz',</span> <span class="pre">'Linux32':</span> <span class="pre">'https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_32bit.tar.gz',</span> <span class="pre">'Linux64':</span> <span class="pre">'https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Linux_64bit.tar.gz',</span> <span class="pre">'Windows32':</span> <span class="pre">'https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_32bit.zip',</span> <span class="pre">'Windows64':</span> <span class="pre">'https://downloads.arduino.cc/arduino-cli/arduino-cli_latest_Windows_64bit.zip'}</span></em><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.arduino_downloads" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">arduino_downloads</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Darwin64':</span> <span class="pre">'https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_macOS_64bit.tar.gz',</span> <span class="pre">'Linux64':</span> <span class="pre">'https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_Linux_64bit.tar.gz',</span> <span class="pre">'Windows32':</span> <span class="pre">'https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_Windows_32bit.zip',</span> <span class="pre">'Windows64':</span> <span class="pre">'https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_Windows_64bit.zip'}</span></em><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.arduino_downloads" title="Link to this definition"></a></dt>
+<dd><p>Expose the currently supported version of the Arduino CLI to use.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.arduino_libraries">
+<span class="sig-name descname"><span class="pre">arduino_libraries</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Ethernet':</span> <span class="pre">'2.0.2'}</span></em><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.arduino_libraries" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices.</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.base_platforms">
+<span class="sig-name descname"><span class="pre">base_platforms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Arduino</span> <span class="pre">AVR':</span> <span class="pre">{'platform_id':</span> <span class="pre">'arduino:avr',</span> <span class="pre">'version':</span> <span class="pre">'1.8.6'}}</span></em><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.base_platforms" title="Link to this definition"></a></dt>
+<dd><p>Dictionary for additional board/platform support for the Arduino CLI.</p>
+<p>These must be tied to a specific version to avoid future unknown issues:</p>
+<dl>
+<dt>extra_platforms = {</dt><dd><dl class="simple">
+<dt>“Platform Name”: {</dt><dd><p>“platform_id”: “&lt;packager&gt;:&lt;arch&gt;”,
+“version”: “&lt;version&gt;”,
+“url”: “&lt;url&gt;”</p>
+</dd>
+</dl>
+<p>}</p>
+</dd>
+</dl>
+<p>}</p>
+<ul class="simple">
+<li><p>ESP32 locked to 2.0.17 as 3.x causes compile errors for EX-CommandStation</p></li>
+<li><p>STM32 locked to 2.7.1 because 2.8.0 introduces new output that needs logic to deal with</p></li>
+</ul>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.cli_file_path">
@@ -1314,6 +1651,18 @@ they will be terminated</p>
 <dd><p>Compiles the sketch ready to upload</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.dccex_devices">
+<span class="sig-name descname"><span class="pre">dccex_devices</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'DCC-EX</span> <span class="pre">EX-CSB1':</span> <span class="pre">'EXCSB1'}</span></em><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.dccex_devices" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.delete_cli">
+<span class="sig-name descname"><span class="pre">delete_cli</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.delete_cli" title="Link to this definition"></a></dt>
+<dd><p>Deletes all files in the provided directory.</p>
+<p>This is required to remove an unsupported version of the Arduino CLI.</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.download_cli">
 <span class="sig-name descname"><span class="pre">download_cli</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">queue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.download_cli" title="Link to this definition"></a></dt>
@@ -1324,13 +1673,22 @@ they will be terminated</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.extra_platforms">
-<span class="sig-name descname"><span class="pre">extra_platforms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Espressif</span> <span class="pre">ESP32':</span> <span class="pre">{'platform_id':</span> <span class="pre">'esp32:esp32',</span> <span class="pre">'url':</span> <span class="pre">'https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json'},</span> <span class="pre">'STMicroelectronics</span> <span class="pre">Nucleo/STM32':</span> <span class="pre">{'platform_id':</span> <span class="pre">'STMicroelectronics:stm32',</span> <span class="pre">'url':</span> <span class="pre">'https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json'}}</span></em><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.extra_platforms" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">extra_platforms</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Espressif</span> <span class="pre">ESP32':</span> <span class="pre">{'platform_id':</span> <span class="pre">'esp32:esp32',</span> <span class="pre">'url':</span> <span class="pre">'https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json',</span> <span class="pre">'version':</span> <span class="pre">'2.0.17'},</span> <span class="pre">'STMicroelectronics</span> <span class="pre">Nucleo/STM32':</span> <span class="pre">{'platform_id':</span> <span class="pre">'STMicroelectronics:stm32',</span> <span class="pre">'url':</span> <span class="pre">'https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json',</span> <span class="pre">'version':</span> <span class="pre">'2.7.1'}}</span></em><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.extra_platforms" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of required Arduino libraries to be installed.</p>
+<p>These must be tied to a specific version to avoid future unknown issues:</p>
+<dl class="simple">
+<dt>arduino_libraries = {</dt><dd><p>“&lt;library name&gt;”: “&lt;version&gt;”</p>
+</dd>
+</dl>
+<p>}</p>
+<p>Note that these were previously an attribute of a product in the product_details module but are now here.</p>
+</dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.get_package_list">
-<span class="sig-name descname"><span class="pre">get_package_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.get_package_list" title="Link to this definition"></a></dt>
-<dd><p>Get list of Arduino packages to install</p>
+<dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.get_libraries">
+<span class="sig-name descname"><span class="pre">get_libraries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.get_libraries" title="Link to this definition"></a></dt>
+<dd><p>Function to retrieve the current libraries installed with the Arduino CLI</p>
+<p>If successful, the list will be in the queue’s “data” field</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1350,8 +1708,8 @@ they will be terminated</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.initialise_config">
 <span class="sig-name descname"><span class="pre">initialise_config</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.initialise_config" title="Link to this definition"></a></dt>
-<dd><p>Initialises the Arduino CLI configuration with the provided additional boards</p>
-<p>Overwrites existing configuration options</p>
+<dd><p>Initialises the Arduino CLI configuration with the provided additional boards.</p>
+<p>Overwrites existing configuration options.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1388,8 +1746,12 @@ they will be terminated</p>
 
 <dl class="py attribute">
 <dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.supported_devices">
-<span class="sig-name descname"><span class="pre">supported_devices</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Arduino</span> <span class="pre">Mega</span> <span class="pre">or</span> <span class="pre">Mega</span> <span class="pre">2560':</span> <span class="pre">'arduino:avr:mega',</span> <span class="pre">'Arduino</span> <span class="pre">Nano':</span> <span class="pre">'arduino:avr:nano',</span> <span class="pre">'Arduino</span> <span class="pre">Uno':</span> <span class="pre">'arduino:avr:uno',</span> <span class="pre">'ESP32</span> <span class="pre">Dev</span> <span class="pre">Kit':</span> <span class="pre">'esp32:esp32:esp32',</span> <span class="pre">'STMicroelectronics</span> <span class="pre">Nucleo</span> <span class="pre">F411RE':</span> <span class="pre">'STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE',</span> <span class="pre">'STMicroelectronics</span> <span class="pre">Nucleo</span> <span class="pre">F446RE':</span> <span class="pre">'STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE'}</span></em><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.supported_devices" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">supported_devices</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">{'Arduino</span> <span class="pre">Mega</span> <span class="pre">or</span> <span class="pre">Mega</span> <span class="pre">2560':</span> <span class="pre">'arduino:avr:mega',</span> <span class="pre">'Arduino</span> <span class="pre">Nano':</span> <span class="pre">'arduino:avr:nano',</span> <span class="pre">'Arduino</span> <span class="pre">Uno':</span> <span class="pre">'arduino:avr:uno',</span> <span class="pre">'DCC-EX</span> <span class="pre">EX-CSB1':</span> <span class="pre">'esp32:esp32:esp32',</span> <span class="pre">'ESP32</span> <span class="pre">Dev</span> <span class="pre">Kit':</span> <span class="pre">'esp32:esp32:esp32',</span> <span class="pre">'STMicroelectronics</span> <span class="pre">Nucleo</span> <span class="pre">F411RE':</span> <span class="pre">'STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE',</span> <span class="pre">'STMicroelectronics</span> <span class="pre">Nucleo</span> <span class="pre">F446RE':</span> <span class="pre">'STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE'}</span></em><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.supported_devices" title="Link to this definition"></a></dt>
+<dd><p>Dictionary of DCC-EX specific devices, used to preselect or exclude motor driver definitions.</p>
+<p>While this isn’t ideal, it makes it easier with the current implementation to control what users can and
+can’t select for motor drivers.</p>
+<p>Future additions must start with “DCC-EX” in order to be used for this purpose.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.update_index">
@@ -1406,8 +1768,13 @@ they will be terminated</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.upload_sketch">
 <span class="sig-name descname"><span class="pre">upload_sketch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fqbn</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">port</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sketch_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">queue</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.upload_sketch" title="Link to this definition"></a></dt>
-<dd><p>Compiles and uploads the sketch in the specified directory to the provided board/port</p>
+<dd><p>Compiles and uploads the sketch in the specified directory to the provided board/port.</p>
 </dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ex_installer.arduino_cli.ArduinoCLI.urlbase">
+<span class="sig-name descname"><span class="pre">urlbase</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_'</span></em><a class="headerlink" href="#ex_installer.arduino_cli.ArduinoCLI.urlbase" title="Link to this definition"></a></dt>
+<dd></dd></dl>
 
 </dd></dl>
 
@@ -1524,6 +1891,13 @@ This would be valid, but better to just provide filename: r”^(config.h)$”  #
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.file_manager.FileManager.get_user_preferences">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_user_preferences</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.file_manager.FileManager.get_user_preferences" title="Link to this definition"></a></dt>
+<dd><p>Method to the dictionary of user preferences</p>
+<p>Reads the JSON user preference file and returns the dictionary</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.file_manager.FileManager.is_valid_dir">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">is_valid_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.file_manager.FileManager.is_valid_dir" title="Link to this definition"></a></dt>
 <dd><p>Simply checks directory exists and that it is a directory</p>
@@ -1554,6 +1928,23 @@ Returns False if no version defined, or a string containing the version</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.file_manager.FileManager.rename_dir">
 <em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rename_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">source_dir</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_dir</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.file_manager.FileManager.rename_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="ex_installer.file_manager.FileManager.save_user_preferences">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">save_user_preferences</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">preferences</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.file_manager.FileManager.save_user_preferences" title="Link to this definition"></a></dt>
+<dd><p>Method to save user preferences to the user preference file</p>
+<p>Call this method with the user preferences dictionary, which will save these</p>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ex_installer.file_manager.FileManager.user_preference_dir">
+<span class="sig-name descname"><span class="pre">user_preference_dir</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'user-config'</span></em><a class="headerlink" href="#ex_installer.file_manager.FileManager.user_preference_dir" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="ex_installer.file_manager.FileManager.user_preference_file">
+<span class="sig-name descname"><span class="pre">user_preference_file</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">'ex-installer-preferences.json'</span></em><a class="headerlink" href="#ex_installer.file_manager.FileManager.user_preference_file" title="Link to this definition"></a></dt>
 <dd></dd></dl>
 
 <dl class="py method">
@@ -1589,8 +1980,8 @@ Writes utf-8 encoded</p>
 <dl class="py class">
 <dt class="sig sig-object py" id="ex_installer.common_widgets.WindowLayout">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">ex_installer.common_widgets.</span></span><span class="sig-name descname"><span class="pre">WindowLayout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Any</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.common_widgets.WindowLayout" title="Link to this definition"></a></dt>
-<dd><p>Class to define the window layout</p>
-<p>All views must inherit from this</p>
+<dd><p>Class to define the window layout used throughout the application.</p>
+<p>All views must inherit from this.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.common_widgets.WindowLayout.disable_input_states">
 <span class="sig-name descname"><span class="pre">disable_input_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">widget</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.common_widgets.WindowLayout.disable_input_states" title="Link to this definition"></a></dt>
@@ -1612,19 +2003,22 @@ Writes utf-8 encoded</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.common_widgets.WindowLayout.process_error">
 <span class="sig-name descname"><span class="pre">process_error</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">message</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.common_widgets.WindowLayout.process_error" title="Link to this definition"></a></dt>
-<dd><p>Stops the progress bar, sets status text, and makes font red</p>
+<dd><p>Stops the progress bar, sets status text, and makes font red.</p>
+<p>We must restore the previously recorded input states.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.common_widgets.WindowLayout.process_start">
 <span class="sig-name descname"><span class="pre">process_start</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">next_phase</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">activity</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">event</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.common_widgets.WindowLayout.process_start" title="Link to this definition"></a></dt>
-<dd><p>Starts a background process that requires monitoring and a progress bar</p>
+<dd><p>Starts a background process that requires monitoring and a progress bar.</p>
+<p>If this is a new process, we must record and disable the current input states.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="ex_installer.common_widgets.WindowLayout.process_stop">
 <span class="sig-name descname"><span class="pre">process_stop</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#ex_installer.common_widgets.WindowLayout.process_stop" title="Link to this definition"></a></dt>
-<dd><p>Stops the progress bar and resets status text</p>
+<dd><p>Stops the progress bar and resets status text.</p>
+<p>We must restore the previously recorded input states.</p>
 </dd></dl>
 
 <dl class="py method">
