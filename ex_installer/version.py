@@ -7,11 +7,12 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.19"
+ex_installer_version = "0.0.20"
 
 """
 Version history:
 
+0.0.20      - Fix bug with Windows file system path preventing cloning repositories
 0.0.19      - NOTE: Support for Windows 32bit is deprecated in this release
             - Building STM32 platforms on Windows 32bit is no longer possible
             - Numerous Python module updates to resolve security issues and a GUI bug on macOS
