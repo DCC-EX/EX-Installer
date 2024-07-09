@@ -174,8 +174,6 @@ class FileManager:
                     os.path.expanduser("~"),
                     "ex-installer",
                 )
-                if sys.platform.startswith("win"):
-                    _cli_path = _cli_path.replace("\\", "\\\\")
                 FileManager.log.debug(_cli_path)
                 return _cli_path
             else:
@@ -189,9 +187,7 @@ class FileManager:
         Returns the path to extract software into
         """
         if FileManager.get_base_dir():
-            dir = os.path.join(FileManager.get_base_dir().replace("\\\\", "\\"), product_name)
-            if sys.platform.startswith("win"):
-                dir = dir.replace("\\", "\\\\")
+            dir = os.path.join(FileManager.get_base_dir(), product_name)
             FileManager.log.debug(dir)
             return dir
         else:
