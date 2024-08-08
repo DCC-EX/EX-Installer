@@ -287,7 +287,10 @@ class ArduinoCLI:
         "DCC-EX EX-CSB1": "esp32:esp32:esp32",
         "ESP32 Dev Kit": "esp32:esp32:esp32",
         "STMicroelectronics Nucleo F411RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
-        "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
+        "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE",
+        "STMicroelectronics Nucleo F446ZE": "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F446ZE",
+        "STMicroelectronics Nucleo F429ZI": "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F429ZI",
+        "STMicroelectronics Nucleo F439ZI": "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F439ZI"
     }
 
     """

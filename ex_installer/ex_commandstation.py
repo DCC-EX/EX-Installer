@@ -512,6 +512,16 @@ class EXCommandStation(WindowLayout):
             if self.wifi_switch.get() == "on":
                 self.wifi_switch.toggle()
             self.wifi_switch.configure(state="enabled")
+        # Enable Ethernet by default for Nucleo-F429ZI and F439ZI and disable control
+        if (device_fqbn == "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F429ZI" or
+                        device_fqbn == "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F439ZI"):
+            if self.ethernet_switch.get() == "off":
+                self.ethernet_switch.toggle()
+            self.ethernet_switch.configure(state="disabled")
+        elif not (device_fqbn.startswith("arduino:avr:nano") or device_fqbn == "arduino:avr:uno"):
+            if self.ethernet_switch.get() == "on":
+                self.ethernet_switch.toggle()
+        self.wifi_switch.configure(state="enabled")
 
     def set_display(self):
         """
