@@ -290,7 +290,7 @@ class ArduinoCLI:
         "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE",
         "STMicroelectronics Nucleo F446ZE": "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F446ZE",
         "STMicroelectronics Nucleo F429ZI": "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F429ZI",
-        "STMicroelectronics Nucleo F439ZI": "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F439ZI"
+        "STMicroelectronics Nucleo F439ZI": "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F429ZI"
     }
 
     """
@@ -542,9 +542,13 @@ class ArduinoCLI:
         """
         Compiles and uploads the sketch in the specified directory to the provided board/port.
         """
-        params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
+        # params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
         if fqbn.startswith('esp32:esp32'):
+            params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
             params = params + ["--board-options", "UploadSpeed=115200"]
+        if fqbn.startswith('STMicroelectronics:stm32:'):
+            params = ["upload", "-v", "-t", "-b", fqbn+",upload_method=swdMethod", "-p", port, sketch_dir, "--format", "jsonmini"]
+            # fqbn = fqbn + [",upload_method=swdMethod"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
 
