@@ -713,7 +713,7 @@ class ManageArduinoCLI(WindowLayout):
 
         Flag the library as installed here but that should be validated in a later version.
         """
-        library = library_name + "@" + version
+        library = f'{library_name}@{version}' #library_name + "@" + version
         self.libraries_to_install[library_name]["state"] = "installed"
         self.log.debug(f"_install_single_library() {self.process_status}\nlibrary: {library}, version: {version}")
         self.process_start("install_libraries", "Install Arduino library " + library, "Manage_CLI")

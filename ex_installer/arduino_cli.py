@@ -274,6 +274,8 @@ class ArduinoCLI:
     Note that these were previously an attribute of a product in the product_details module but are now here.
     """
     arduino_libraries = {
+        "STM32duino STM32Ethernet": "1.4.0",
+        "MDNS_Generic": "1.4.2",
         "Ethernet": "2.0.2"
     }
 

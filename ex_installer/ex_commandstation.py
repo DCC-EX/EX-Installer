@@ -847,6 +847,9 @@ class EXCommandStation(WindowLayout):
             if self.wifi_switch.get() == "on":
                 param_errors.append("Can not have both Ethernet and WiFi enabled")
             else:
+                # For now, we'll specify HOSTNAME, but ideally we want folks to be able to change it!
+                line = '#define WIFI_HOSTNAME "' + self.wifi_hostname.get() + '"\n'
+                config_list.append(line)
                 config_list.append("#define ENABLE_ETHERNET true\n")
         if self.override_current_limit.get() == "on":
             try:
