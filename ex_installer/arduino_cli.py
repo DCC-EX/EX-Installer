@@ -257,7 +257,7 @@ class ArduinoCLI:
         },
         "STMicroelectronics Nucleo/STM32": {
             "platform_id": "STMicroelectronics:stm32",
-            "version": "2.7.1",
+            "version": "2.8.1",
             "url": "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
         }
     }
