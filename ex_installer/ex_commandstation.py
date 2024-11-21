@@ -734,7 +734,7 @@ class EXCommandStation(WindowLayout):
         If in access point mode:
         - Must be between 8 and 64 characters
 
-        In either mode, must not contain \ or "  # noqa: W605
+        In either mode, must not contain '\' or '"'  # noqa: W605
 
         Returns tuple of (True|False, message)
         """
