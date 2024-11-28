@@ -250,12 +250,12 @@ class ArduinoCLI:
     - STM32 locked to 2.7.1 because 2.8.0 introduces new output that needs logic to deal with
     """
     extra_platforms = {
-        "Espressif ESP32": {
+        "Espressif ESP32 (EX-CSB1)": {
             "platform_id": "esp32:esp32",
             "version": "2.0.17",
             "url": "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
         },
-        "STMicroelectronics Nucleo/STM32": {
+        "STMicroelectronics (Nucleo/STM32F4xx)": {
             "platform_id": "STMicroelectronics:stm32",
             "version": "2.8.1",
             "url": "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
@@ -283,10 +283,10 @@ class ArduinoCLI:
     Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices.
     """
     supported_devices = {
+        "DCC-EX EX-CSB1": "esp32:esp32:esp32",
         "Arduino Mega or Mega 2560": "arduino:avr:mega",
         "Arduino Uno": "arduino:avr:uno",
         "Arduino Nano": "arduino:avr:nano",
-        "DCC-EX EX-CSB1": "esp32:esp32:esp32",
         "ESP32 Dev Kit": "esp32:esp32:esp32",
         "STMicroelectronics Nucleo F411RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
         "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE",
@@ -545,8 +545,8 @@ class ArduinoCLI:
         Compiles and uploads the sketch in the specified directory to the provided board/port.
         """
         if fqbn.startswith('esp32:esp32'):
-            params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
-            params = params + ["--board-options", "UploadSpeed=115200"]
+            params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"] #, "--board-options", "UploadSpeed=230400"]
+            params = params + ["--board-options", "UploadSpeed=460800"]
         elif fqbn.startswith('STMicroelectronics:stm32:'):
             params = ["upload", "-v", "-t", "-b", fqbn+",upload_method=swdMethod", "-p", port, sketch_dir, "--format", "jsonmini"]
             # fqbn = fqbn + [",upload_method=swdMethod"]
