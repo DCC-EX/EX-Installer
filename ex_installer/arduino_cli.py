@@ -545,11 +545,13 @@ class ArduinoCLI:
         Compiles and uploads the sketch in the specified directory to the provided board/port.
         """
         if fqbn.startswith('esp32:esp32'):
-            params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"] #, "--board-options", "UploadSpeed=230400"]
-            params = params + ["--board-options", "UploadSpeed=460800"]
+            params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
+            params = params + ["--board-options", "UploadSpeed=115200"] # upload speeds of 230400 and 460800 are possible, but for now go slow
         elif fqbn.startswith('STMicroelectronics:stm32:'):
-            params = ["upload", "-v", "-t", "-b", fqbn+",upload_method=swdMethod", "-p", port, sketch_dir, "--format", "jsonmini"]
-            # fqbn = fqbn + [",upload_method=swdMethod"]
+            fqbn_nucleo = fqbn
+            # fqbn_nucleo += ",upload_method=swdMethod" # this allows use of SWD upload, sadly this requires STM32CubeProgrammer to be installed
+            # defaults to using DFU upload as a "virtual USB disk"
+            params = ["upload", "-v", "-t", "-b", fqbn_nucleo, "-p", port, sketch_dir, "--format", "jsonmini"]
         else:
             params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
         acli = ThreadedArduinoCLI(file_path, params, queue)

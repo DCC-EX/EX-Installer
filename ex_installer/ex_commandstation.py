@@ -556,11 +556,11 @@ class EXCommandStation(WindowLayout):
                 self.booster_input_entry.configure(state="disabled")
             else:
                 # Here we have an ESP32 which may have a booster, but will let users decide which pin, suggesting GPIO22
-                if self.booster_input.get() == "on":
-                    self.booster_input_switch.deselect()
+                if self.booster_input_enabled.get() == "off":
+                    self.booster_input_switch.select()
                 self.booster_input_entry.configure(state="normal")
         else:
-            if self.booster_input.get() == "on":
+            if self.booster_input_enabled.get() == "on":
                 self.booster_input_switch.deselect()
             self.booster_input_entry.configure(state="disabled")
 
@@ -920,19 +920,20 @@ class EXCommandStation(WindowLayout):
                 config_list.append(line)
                 config_list.append("#define ENABLE_ETHERNET true\n")
         if self.booster_input_switch.get() == "on":
-            if device_fqbn.startswith("esp32"):
+            if device_fqbn.startswith("esp32:"):
                 if self.acli.dccex_device == "EXCSB1":
                     booster_input_gpio = "32"
                     wifi_led_gpio = "33"
                 else:
+                    print("Not an excsb1!")
                     booster_input_gpio = "26"
                     wifi_led_gpio = "2"
-            else:
-                booster_input_gpio = "UNKNOWN"
-            line = '#define BOOSTER_INPUT ' + booster_input_gpio + '\n'
-            config_list.append(line)
-            line = '#define WIFI_LED ' + wifi_led_gpio + '\n'
-            config_list.append(line)
+                line = '#define WIFI_LED ' + wifi_led_gpio + '\n'
+                config_list.append(line)
+                line = '#define BOOSTER_INPUT ' + booster_input_gpio + '\n'
+                config_list.append(line)
+            # else:
+            #     booster_input_gpio = "UNKNOWN"
         if self.override_current_limit.get() == "on":
             try:
                 int(self.current_limit.get())
