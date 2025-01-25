@@ -123,3 +123,17 @@ Windows command:
 Linux command:
 
 `pyinstaller --windowed --clean --onefile --icon=ex_installer/images/dccex-logo.png ex_installer/__main__.py --name "EX-Installer-<platform>" --add-data "<repository>/ex_installer/images/*:images" --add-data "<repository>/ex_installer/theme/dcc-ex-theme.json:theme/." --add-data "<repository>/venv/lib/python3.8/site-packages/customtkinter:customtkinter" --hidden-import="PIL._tkinter_finder"`
+
+## Nuitka notes
+
+Set up a fresh virtual environment `virtualenv venv`, activate it `venv\scripts\activate`, and `pip install -r requirements-new.txt`.
+
+Install Nuitka with `pip install nuitka`.
+
+Initial test build command on Windows:
+
+`python -m nuitka --standalone --onefile --windows-icon-from-ico=ex_installer/images/dccex.ico --windows-console-mode=disable --enable-plugin=tk-inter --output-filename=EX-Installer-Win64 --output-dir=dist --remove-output --company-name="DCC-EX" --product-name="EX-Installer" --product-version=0.0.21 --include-module=cffi --include-data-dir=ex_installer/images=ex_installer/images --include-data-dir=ex_installer/theme=ex_installer/theme ex_installer`
+
+During this process, Nuitka will prompt to download and install a specific version of gcc using the MinGW64 libs, accept this, and also accept downloading Dependency Walker.
+
+Unlike PyInstaller, this will actually commence compiling the C code into a single .exe file.

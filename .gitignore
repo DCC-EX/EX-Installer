@@ -169,3 +169,6 @@ file_version.txt
 # macOS build app directory (not required)
 dist/EX-Installer-macOS.app/
 .DS_Store
+
+# Nuitka build folders
+dist/ex_installer.*/
