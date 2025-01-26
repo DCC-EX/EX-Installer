@@ -13,7 +13,10 @@ idna==3.10
 imagesize==1.4.1
 Jinja2==3.1.5
 MarkupSafe==3.0.2
+Nuitka==2.6
+ordered-set==4.1.0
 packaging==24.2
+patchelf==0.17.2.1
 pillow==11.1.0
 pycparser==2.22
 pyenchant==3.2.2
@@ -36,3 +39,4 @@ sphinxcontrib-serializinghtml==2.0.0
 sphinxcontrib-spelling==8.0.1
 tomli==2.2.1
 urllib3==2.3.0
+zstandard==0.23.0
