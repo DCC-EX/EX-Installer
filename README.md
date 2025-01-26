@@ -126,6 +126,8 @@ Linux command:
 
 ## Nuitka notes
 
+**Delete the existing virtual environment before continuing**
+
 Set up a fresh virtual environment `virtualenv venv`, activate it `venv\scripts\activate`, and `pip install -r requirements-new.txt`.
 
 Install Nuitka with `pip install nuitka`.
@@ -133,6 +135,14 @@ Install Nuitka with `pip install nuitka`.
 Initial test build command on Windows:
 
 `python -m nuitka --standalone --onefile --windows-icon-from-ico=ex_installer/images/dccex.ico --windows-console-mode=disable --enable-plugin=tk-inter --output-filename=EX-Installer-Win64 --output-dir=dist --remove-output --company-name="DCC-EX" --product-name="EX-Installer" --product-version=0.0.22 --include-module=cffi --include-data-dir=ex_installer/images=ex_installer/images --include-data-dir=ex_installer/theme=ex_installer/theme ex_installer`
+
+Test build command on Linux:
+
+`python -m nuitka --standalone --onefile --windows-console-mode=disable --enable-plugin=tk-inter --output-filename=EX-Installer-Linux64 --output-dir=dist --remove-output --company-name="DCC-EX" --product-name="EX-Installer" --product-version=0.0.22 --include-module=cffi --include-data-dir=ex_installer/images=ex_installer/images --include-data-dir=ex_installer/theme=ex_installer/theme ex_installer`
+
+Test build command on macOS:
+
+`python -m nuitka --standalone --onefile --windows-icon-from-ico=ex_installer/images/dccex.ico --windows-console-mode=disable --enable-plugin=tk-inter --output-filename=EX-Installer-macOS --output-dir=dist --remove-output --company-name="DCC-EX" --product-name="EX-Installer" --product-version=0.0.22 --include-module=cffi --include-data-dir=ex_installer/images=ex_installer/images --include-data-dir=ex_installer/theme=ex_installer/theme ex_installer`
 
 During this process, Nuitka will prompt to download and install a specific version of gcc using the MinGW64 libs, accept this, and also accept downloading Dependency Walker.
 
