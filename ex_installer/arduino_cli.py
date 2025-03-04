@@ -247,7 +247,7 @@ class ArduinoCLI:
     }
 
     - ESP32 locked to 2.0.17 as 3.x causes compile errors for EX-CommandStation
-    - STM32 locked to 2.7.1 because 2.8.0 introduces new output that needs logic to deal with
+    - STM32 locked to 2.9.0 as 2.8.0 introduced new output that needs logic to deal with, and 2.9.0 supports F429ZI/F439ZI variants
     """
     extra_platforms = {
         "Espressif ESP32 (EX-CSB1)": {
@@ -257,7 +257,7 @@ class ArduinoCLI:
         },
         "STMicroelectronics (Nucleo/STM32F4xx)": {
             "platform_id": "STMicroelectronics:stm32",
-            "version": "2.8.1",
+            "version": "2.9.0",
             "url": "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
         }
     }
@@ -545,8 +545,8 @@ class ArduinoCLI:
         Compiles and uploads the sketch in the specified directory to the provided board/port.
         """
         if fqbn.startswith('esp32:esp32'):
-            params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
-            params = params + ["--board-options", "UploadSpeed=115200"] # upload speeds of 230400 and 460800 are possible, but for now go slow
+            params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"] #, "--before", "default_reset", "--after", "hard_reset"]
+            params = params + ["--board-options", "UploadSpeed=115200"]#, "--before", "default_reset", "--after", "hard_reset"] # upload speeds of 230400 and 460800 are possible, but for now go slow
         elif fqbn.startswith('STMicroelectronics:stm32:'):
             fqbn_nucleo = fqbn
             # fqbn_nucleo += ",upload_method=swdMethod" # this allows use of SWD upload, sadly this requires STM32CubeProgrammer to be installed
