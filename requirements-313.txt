@@ -1,0 +1,14 @@
+certifi==2025.4.26
+cffi==1.17.1
+charset-normalizer==3.4.2
+CTkMessagebox==2.7
+customtkinter==5.2.2
+darkdetect==0.8.0
+idna==3.10
+packaging==25.0
+pillow==11.2.1
+pycparser==2.22
+pygit2==1.18.0
+pyserial==3.5
+requests==2.32.3
+urllib3==2.4.0
