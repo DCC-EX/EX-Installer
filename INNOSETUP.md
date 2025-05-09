@@ -51,3 +51,5 @@ Mounting the EX-Installer directory on my local machine to an Oracle VirtualBox 
 ## Inno Setup
 
 Install Inno Setup 6 (6.4.3 at time of writing), and note there is a VSCode Extension "Inno Setup" that will help with syntax etc.
+
+Use the built in wizard to create a new .iss file.

@@ -14,6 +14,7 @@ Version history:
 
 0.0.21      - Adding STM32 Ethernet support, and support for more platform targets
             - STM32 upload now via serial SWD (swdMethod) instead of DFU USB memory stick emulation
+            - Windows EX-Installer now distributed as a setup file using Inno Setup
 0.0.20      - Fix bug with Windows file system path preventing cloning repositories
 0.0.19      - NOTE: Support for Windows 32bit is deprecated in this release
             - Building STM32 platforms on Windows 32bit is no longer possible
