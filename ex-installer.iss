@@ -28,8 +28,8 @@ SolidCompression=yes
 WizardStyle=modern
 SetupIconFile=ex_installer\images\dccex.ico
 OutputDir=dist
-ArchitecturesInstallIn64BitMode=x64
-UninstallFilesDir="{app}\__pycache__"
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
@@ -40,7 +40,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 [Files]
 Source: "launch_ex_installer.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "python\*"; DestDir: "{app}\python"; Flags: recursesubdirs
-Source: "ex_installer\*"; DestDir: "{app}\ex_installer"; Flags: recursesubdirs Excludes: "__pycache__"
+Source: "ex_installer\*"; DestDir: "{app}\ex_installer"; Flags: recursesubdirs; Excludes: "__pycache__"
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
