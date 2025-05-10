@@ -4,21 +4,21 @@ EX-Installer is a Python based, cross-platform installer for the various Arduino
 
 Binaries will be made available to allow EX-Installer to be run on:
 
-- Windows 10/11
-- Linux graphical environments
+- Windows 10/11 (64 bit only)
+- Linux graphical environments (64 bit only, not Raspberry Pi)
 - macOS
 
 ## What's in this repository?
 
 This repository includes all source code of EX-Installer, along with related documentation and screen captures of the initial design ideas.
 
-The binaries are kept in the /dist directory of the repository, and will also be hosted on the [DCC-EX website](https://dcc-ex.com).
+The binaries are attached to each version's release of EX-Installer, and will also be linked from the [DCC-EX website](https://dcc-ex.com).
 
-### EX-Installer-Configs repository
+<!-- ### EX-Installer-Configs repository
 
 In addition to this EX-Installer repository, there is a separate repository [EX-Installer-Configs](https://github.com/DCC-EX/EX-Installer-Configs) which contains various configuration information that EX-Installer relies on.
 
-This enables product and device configuration information to be updated without necessarily needing to build a new release of EX-Installer binaries.
+This enables product and device configuration information to be updated without necessarily needing to build a new release of EX-Installer binaries. -->
 
 ## Operating principles and modules
 
@@ -43,9 +43,7 @@ The main Python modules in use are:
 
 ## Supported products
 
-Initially, EX-Installer will be focused on basic configuration and installation of EX-CommandStation only in order to be able to replace the previous version of EX-Installer.
-
-Once stable, it will be expanded to be able to configure and install all of our Arduino based products including:
+Currently, EX-Installer configures and installs:
 
 - EX-CommandStation
 - EX-IOExpander
@@ -53,9 +51,11 @@ Once stable, it will be expanded to be able to configure and install all of our 
 
 ## Running EX-Installer
 
-To run EX-Installer, simply download the appropriate executable or binary file for the Operating System in use.
+To run EX-Installer on macOS or Linux, simply download the appropriate executable or binary file for the Operating System in use from the release.
 
-If downloading directly from GitHub, use the "raw" file download.
+On Windows, download the installation setup file "EX-Installer-Setup-Win64.exe" to install EX-Installer.
+
+### Run as a Python module
 
 Alternatively, if desired, it can be run using a local Python install as a Python module.
 
@@ -82,7 +82,9 @@ Once all binaries for a specific version have been built and published, a GitHub
 
 ## How to build binaries
 
-PyInstaller is used to build Windows executables and binaries for Linux/macOS.
+**NOTE** that for Windows users, InnoSetup is now used to distribute a setup file instead, refer to `InnoSetup\INNOSETUP.md` for details on how this works.
+
+PyInstaller is used to build binaries for Linux/macOS.
 
 The use of CustomTkinter dictates that some extra options need to be defined to ensure non-Python files are included in the binary, otherwise they will not execute correctly.
 
@@ -97,7 +99,7 @@ The script will refer to the "version.py" file mentioned above, so this needs to
 To run the script, you need to pass the EX-Installer repository directory and the platform being built for:
 
 ```shell
-python -m build_app -D <Directory path> -P <Win32|Win64|Linux64|macOS>
+python -m build_app -D <Directory path> -P <Linux64|macOS>
 ```
 
 ### Building manually
@@ -109,17 +111,11 @@ These directories are referenced in the commands below:
 - \<repository\> - This is the directory containing the locally cloned EX-Installer repository
 - \<python version\> - This is the directory containing the Python version's local packages
 - \<platform\> - This is the platform the binary is built for:
-  - Win64 - Windows 64 bit
-  - Win32 - Windows 32 bit
   - Linux64 - Linux 64 bit
   - macOS - macOS (64 bit only)
 
 The build commands should be executed in a command prompt or terminal window in the directory containing the cloned repository.
 
-Windows command:
-
-`pyinstaller --windowed --clean --onefile --icon=ex_installer\images\dccex-logo.png ex_installer\__main__.py --name "EX-Installer-<platform>" --add-data "<repository>\ex_installer\images\*;images" --add-data "<repository>\ex_installer\theme\dcc-ex-theme.json;theme/." --add-data "<repository>\venv\Lib\site-packages\customtkinter;customtkinter"`
-
-Linux command:
+Linux/macOS command:
 
 `pyinstaller --windowed --clean --onefile --icon=ex_installer/images/dccex-logo.png ex_installer/__main__.py --name "EX-Installer-<platform>" --add-data "<repository>/ex_installer/images/*:images" --add-data "<repository>/ex_installer/theme/dcc-ex-theme.json:theme/." --add-data "<repository>/venv/lib/python3.8/site-packages/customtkinter:customtkinter" --hidden-import="PIL._tkinter_finder"`
