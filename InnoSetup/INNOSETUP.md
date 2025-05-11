@@ -1,55 +1,43 @@
-# Experimenting with Inno Setup
+# Building and Distributing Windows Versions with Inno Setup
 
-Trying an experiment to see if distributing EX-Installer as an installed application rather than a pre-compiled single .exe with PyInstaller can help alleviate the anti-virus and Windows Defender issues users are experiencing.
+As of version 0.0.21, EX-Installer will no long be distributed as a single .exe built with PyInstaller due to the myriad of issues encountered with anti-virus applications and Windows Defender.
 
-To be able to use Inno Setup, we need to have a way of installing not just the EX-Installer Python modules, but also a version of Python that will work on Windows systems that have no existing Python installation, but also not conflict with those that do have an existing installation.
+Instead, [Inno Setup](https://jrsoftware.org/isinfo.php) is used to build an installer, which users can use to install EX-Installer.
 
-## New Portable Python - 3.13
+Given this will no longer provide a standalone, independent version of Python, [WinPython](https://winpython.github.io/) is included in the installer built with Inno Setup. This mitigates users having to install Python when they don't know how, and also prevents conflicts with other existing versions.
 
-These experiments are being run with Python 3.13 to ensure the latest  version is in use and to take advantage of any new bug fixes and security updates.
+## Building the Windows Installer
 
-To help with simpler distribution, WinPython 3.13.2 is being used to allow Python to be distributed without needing to be installed or managed separately, which also ensures a contained version that does not impact, and is not impacted by, other Python versions.
+### WinPython
 
-### Setting up WinPython
+Download the WinPython zip file and copy the included "python" directory to the root of the EX-Installer directory. WinPython releases are [here](https://winpython.github.io/).
 
-Download the WinPython zip file and copy the included "python" directory to the root of the EX-Installer directory.
+Use the latest stable 64bit zip file eg. "Winpython64-3.13.0dot.zip".
 
-### Adding EX-Installer packages to WinPython
+The copied "python" directory should be at the same level in the directory structure as "dist", "docs", "ex_installer", and "InnoSetup".
 
-Download  the .whl files for each required package identified in requirements-313.txt into a "downloads directory in the root of the EX-Installer directory.
+### Install WinPython Requirements
 
-Extract the contents of each .whl file using WinPython:
-
-```
-python\python.exe -m zipfile -e downloads\<.whl file> python\Lib
-```
-
-You will need to force reinstall Pillow to fix the missing "_imaging" binary:
+Ensure the required Python packages are installed:
 
 ```
-python\python.exe -m pip install --force-reinstall --no-cache-dir Pillow
+python\python.exe -m pip install -r InnoSetup\winpython-requirements.txt
 ```
 
-This may also work with WinPython's pip module:
-
-```
-python\python.exe -m pip install -r requirements-313.txt
-```
+Be careful to run this using the WinPython's python.exe, not any other installed version.
 
 ### Test EX-Installer
 
-At this point, EX-Installer should run as a module with:
+At this point, EX-Installer should run as a module with WinPython using:
 
 ```
 python\python.exe -m ex_installer
 ```
 
-## Initial Test
+### Inno Setup
 
-Mounting the EX-Installer directory on my local machine to an Oracle VirtualBox Windows VM with no version of Python or anything else installed via a shared folder enabled me to run EX-Installer using the WinPython version of Python and was able to successfully download the Arduino CLI and compile for a fake device.
+Download and install [Inno Setup 6](https://jrsoftware.org/isdl.php) (6.4.3 at time of writing), and note there is a VSCode Extension "Inno Setup" that will help with syntax etc.
 
-## Inno Setup
+Open Inno Setup and open the file "InnoSetup\ex-installer.iss".
 
-Install Inno Setup 6 (6.4.3 at time of writing), and note there is a VSCode Extension "Inno Setup" that will help with syntax etc.
-
-Use the built in wizard to create a new .iss file.
+To compile the installer, simply click the "Compile" button. Provided there are no errors, "EX-Installer-Setup-Win64.exe" will be compiled and located in the "dist" folder, ready to be added to the release.
