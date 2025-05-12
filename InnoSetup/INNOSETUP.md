@@ -8,6 +8,8 @@ Given this will no longer provide a standalone, independent version of Python, [
 
 ## Building the Windows Installer
 
+**NOTE** Until this part can be automated, you **must** manually edit `InnoSetup\ex-installer.iss` and set "MyAppVersion" to the current version of EX-Installer.
+
 ### WinPython
 
 Download the WinPython zip file and copy the included "python" directory to the root of the EX-Installer directory. WinPython releases are [here](https://winpython.github.io/).
@@ -15,6 +17,8 @@ Download the WinPython zip file and copy the included "python" directory to the 
 Use the latest stable 64bit zip file eg. "Winpython64-3.13.0dot.zip".
 
 The copied "python" directory should be at the same level in the directory structure as "dist", "docs", "ex_installer", and "InnoSetup".
+
+To reduce the size of the compiled .exe file, deleting the "python\Doc" directory is recommended.
 
 ### Install WinPython Requirements
 
