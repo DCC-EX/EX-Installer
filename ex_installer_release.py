@@ -37,6 +37,7 @@ current_version = ex_installer_version
 github_instance = Github(github_token)
 repo = github_instance.get_repo(repo_name)
 
+
 def get_version_release(repo: Repository, version: str) -> Optional[GitRelease]:
     """
     Get the release for the provided version number.
@@ -44,7 +45,7 @@ def get_version_release(repo: Repository, version: str) -> Optional[GitRelease]:
     Args:
         repo (Repository): A GitHub repository instance
         version (str): String containing the current version number
-    
+
     Returns:
         Optional[GitRelease]: Github release for this version, or None if it doesn't exist
     """
@@ -59,6 +60,7 @@ def get_version_release(repo: Repository, version: str) -> Optional[GitRelease]:
         print(f"Could not check releases: {error}")
     return version_release
 
+
 def get_version_tag(repo: Repository, version: str) -> Optional[str]:
     """
     Get the tag for the provided version number if it exists.
@@ -66,7 +68,7 @@ def get_version_tag(repo: Repository, version: str) -> Optional[str]:
     Args:
         repo (Repository): A GitHub repository instance
         version (str): String containing the current version number
-    
+
     Returns:
         Optional[str]: The tag if it exists, otherwise None
     """
@@ -80,6 +82,7 @@ def get_version_tag(repo: Repository, version: str) -> Optional[str]:
     except Exception as error:
         print(f"Could not check tags: {error}")
     return version_tag
+
 
 def extract_release_notes(version: str, file_path: str) -> str:
     """
@@ -113,6 +116,7 @@ def extract_release_notes(version: str, file_path: str) -> str:
         print(f"Could not get contents from {file_path}: {error}")
     return "\n".join(f"{note}" for note in notes)
 
+
 def create_draft_release(repo: Repository, version: str, production: bool) -> GitRelease:
     """
     Create a new draft release for the provided version.
@@ -121,7 +125,7 @@ def create_draft_release(repo: Repository, version: str, production: bool) -> Gi
         repo (Repository): Instance of a repository to create the release for
         version (str): Version string to use for the release
         production (bool): Flag if this is a Production release or not
-    
+
     Returns:
         GitRelease: An instance of a release
     """
@@ -133,14 +137,38 @@ def create_draft_release(repo: Repository, version: str, production: bool) -> Gi
             print(f"Error creating new tag: {error}")
 
 
-release = get_version_release(repo, current_version)
-if release:
-    print(f"Release exists: {release.tag_name}")
-else:
-    create_draft_release(repo, current_version, False)
+"""
+This script will use the version in version.py to determine the release type and tag name:
+- Anything less than 1.x.x is development (vX.Y.Z-Devel)
+- Once reaching 1.Y.Z, like EX-CommandStation, odd Y = Devel, even Y = Prod
+
+Script must validate that the version in version.py matches the version in ex-installer.iss.
+
+Mandatory user arguments to provide:
+- Current working branch - need to use this for the correct commit SHA for the version tag
+- Binary/.exe to add as an asset to the release
+- Publish the release (optional)
+
+Process:
+- Check if a release exists for the current version (get_version_release())
+- If not, check if a tag exists (get_version_tag())
+- If not, get latest commit SHA and create new tag
+- Extract release notes from version.py (extract_release_notes())
+- Create new draft release with tag and release notes using version as name (create_draft_release())
+- Add the provided binary/.exe to the asset
+- If release exists, just add asset
+- If publish flag set, set as the latest release and publish
+
+Optional:
+- Remove or update an asset
+"""
 
 
-
-version_file_path = os.path.join(os.getcwd(), "ex_installer", "version.py")
-notes = extract_release_notes(current_version, version_file_path)
-print(notes)
+# release = get_version_release(repo, current_version)
+# if release:
+#     print(f"Release exists: {release.tag_name}")
+# else:
+#     create_draft_release(repo, current_version, False)
+# version_file_path = os.path.join(os.getcwd(), "ex_installer", "version.py")
+# notes = extract_release_notes(current_version, version_file_path)
+# print(notes)
