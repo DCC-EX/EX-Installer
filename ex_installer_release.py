@@ -58,50 +58,26 @@ All functions for this script are below, script logic follows these.
 """
 
 
-def get_version_release(repo: Repository, version: str) -> Optional[GitRelease]:
+def get_version_release(repo: Repository, tag_name: str) -> Optional[GitRelease]:
     """
-    Get the release for the provided version number.
+    Get the release for the provided tag name.
 
     Args:
         repo (Repository): A GitHub repository instance
-        version (str): String containing the current version number
+        tag_name (str): String containing the tag this release should be associated with
 
     Returns:
         Optional[GitRelease]: Github release for this version, or None if it doesn't exist
     """
     version_release = None
-    version_pattern = re.compile(rf"v?{re.escape(version)}(-\w+)?$")
     try:
         for release in repo.get_releases():
-            if version_pattern.match(release.tag_name):
+            if release.tag_name == tag_name:
                 version_release = release
                 break
     except Exception as error:
         print(f"Could not check releases: {error}")
     return version_release
-
-
-def get_version_tag(repo: Repository, version: str) -> Optional[str]:
-    """
-    Get the tag for the provided version number if it exists.
-
-    Args:
-        repo (Repository): A GitHub repository instance
-        version (str): String containing the current version number
-
-    Returns:
-        Optional[str]: The tag if it exists, otherwise None
-    """
-    version_tag = None
-    version_pattern = re.compile(rf"v?{re.escape(version)}(-\w+)?$")
-    try:
-        for tag in repo.get_tags():
-            if version_pattern.match(tag.name):
-                version_tag = tag.name
-                break
-    except Exception as error:
-        print(f"Could not check tags: {error}")
-    return version_tag
 
 
 def extract_release_notes(version: str, file_path: str) -> str:
@@ -137,24 +113,49 @@ def extract_release_notes(version: str, file_path: str) -> str:
     return "\n".join(f"{note}" for note in notes)
 
 
-def create_draft_release(repo: Repository, version: str, production: bool) -> GitRelease:
+def create_draft_release(repo: Repository, tag_name: str, author: str, release_notes: str, publish: bool) -> GitRelease:
     """
     Create a new draft release for the provided version.
 
     Args:
         repo (Repository): Instance of a repository to create the release for
-        version (str): Version string to use for the release
-        production (bool): Flag if this is a Production release or not
+        tag_name (str): Tag name to associate with this release
+        author (str): Author of the tag/release
+        release_notes (str): Release notes to include in this release
+        publish (bool): Flag if this should be published or just a draft
 
     Returns:
         GitRelease: An instance of a release
     """
-    tag = get_version_tag(repo, current_version)
-    if tag is None:
+    # First make sure we have a tag associated with the latest commit
+    git_tag = None
+    release = None
+    release_name = "EX-Installer Release " + tag_name
+    if publish:
+        draft = False
+    else:
+        draft = True
+    for tag in repo.get_tags():
+        if tag.name == tag_name:
+            git_tag = tag
+            break
+    # If no tag, create release and tag based on latest commit
+    if git_tag is None:
+        # Get the latest commit
+        commit_sha = repo.get_commits()[0].sha
+        print(f"Using commit with SHA {commit_sha}")
         try:
-            tag = repo.create_git_tag(version, version, '', 'commit')
+            release = repo.create_git_tag_and_release(
+                tag_name, tag_name, release_name, release_notes,
+                commit_sha, 'commit', author, draft, False, False, publish)
         except Exception as error:
-            print(f"Error creating new tag: {error}")
+            print(f"ERROR: Could not create tag or release: {error}")
+    else:
+        try:
+            release = repo.create_git_release(tag_name, release_name, release_notes, draft, False, False, '', publish)
+        except Exception as error:
+            print(f"Could not create release: {error}")
+    return release
 
 
 def process_file_list(files: str) -> List:
@@ -177,7 +178,7 @@ def process_file_list(files: str) -> List:
     return file_paths
 
 
-def build_tag(version: str) -> Optional[str]:
+def build_tag_name(version: str) -> Optional[str]:
     """
     Use the provided version string to determine the correct Git tag for the release.
 
@@ -191,16 +192,27 @@ def build_tag(version: str) -> Optional[str]:
     Returns:
         Optional (str): Tag name string in 'vX.Y.Z-[Devel|Prod]' format, or None if version is not valid
     """
-    version_tag = None
     production = False
-    version_numbers = version.split('.')
-    if len(version_numbers) != 3:
+    version_numbers = []
+    # If we don't have exactly 3, invalid
+    if len(version.split('.')) != 3:
         return None
-    for number in version_numbers:
+    # Validate each item is a digit
+    for number in version.split('.'):
         number = number.strip()
         if not number.isdigit():
-            print(f"Version string '{version}' contains invalid characters, cannot build tag name.")
-            return version_tag
+            return None
+        version_numbers.append(int(number))
+    # 1.y.z or later and y is even = production
+    if version_numbers[0] > 0 and version_numbers[1] % 2 == 0:
+        production = True
+    # If we got here, build our tag
+    version_tag = "v" + ".".join(map(str, version_numbers))
+    if production:
+        version_tag += "-Prod"
+    else:
+        version_tag += "-Devel"
+    return version_tag
 
 
 """
@@ -236,18 +248,15 @@ except Exception as error:
     print(f"Could not connect to GitHub: {error}")
     exit()
 
+# Validate the provided repository exists, and get it
 try:
     repo = github_instance.get_repo(repo_name)
 except Exception as error:
     print(f"Could not get repository '{repo_name}': {error}")
     exit()
 
-# Get the specified branch, or abort if doesn't exist
-try:
-    branch = repo.get_branch(args.branch)
-except Exception as error:
-    print(f"Could not get branch '{args.branch}': {error}")
-    exit()
+# Get the author name for creating tags/releases
+author = github_instance.get_user().login
 
 # If files are to be added, validate and build the file path list
 file_list = process_file_list(args.files)
@@ -255,14 +264,17 @@ if len(file_list) == 0:
     print("ERROR: You haven't provided any valid files, at least one file must be provided.")
     exit()
 
+# Get the tag name that should be associated with this release
+tag_name = build_tag_name(ex_installer_version)
+if tag_name is None:
+    print(f"Could not create tag name from '{ex_installer_version}', aborting.")
+    exit()
 
-
-
-# release = get_version_release(repo, current_version)
-# if release:
-#     print(f"Release exists: {release.tag_name}")
-# else:
-#     create_draft_release(repo, current_version, False)
-# version_file_path = os.path.join(os.getcwd(), "ex_installer", "version.py")
-# notes = extract_release_notes(current_version, version_file_path)
-# print(notes)
+# Now check if we have a release
+release = get_version_release(repo, tag_name)
+if release:
+    print(f"Release exists: {release.tag_name}")
+else:
+    version_file_path = os.path.join(os.getcwd(), "ex_installer", "version.py")
+    release_notes = extract_release_notes(ex_installer_version, version_file_path)
+    create_draft_release(repo, tag_name, author, release_notes, args.publish)
