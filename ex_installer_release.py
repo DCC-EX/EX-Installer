@@ -22,8 +22,28 @@ from github.GitRelease import GitRelease
 import os
 from dotenv import load_dotenv
 from ex_installer.version import ex_installer_version
-from typing import Optional
+from typing import Optional, List
 import re
+import argparse
+
+# Create argument parser and add arguments
+parser = argparse.ArgumentParser()
+
+# Add branch and publish arguments
+parser.add_argument("-B", "--branch", help="Branch to use the latest commit from for tagging",
+                    required=True, dest="branch")
+parser.add_argument(
+    "-P", "--publish", help="If provided, this will trigger the release to be published rather than remaining a draft",
+    action="store_true")
+# Add files and delete group arguments, either must be specified, but not both
+file_arg_group = parser.add_mutually_exclusive_group(required=True)
+file_arg_group.add_argument(
+    "-F", "--files", help="Comma separated list of files in the 'dist' folder to attach to the release", dest="files")
+file_arg_group.add_argument(
+    "-D", "--delete", help="Single file to be deleted from the release, cannot use with -F|--files", dest="delete")
+
+# Parse the args ready for validation later
+args = parser.parse_args()
 
 # Load environment variables from .env file
 load_dotenv()
@@ -31,11 +51,11 @@ load_dotenv()
 # Set GitHub token, name of the repository, and the current EX-Installer version
 github_token = os.getenv("GITHUB_TOKEN")
 repo_name = os.getenv("REPO")
-current_version = ex_installer_version
 
-# Connect to GitHub using the token and get the repository
-github_instance = Github(github_token)
-repo = github_instance.get_repo(repo_name)
+
+"""
+All functions for this script are below, script logic follows these.
+"""
 
 
 def get_version_release(repo: Repository, version: str) -> Optional[GitRelease]:
@@ -137,6 +157,52 @@ def create_draft_release(repo: Repository, version: str, production: bool) -> Gi
             print(f"Error creating new tag: {error}")
 
 
+def process_file_list(files: str) -> List:
+    """
+    Processes a comma separated list of files into a List of full file paths.
+
+    Args:
+        files (str): String containing comma separated list of files
+
+    Returns:
+        List: List of file paths
+    """
+    file_paths = []
+    for file_name in files.split(","):
+        file_path = os.path.join(os.getcwd(), "dist", file_name.strip())
+        if os.path.isfile(file_path):
+            file_paths.append(file_path)
+        else:
+            print(f"WARNING: Provided file '{file_path}' is not a valid file and will not be added to the release.")
+    return file_paths
+
+
+def build_tag(version: str) -> Optional[str]:
+    """
+    Use the provided version string to determine the correct Git tag for the release.
+
+    Any version less than 1.y.z will be Devel.
+    Any version after 1.y.z with even y will be Prod.
+    Any version after 1.y.z with odd y will be Devel.
+
+    Args:
+        version (str): Semantic version string in 'X.Y.Z' format
+
+    Returns:
+        Optional (str): Tag name string in 'vX.Y.Z-[Devel|Prod]' format, or None if version is not valid
+    """
+    version_tag = None
+    production = False
+    version_numbers = version.split('.')
+    if len(version_numbers) != 3:
+        return None
+    for number in version_numbers:
+        number = number.strip()
+        if not number.isdigit():
+            print(f"Version string '{version}' contains invalid characters, cannot build tag name.")
+            return version_tag
+
+
 """
 This script will use the version in version.py to determine the release type and tag name:
 - Anything less than 1.x.x is development (vX.Y.Z-Devel)
@@ -150,6 +216,7 @@ Mandatory user arguments to provide:
 - Publish the release (optional)
 
 Process:
+- Validate arguments are valid (Branch must exist, files must exist, cannot add and delete)
 - Check if a release exists for the current version (get_version_release())
 - If not, check if a tag exists (get_version_tag())
 - If not, get latest commit SHA and create new tag
@@ -162,6 +229,33 @@ Process:
 Optional:
 - Remove or update an asset
 """
+# Connect to GitHub using the token and get the repository
+try:
+    github_instance = Github(github_token)
+except Exception as error:
+    print(f"Could not connect to GitHub: {error}")
+    exit()
+
+try:
+    repo = github_instance.get_repo(repo_name)
+except Exception as error:
+    print(f"Could not get repository '{repo_name}': {error}")
+    exit()
+
+# Get the specified branch, or abort if doesn't exist
+try:
+    branch = repo.get_branch(args.branch)
+except Exception as error:
+    print(f"Could not get branch '{args.branch}': {error}")
+    exit()
+
+# If files are to be added, validate and build the file path list
+file_list = process_file_list(args.files)
+if len(file_list) == 0:
+    print("ERROR: You haven't provided any valid files, at least one file must be provided.")
+    exit()
+
+
 
 
 # release = get_version_release(repo, current_version)
