@@ -119,3 +119,52 @@ The build commands should be executed in a command prompt or terminal window in 
 Linux/macOS command:
 
 `pyinstaller --windowed --clean --onefile --icon=ex_installer/images/dccex-logo.png ex_installer/__main__.py --name "EX-Installer-<platform>" --add-data "<repository>/ex_installer/images/*:images" --add-data "<repository>/ex_installer/theme/dcc-ex-theme.json:theme/." --add-data "<repository>/venv/lib/python3.8/site-packages/customtkinter:customtkinter" --hidden-import="PIL._tkinter_finder"`
+
+## EX-Installer Release Manager
+
+To simplify the release process and ensure releases are consistent, use the provided script "ex_installer_release.py".
+
+This script automates the release management process for EX-Installer and takes care of:
+
+- Creating the required GitHub tag
+- Creating the required GitHub release
+- Uploading the required distribution files to the release
+- Publishing the release
+
+Each release will be versioned consistently based on the version defined in "ex_installer/version.py":
+
+- Releases 0.y.z will automatically be marked "Devel"
+- Releases 1.y.z or later, where y is an even number will be marked "Prod"
+- Releases 1.y.z or later, where y is an odd number will be marked "Devel"
+
+Examples:
+
+- 0.0.21 will become "v0.0.21-Devel"
+- 1.0.0 will become "v1.0.0-Prod"
+- 1.1.0 will become "v1.1.0-Devel"
+
+### Running the script
+
+To run this script, you must copy the provided '.env.example' file to '.env' and update it.
+
+It must contain a valid GitHub personal access token with these privileges on the DCC-EX/EX-Installer repository:
+
+- Contents - read/write
+- Deployments - read/write
+- Metadata - read
+
+When running this script, you must specify at least one of:
+
+- -F|--files: A comma separated list of files to upload, which must be located in your local EX-Installer/dist folder
+- -D|--delete: A file to be deleted from the release
+- -P|--publish: If specified, the release will be published, otherwise it will be created as a draft
+
+Note: You cannot specify both -F|--files and -D|--delete at the same time.
+
+To publish an EX-Installer release, three distribution files are expected to be attached as assets:
+
+- EX-Installer-Linux64 - 64bit Linux binary
+- EX-Installer-macOS - macOS binary
+- EX-Installer-Setup-Win64.exe - Windows 64bit installer executable built by Inno Setup
+
+When publishing, if any of these are not present, a warning will be generated, with a prompt to continue or cancel.
