@@ -265,7 +265,6 @@ def publish_release(repo: Repository, release: GitRelease):
         # If there are no production releases and this is devel, it should still be the latest
         prod = any("-Prod" in rel.tag_name for rel in repo.get_releases())
         if not prod:
-            print("Devel but no prod, make latest anyway")
             make_latest = "true"
 
     try:
