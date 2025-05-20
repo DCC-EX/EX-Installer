@@ -247,17 +247,17 @@ class ArduinoCLI:
     }
 
     - ESP32 locked to 2.0.17 as 3.x causes compile errors for EX-CommandStation
-    - STM32 locked to 2.9.0 as 2.8.0 introduced new output that needs logic to deal with, and 2.9.0 supports F429ZI/F439ZI variants
+    - STM32 locked to 2.7.1 because 2.8.0 introduces new output that needs logic to deal with
     """
     extra_platforms = {
-        "Espressif ESP32 (EX-CSB1)": {
+        "Espressif ESP32": {
             "platform_id": "esp32:esp32",
             "version": "2.0.17",
             "url": "https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json"
         },
-        "STMicroelectronics (Nucleo/STM32F4xx)": {
+        "STMicroelectronics Nucleo/STM32": {
             "platform_id": "STMicroelectronics:stm32",
-            "version": "2.9.0",
+            "version": "2.7.1",
             "url": "https://github.com/stm32duino/BoardManagerFiles/raw/main/package_stmicroelectronics_index.json"
         }
     }
@@ -274,8 +274,6 @@ class ArduinoCLI:
     Note that these were previously an attribute of a product in the product_details module but are now here.
     """
     arduino_libraries = {
-        "STM32duino STM32Ethernet": "1.4.0",
-        "MDNS_Generic": "1.4.2",
         "Ethernet": "2.0.2"
     }
 
@@ -283,16 +281,13 @@ class ArduinoCLI:
     Dictionary of devices supported with EX-Installer to enable selection when detecting unknown devices.
     """
     supported_devices = {
-        "DCC-EX EX-CSB1": "esp32:esp32:esp32",
         "Arduino Mega or Mega 2560": "arduino:avr:mega",
         "Arduino Uno": "arduino:avr:uno",
         "Arduino Nano": "arduino:avr:nano",
+        "DCC-EX EX-CSB1": "esp32:esp32:esp32",
         "ESP32 Dev Kit": "esp32:esp32:esp32",
         "STMicroelectronics Nucleo F411RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
-        "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE",
-        "STMicroelectronics Nucleo F446ZE": "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F446ZE",
-        "STMicroelectronics Nucleo F429ZI": "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F429ZI",
-        "STMicroelectronics Nucleo F439ZI": "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F439ZI"
+        "STMicroelectronics Nucleo F446RE": "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
     }
 
     """
@@ -544,16 +539,9 @@ class ArduinoCLI:
         """
         Compiles and uploads the sketch in the specified directory to the provided board/port.
         """
+        params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
         if fqbn.startswith('esp32:esp32'):
-            params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"] #, "--before", "default_reset", "--after", "hard_reset"]
-            params = params + ["--board-options", "UploadSpeed=115200"]#, "--before", "default_reset", "--after", "hard_reset"] # upload speeds of 230400 and 460800 are possible, but for now go slow
-        elif fqbn.startswith('STMicroelectronics:stm32:'):
-            fqbn_nucleo = fqbn
-            # fqbn_nucleo += ",upload_method=swdMethod" # this allows use of SWD upload, sadly this requires STM32CubeProgrammer to be installed
-            # defaults to using DFU upload as a "virtual USB disk"
-            params = ["upload", "-v", "-t", "-b", fqbn_nucleo, "-p", port, sketch_dir, "--format", "jsonmini"]
-        else:
-            params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"]
+            params = params + ["--board-options", "UploadSpeed=115200"]
         acli = ThreadedArduinoCLI(file_path, params, queue)
         acli.start()
 

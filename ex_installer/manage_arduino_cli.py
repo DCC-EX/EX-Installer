@@ -35,7 +35,6 @@ class ManageArduinoCLI(WindowLayout):
     intro_text = ("We use the Arduino Command Line Interface (CLI) to upload the DCC-EX products to your Arduino. " +
                   "The CLI eliminates the need to install the more daunting Arduino IDE. EX-Installer is able to " +
                   "manage the installation and updating of the Arduino CLI for you at the click of a button.")
-    csb1_text = ("Important! If using the EX-CSB1, you must enable support for Espressif ESP32 below.")
     installed_text = "The Arduino CLI is installed"
     not_installed_text = "The Arduino CLI is not installed"
     install_instruction_text = ("To install the Arduino CLI, simply click the install button.\n\n" +
@@ -150,9 +149,8 @@ class ManageArduinoCLI(WindowLayout):
         self.manage_cli_frame = ctk.CTkFrame(self.main_frame, height=360)
         self.manage_cli_frame.grid(column=0, row=0, sticky="nsew", ipadx=5, ipady=5)
         self.manage_cli_frame.grid_columnconfigure((0, 1), weight=1)
-        self.manage_cli_frame.grid_rowconfigure((0, 1), weight=2)
-        self.manage_cli_frame.grid_rowconfigure(2, weight=1)
-        self.manage_cli_frame.grid_rowconfigure(3, weight=4)
+        self.manage_cli_frame.grid_rowconfigure((0, 2), weight=4)
+        self.manage_cli_frame.grid_rowconfigure(1, weight=1)
 
         # Create state and instruction labels and manage CLI button
         label_options = {"wraplength": 700}
@@ -160,10 +158,6 @@ class ManageArduinoCLI(WindowLayout):
                                         text=self.intro_text,
                                         font=self.instruction_font,
                                         **label_options)
-        self.csb1_label = ctk.CTkLabel(self.manage_cli_frame,
-                                       text=self.csb1_text,
-                                       font=self.bold_instruction_font,
-                                       **label_options)
         self.cli_state_label = ctk.CTkLabel(self.manage_cli_frame,
                                             font=self.instruction_font,
                                             **label_options)
@@ -207,11 +201,10 @@ class ManageArduinoCLI(WindowLayout):
 
         # Layout frame
         self.intro_label.grid(column=0, row=0, columnspan=2)
-        self.csb1_label.grid(column=0, row=1, columnspan=2)
-        self.cli_state_label.grid(column=0, row=2)
-        self.manage_cli_button.grid(column=1, row=2)
-        self.instruction_label.grid(column=0, row=3)
-        self.extra_platforms_frame.grid(column=1, row=3, ipadx=5, ipady=5)
+        self.cli_state_label.grid(column=0, row=1)
+        self.manage_cli_button.grid(column=1, row=1)
+        self.instruction_label.grid(column=0, row=2)
+        self.extra_platforms_frame.grid(column=1, row=2, ipadx=5, ipady=5)
 
         self.set_state()
 
@@ -223,9 +216,6 @@ class ManageArduinoCLI(WindowLayout):
                                            font=self.instruction_font)
             self.instruction_label.configure(text=self.refresh_instruction_text)
             self.manage_cli_button.configure(text="Refresh Arduino CLI", command=self._generate_refresh_cli)
-            for child in self.extra_platforms_frame.winfo_children():
-                if isinstance(child, ctk.CTkSwitch):
-                    child.configure(state="normal")
             self._generate_check_cli()
         else:
             self.cli_state_label.configure(text=self.not_installed_text,
@@ -233,9 +223,6 @@ class ManageArduinoCLI(WindowLayout):
                                            font=self.bold_instruction_font)
             self.instruction_label.configure(text=self.install_instruction_text)
             self.manage_cli_button.configure(text="Install Arduino CLI", command=self._generate_install_cli)
-            for child in self.extra_platforms_frame.winfo_children():
-                if isinstance(child, ctk.CTkSwitch):
-                    child.configure(state="disabled")
             self.next_back.disable_next()
 
     def update_package_list(self, switch):
@@ -726,7 +713,7 @@ class ManageArduinoCLI(WindowLayout):
 
         Flag the library as installed here but that should be validated in a later version.
         """
-        library = f'{library_name}@{version}' #library_name + "@" + version
+        library = library_name + "@" + version
         self.libraries_to_install[library_name]["state"] = "installed"
         self.log.debug(f"_install_single_library() {self.process_status}\nlibrary: {library}, version: {version}")
         self.process_start("install_libraries", "Install Arduino library " + library, "Manage_CLI")
