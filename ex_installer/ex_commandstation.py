@@ -174,8 +174,18 @@ class EXCommandStation(WindowLayout):
                     "options to configure it as an access point (it will run as its own WiFi network you can connect " +
                     "to) or to connect it to your existing WiFi network. Click this tip to be redirected to our " +
                     "website for further information.")
-        ethernet_tip = ("If you have added Ethernet capability to your CommandStation, enable this option (this " +
+        # Enable Ethernet by default for Nucleo-F429ZI and F439ZI and alter the tip to suit
+        device = self.acli.selected_device
+        device_fqbn = self.acli.detected_devices[device]["matching_boards"][0]["fqbn"]
+        if (device_fqbn == "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F429ZI" or
+                        device_fqbn == "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F439ZI"):
+            ethernet_tip = ("Your Nucleo has Ethernet capability, so this option is enabled by default. " +
+                        "You may instead enable WiFi, which will disable Ethernet. Click this tip to be redirected to our website for further information.")
+        else:
+            ethernet_tip = ("If you have added Ethernet capability to your CommandStation, enable this option (this " +
                         "will disable WiFi). Click this tip to be redirected to our website for further information.")
+        booster_input_tip = ("If you have an EX-CSB1 or added booster input capability to your ESP32 based CommandStation, enable this option. " +
+                        "Click this tip to be redirected to our website for further information.")
         advanced_tip = ("If you need to specify additional options not available on this screen, enable this option " +
                         "to edit the config files directly on the following screen. It is recommended not to touch " +
                         "these unless you're comfortable you know what you're doing.")
@@ -327,8 +337,23 @@ class EXCommandStation(WindowLayout):
         self.ethernet_switch = ctk.CTkSwitch(self.switch_frame, text="I have ethernet", width=200,
                                              onvalue="on", offvalue="off", variable=self.ethernet_enabled,
                                              command=self.set_ethernet, font=self.instruction_font)
+        
         CreateToolTip(self.ethernet_switch, ethernet_tip,
                       "https://dcc-ex.com/reference/hardware/ethernet-boards.html")
+
+        # Booster Input
+        self.booster_input_enabled = ctk.StringVar(self, value="off")
+        self.booster_input_switch = ctk.CTkSwitch(self.switch_frame, text="I have a booster input", width=200,
+                                             onvalue="on", offvalue="off", variable=self.booster_input_enabled,
+                                             command=self.set_booster_input, font=self.instruction_font)
+        CreateToolTip(self.booster_input_switch, booster_input_tip,
+                      "https://dcc-ex.com/reference/hardware/FIXME")
+        self.booster_input_gpio = ctk.StringVar(self, value="")
+        self.booster_input_label = ctk.CTkLabel(self.options_frame, text="Specify GPIO to use for Booster Input:",
+                                                font=self.instruction_font)
+        self.booster_input_entry = ctk.CTkEntry(self.options_frame, textvariable=self.booster_input_gpio,
+                                                width=50, fg_color="white")
+
 
         # Track Manager Options
         self.track_modes_enabled = ctk.StringVar(self, value="off")
@@ -422,11 +447,12 @@ class EXCommandStation(WindowLayout):
         self.display_switch.grid(column=0, row=0, **grid_options)
         self.wifi_switch.grid(column=0, row=1, **grid_options)
         self.ethernet_switch.grid(column=0, row=2, **grid_options)
-        self.track_modes_switch.grid(column=0, row=3, **grid_options)
-        self.power_on_switch.grid(column=0, row=4, **grid_options)
-        self.override_current_limit.grid(column=0, row=5, **grid_options)
-        self.blank_myautomation_switch.grid(column=0, row=6, **grid_options)
-        self.advanced_config_switch.grid(column=0, row=7, **grid_options)
+        self.booster_input_entry.grid(column=0, row=3, **grid_options)
+        self.track_modes_switch.grid(column=0, row=4, **grid_options)
+        self.power_on_switch.grid(column=0, row=5, **grid_options)
+        self.override_current_limit.grid(column=0, row=6, **grid_options)
+        self.blank_myautomation_switch.grid(column=0, row=7, **grid_options)
+        self.advanced_config_switch.grid(column=0, row=8, **grid_options)
 
         # Layout options frame
         self.options_frame.grid_columnconfigure((0, 1), weight=1)
@@ -479,6 +505,7 @@ class EXCommandStation(WindowLayout):
         """
         device = self.acli.selected_device
         device_fqbn = self.acli.detected_devices[device]["matching_boards"][0]["fqbn"]
+        device_dccex = self.acli.dccex_device
         # EEPROM disabled on ESP32 and Nucleo
         if device_fqbn.startswith("esp32") or device_fqbn.startswith("STMicroelectronics:stm32"):
             self.disable_eeprom_switch.select()
@@ -508,10 +535,43 @@ class EXCommandStation(WindowLayout):
             if self.wifi_switch.get() == "off":
                 self.wifi_switch.toggle()
             self.wifi_switch.configure(state="disabled")
+        # Allow WiFi to be enabled on other platforms
         elif not (device_fqbn.startswith("arduino:avr:nano") or device_fqbn == "arduino:avr:uno"):
             if self.wifi_switch.get() == "on":
                 self.wifi_switch.toggle()
             self.wifi_switch.configure(state="enabled")
+        # Enable Ethernet by default for Nucleo-F429ZI and F439ZI and disable control
+        if (device_fqbn == "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F429ZI" or
+                        device_fqbn == "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F439ZI"):
+            if self.ethernet_switch.get() == "off":
+                self.ethernet_switch.toggle()
+            self.ethernet_switch.configure(state="enabled")
+        # Allow Ethernet for everything else except Nano, UNO or ALL ESP32 devices
+        elif not (device_fqbn.startswith("arduino:avr:nano") or device_fqbn == "arduino:avr:uno" or device_fqbn.startswith("esp32")):
+            if self.ethernet_switch.get() == "on":
+                self.ethernet_switch.toggle()
+            self.ethernet_switch.configure(state="enabled")
+        else:
+            if self.ethernet_switch.get() == "on":
+                self.ethernet_switch.toggle()
+            self.ethernet_switch.configure(state="disabled")
+
+        # Enable Booster Input by default for EX-CSB1, and optionally for ESP32, but not for others
+        if device_fqbn.startswith("esp32"):
+            # TODO PMA... need to disable the toggle only for CSB1!
+            if self.acli.dccex_device == "EXCSB1":
+                if self.booster_input_enabled.get() == "off":
+                    self.booster_input_switch.select()
+                self.booster_input_entry.configure(state="disabled")
+            else:
+                # Here we have an ESP32 which may have a booster, but will let users decide which pin, suggesting GPIO22
+                if self.booster_input_enabled.get() == "off":
+                    self.booster_input_switch.select()
+                self.booster_input_entry.configure(state="normal")
+        else:
+            if self.booster_input_enabled.get() == "on":
+                self.booster_input_switch.deselect()
+            self.booster_input_entry.configure(state="disabled")
 
     def set_display(self):
         """
@@ -623,6 +683,19 @@ class EXCommandStation(WindowLayout):
         else:
             self.log.debug("Ethernet disabled")
 
+    def set_booster_input(self):
+        """
+        Enable or disable booster input entry based on switch state.
+        """
+        if self.booster_input_enabled.get() == "on":
+            self.booster_input_label.grid(column=0, row=4, sticky="e", padx=5, pady=5)
+            self.booster_input_entry.grid(column=1, row=4, sticky="w", padx=5, pady=5)
+            self.log.debug("Booster Input enabled")
+        else:
+            self.booster_input_label.grid_remove()
+            self.booster_input_entry.grid_remove()
+            self.log.debug("Booster Input disabled")
+
     def decrement_channel(self):
         """
         Function to decrement the WiFi channel
@@ -650,6 +723,7 @@ class EXCommandStation(WindowLayout):
         self.set_wifi()
         self.set_track_modes()
         self.set_advanced_config()
+        self.set_booster_input()  # Initialize Booster Input visibility
         self.check_motor_driver(self.motor_driver_combo.get())
         self.next_back.set_next_text("Compile and load")
         self.next_back.set_next_command(self.create_config_files)
@@ -724,7 +798,7 @@ class EXCommandStation(WindowLayout):
         If in access point mode:
         - Must be between 8 and 64 characters
 
-        In either mode, must not contain \ or "  # noqa: W605
+        In either mode, must not contain '\' or '"'  # noqa: W605
 
         Returns tuple of (True|False, message)
         """
@@ -756,6 +830,17 @@ class EXCommandStation(WindowLayout):
         else:
             self.current_limit_label.grid_remove()
             self.current_limit_entry.grid_remove()
+
+    def booster_input_gpio(self):
+        """
+        Function to enable setting booster input GPIO
+        """
+        if self.override_booster_input.get() == "on":
+            self.booster_input_label.grid()
+            self.booster_input_entry.grid()
+        else:
+            self.booster_input_label.grid_remove()
+            self.booster_input_entry.grid_remove()
 
     def delete_config_files(self):
         """
@@ -791,6 +876,8 @@ class EXCommandStation(WindowLayout):
         self.delete_config_files()
         param_errors = []
         config_list = []
+        device = self.acli.selected_device
+        device_fqbn = self.acli.detected_devices[device]["matching_boards"][0]["fqbn"]
         if self.motor_driver_combo.get() == "Select motor driver":
             param_errors.append("Motor driver not set")
         else:
@@ -837,7 +924,25 @@ class EXCommandStation(WindowLayout):
             if self.wifi_switch.get() == "on":
                 param_errors.append("Can not have both Ethernet and WiFi enabled")
             else:
+                # For now, we'll specify HOSTNAME, but ideally we want folks to be able to change it!
+                line = '#define WIFI_HOSTNAME "' + self.wifi_hostname.get() + '"\n'
+                config_list.append(line)
                 config_list.append("#define ENABLE_ETHERNET true\n")
+        if self.booster_input_switch.get() == "on":
+            if device_fqbn.startswith("esp32:"):
+                if self.acli.dccex_device == "EXCSB1":
+                    booster_input_gpio = "32"
+                    wifi_led_gpio = "33"
+                else:
+                    print("Not an excsb1!")
+                    booster_input_gpio = "26"
+                    wifi_led_gpio = "2"
+                line = '#define WIFI_LED ' + wifi_led_gpio + '\n'
+                config_list.append(line)
+                line = '#define BOOSTER_INPUT ' + booster_input_gpio + '\n'
+                config_list.append(line)
+            # else:
+            #     booster_input_gpio = "UNKNOWN"
         if self.override_current_limit.get() == "on":
             try:
                 int(self.current_limit.get())

@@ -205,16 +205,35 @@ class SelectDevice(WindowLayout):
                             matched_boards = []
                             for matched_board in self.acli.detected_devices[index]["matching_boards"]:
                                 matched_boards.append(matched_board["name"])
-                            multi_combo = ctk.CTkComboBox(self.device_list_frame,
-                                                          values="Select the correct device", width=250,
-                                                          command=lambda name, i=index: self.update_board(name, i))
-                            multi_combo.grid(column=1, row=row, sticky="e", **grid_options)
-                            multi_combo.configure(values=matched_boards)
-                            text = "Multiple matches detected"
-                            text += " on " + self.acli.detected_devices[index]["port"]
-                            tip = multi_device_tip
-                            self.log.debug("Multiple matched devices on %s", self.acli.detected_devices[index]["port"])
-                            self.log.debug(self.acli.detected_devices[index]["matching_boards"])
+                            self.log.debug(f"Multiple detected devices: {self.acli.detected_devices[index]}")
+                            # When running the STM32 device drivers under Windows, the Arduino CLI will detect multiple possible
+                            # matches, due to the way STM32 boards are chosen. We detect the first of these being "Discovery"
+                            # and create a special combo box with just the Nucleo options. Otherwise proceed per normal.
+                            if matched_boards[0] == "Discovery":
+                                nucleo_combo = ctk.CTkComboBox(self.device_list_frame,
+                                                                values=["Select the correct device"], width=250,
+                                                                command=lambda name, i=index: self.update_board(name, i))
+                                nucleo_combo.grid(column=1, row=row, sticky="e", **grid_options)
+                                # Filter the dictionary keys to only include those that match "Nucleo"
+                                filter_string = "Nucleo"
+                                filtered_boards = [key for key in supported_boards if filter_string in key]
+                                nucleo_combo.configure(values=filtered_boards)
+                                port_description = self.get_port_description(self.acli.detected_devices[index]["port"])
+                                text = ("STM32 Nucleo or clone device detected on " +
+                                            self.acli.detected_devices[index]['port'])
+                                tip = "The Arduino CLI has detected an STM32 Nucleo device but can't decide which one... please select which model you have attached"
+                                self.log.debug("STM32 Nucleo or clone device on %s", self.acli.detected_devices[index]["port"])
+                            else:
+                                multi_combo = ctk.CTkComboBox(self.device_list_frame,
+                                                            values="Select the correct device", width=250,
+                                                            command=lambda name, i=index: self.update_board(name, i))
+                                multi_combo.grid(column=1, row=row, sticky="e", **grid_options)
+                                multi_combo.configure(values=matched_boards)
+                                text = "Multiple matches detected"
+                                text += " on " + self.acli.detected_devices[index]["port"]
+                                tip = multi_device_tip
+                                self.log.debug("Multiple matched devices on %s", self.acli.detected_devices[index]["port"])
+                                self.log.debug(self.acli.detected_devices[index]["matching_boards"])
                         elif self.acli.detected_devices[index]["matching_boards"][0]["name"] == "Unknown":
                             unknown_combo = ctk.CTkComboBox(self.device_list_frame,
                                                             values=["Select the correct device"], width=250,
@@ -257,6 +276,8 @@ class SelectDevice(WindowLayout):
                     self.acli.dccex_device = None
             else:
                 self.acli.dccex_device = None
+            self.log.debug(f"Detected devices: {self.acli.detected_devices}")
+            self.log.debug(f"Supported devices: {self.acli.supported_devices}")
             self.acli.detected_devices[index]["matching_boards"][0]["name"] = name
             self.acli.detected_devices[index]["matching_boards"][0]["fqbn"] = self.acli.supported_devices[name]
             self.selected_device.set(index)

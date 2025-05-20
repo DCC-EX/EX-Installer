@@ -36,7 +36,10 @@ product_details = {
             "arduino:avr:mega",
             "esp32:esp32:esp32",
             "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F411RE",
-            "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE"
+            "STMicroelectronics:stm32:Nucleo_64:pnum=NUCLEO_F446RE",
+            "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F446ZE",
+            "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F429ZI",
+            "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F439ZI"
         ],
         "minimum_config_files": [
             "config.h"
