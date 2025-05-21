@@ -29,7 +29,7 @@ DisableDirPage=auto
 DisableProgramGroupPage=auto
 ; Uncomment the following line to run in non administrative install mode (install for current user only).
 ;PrivilegesRequired=lowest
-OutputBaseFilename="EX-Installer-Setup-Win64"
+OutputBaseFilename="EX-Installer-Win64"
 SolidCompression=yes
 WizardStyle=modern
 WizardImageFile="..\{#MyDCCEXLogo}"
