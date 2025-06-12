@@ -174,7 +174,15 @@ class EXCommandStation(WindowLayout):
                     "options to configure it as an access point (it will run as its own WiFi network you can connect " +
                     "to) or to connect it to your existing WiFi network. Click this tip to be redirected to our " +
                     "website for further information.")
-        ethernet_tip = ("If you have added Ethernet capability to your CommandStation, enable this option (this " +
+        # Enable Ethernet by default for Nucleo-F429ZI and F439ZI and alter the tip to suit
+        device = self.acli.selected_device
+        device_fqbn = self.acli.detected_devices[device]["matching_boards"][0]["fqbn"]
+        if (device_fqbn == "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F429ZI" or
+                        device_fqbn == "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F439ZI"):
+            ethernet_tip = ("Your Nucleo has Ethernet capability, so this option is enabled by default. " +
+                        "You may instead enable WiFi, which will disable Ethernet. Click this tip to be redirected to our website for further information.")
+        else:
+            ethernet_tip = ("If you have added Ethernet capability to your CommandStation, enable this option (this " +
                         "will disable WiFi). Click this tip to be redirected to our website for further information.")
         booster_input_tip = ("If you have an EX-CSB1 or added booster input capability to your ESP32 based CommandStation, enable this option. " +
                         "Click this tip to be redirected to our website for further information.")
@@ -329,6 +337,7 @@ class EXCommandStation(WindowLayout):
         self.ethernet_switch = ctk.CTkSwitch(self.switch_frame, text="I have ethernet", width=200,
                                              onvalue="on", offvalue="off", variable=self.ethernet_enabled,
                                              command=self.set_ethernet, font=self.instruction_font)
+        
         CreateToolTip(self.ethernet_switch, ethernet_tip,
                       "https://dcc-ex.com/reference/hardware/ethernet-boards.html")
 
@@ -536,7 +545,7 @@ class EXCommandStation(WindowLayout):
                         device_fqbn == "STMicroelectronics:stm32:Nucleo_144:pnum=NUCLEO_F439ZI"):
             if self.ethernet_switch.get() == "off":
                 self.ethernet_switch.toggle()
-            self.ethernet_switch.configure(state="disabled")
+            self.ethernet_switch.configure(state="enabled")
         # Allow Ethernet for everything else except Nano, UNO or ALL ESP32 devices
         elif not (device_fqbn.startswith("arduino:avr:nano") or device_fqbn == "arduino:avr:uno" or device_fqbn.startswith("esp32")):
             if self.ethernet_switch.get() == "on":
