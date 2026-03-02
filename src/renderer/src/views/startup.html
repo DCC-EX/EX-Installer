@@ -1,0 +1,186 @@
+<template>
+    <div
+        class="min-h-screen bg-linear-to-br from-slate-950 via-blue-950 to-slate-900 flex flex-col items-center justify-center p-8">
+
+        <!-- Logo / title -->
+        <div class="text-center mb-12">
+            <div class="flex items-center justify-center gap-3 mb-3">
+                <div class="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-white tracking-tight">EX-Installer</h1>
+            </div>
+            <p class="text-blue-300 text-sm">DCC-EX Device Configuration &amp; Programming Tool</p>
+        </div>
+
+        <!-- ── Splash (initial render, before attached() fires) ── -->
+        <div if.bind="phase === 'splash'" class="flex flex-col items-center gap-3 opacity-60">
+            <div class="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></div>
+        </div>
+
+        <!-- ── Checking ── -->
+        <div if.bind="phase === 'checking'" class="flex flex-col items-center gap-4">
+            <svg class="w-8 h-8 text-blue-400 animate-spin" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <p class="text-blue-300 text-sm">${statusMessage}</p>
+        </div>
+
+        <!-- ── CLI Prompt (first run or broken install) ── -->
+        <div if.bind="phase === 'cli-prompt'"
+            class="w-full max-w-sm bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col gap-5">
+            <div>
+                <h2 class="text-white font-semibold text-base mb-1">Arduino CLI Required</h2>
+                <p class="text-gray-400 text-sm">
+                    EX-Installer uses the Arduino CLI (<span class="text-white font-medium">${bundledVersion}</span>)
+                    to compile and upload sketches. How would you like to set it up?
+                </p>
+            </div>
+            <div class="space-y-2">
+                <button click.trigger="downloadAndInstall()" disabled.bind="browseBusy"
+                    class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg text-white text-sm font-semibold transition-colors">
+                    Download Automatically
+                </button>
+                <button click.trigger="browseForBinary()" disabled.bind="browseBusy"
+                    class="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-300 text-sm transition-colors disabled:opacity-50">
+                    ${browseBusy ? 'Checking...' : 'Browse for Existing arduino-cli Binary'}
+                </button>
+                <button click.trigger="browseForArchive()" disabled.bind="browseBusy"
+                    class="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-300 text-sm transition-colors disabled:opacity-50">
+                    Use Local Archive (.tar.gz / .zip)
+                </button>
+            </div>
+            <div if.bind="browseError"
+                class="bg-red-900/20 border border-red-500/30 rounded-xl p-3 text-red-300 text-xs">
+                ${browseError}
+            </div>
+        </div>
+
+        <!-- ── Installing / upgrading ── -->
+        <div if.bind="phase === 'installing'" class="w-full max-w-sm flex flex-col gap-4">
+            <div class="text-center">
+                <p class="text-white font-medium text-sm mb-1">${statusMessage}</p>
+                <p class="text-blue-300/60 text-xs">This may take a minute on the first run.</p>
+            </div>
+            <div class="bg-white/10 rounded-full h-2 overflow-hidden">
+                <div class="h-full bg-blue-500 rounded-full transition-all duration-300" css="width: ${progress}%">
+                </div>
+            </div>
+            <p class="text-gray-500 text-xs text-center">${progress}%</p>
+        </div>
+
+        <!-- ── Upgrade prompt ── -->
+        <div if.bind="phase === 'upgrade-prompt'"
+            class="w-full max-w-sm bg-white/5 border border-white/10 rounded-2xl p-6 flex flex-col gap-5">
+            <div>
+                <h2 class="text-white font-semibold text-base mb-1">Arduino CLI Update Available</h2>
+                <p class="text-gray-400 text-sm">
+                    This version of EX-Installer ships with Arduino CLI
+                    <span class="text-white font-medium">${bundledVersion}</span>.
+                    You have
+                    <span class="text-blue-300 font-medium">${installedVersion}</span>
+                    installed.
+                </p>
+            </div>
+            <div class="space-y-2">
+                <button click.trigger="upgrade()" disabled.bind="browseBusy"
+                    class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg text-white text-sm font-semibold transition-colors">
+                    Upgrade to ${bundledVersion}
+                </button>
+                <button click.trigger="browseForUpgradeFile()" disabled.bind="browseBusy"
+                    class="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-300 text-sm transition-colors disabled:opacity-50">
+                    ${browseBusy ? 'Checking...' : 'Use Local Binary or Archive'}
+                </button>
+                <button click.trigger="skipUpgrade()" disabled.bind="browseBusy"
+                    class="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 text-xs transition-colors disabled:opacity-50">
+                    Skip — continue with ${installedVersion}
+                </button>
+            </div>
+            <div if.bind="browseError"
+                class="bg-red-900/20 border border-red-500/30 rounded-xl p-3 text-red-300 text-xs">
+                ${browseError}
+            </div>
+        </div>
+
+        <!-- ── ESP32 Platform prompt (install or update) ── -->
+        <div if.bind="phase === 'esp32-prompt'"
+            class="w-full max-w-sm bg-white/5 border border-amber-500/20 rounded-2xl p-6 flex flex-col gap-5">
+            <div>
+                <div class="flex items-center gap-2 mb-1">
+                    <svg class="w-4 h-4 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 16h-1v-4h-1m1-4h.01M12 2a10 10 0 110 20A10 10 0 0112 2z" />
+                    </svg>
+                    <h2 class="text-white font-semibold text-base">
+                        ${esp32UpdateAvailable ? 'ESP32 Platform Update' : 'ESP32 Platform Not Installed'}
+                    </h2>
+                </div>
+                <p if.bind="!esp32UpdateAvailable" class="text-gray-400 text-sm">
+                    The <span class="text-white font-medium">esp32:esp32</span> platform
+                    (<span class="text-white">${esp32PlatformVersion}</span>) is needed to compile
+                    sketches for ESP32-based boards such as the EX-CSB1. (~300–500 MB)
+                </p>
+                <p if.bind="esp32UpdateAvailable" class="text-gray-400 text-sm">
+                    An update is available for the <span class="text-white font-medium">esp32:esp32</span> platform.
+                    Installed: <span class="text-blue-300">${esp32InstalledVersion}</span> &middot;
+                    Recommended: <span class="text-white">${esp32PlatformVersion}</span>
+                </p>
+            </div>
+            <div class="space-y-2">
+                <button click.trigger="downloadEsp32()" disabled.bind="browseBusy"
+                    class="w-full py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 rounded-lg text-white text-sm font-semibold transition-colors">
+                    ${esp32UpdateAvailable ? 'Update Now' : 'Download &amp; Install'}
+                </button>
+                <button click.trigger="browseEsp32Archive()" disabled.bind="browseBusy"
+                    class="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-300 text-sm transition-colors disabled:opacity-50">
+                    ${browseBusy ? 'Opening...' : 'Use Local Archive (.tar.gz / .zip)'}
+                </button>
+                <button click.trigger="skipEsp32()" disabled.bind="browseBusy"
+                    class="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-gray-400 text-xs transition-colors disabled:opacity-50">
+                    ${esp32UpdateAvailable ? 'Keep Current Version' : 'Skip — I don\'t use ESP32 boards'}
+                </button>
+            </div>
+            <div if.bind="browseError"
+                class="bg-red-900/20 border border-red-500/30 rounded-xl p-3 text-red-300 text-xs">
+                ${browseError}
+            </div>
+        </div>
+
+        <!-- ── ESP32 Installing ── -->
+        <div if.bind="phase === 'esp32-installing'" class="w-full max-w-sm flex flex-col gap-4">
+            <div class="text-center">
+                <p class="text-white font-medium text-sm mb-1">${statusMessage}</p>
+                <p class="text-blue-300/60 text-xs">This may take several minutes — the ESP32 platform is large.</p>
+            </div>
+            <div class="bg-white/10 rounded-full h-2 overflow-hidden">
+                <div class="h-full bg-blue-500 rounded-full transition-all duration-300" css="width: ${progress}%">
+                </div>
+            </div>
+            <p class="text-gray-500 text-xs text-center">${progress}%</p>
+        </div>
+
+        <!-- ── Error ── -->
+        <div if.bind="phase === 'error'"
+            class="w-full max-w-sm bg-red-900/20 border border-red-500/30 rounded-2xl p-6 flex flex-col gap-4">
+            <div class="flex items-start gap-3">
+                <svg class="w-5 h-5 text-red-400 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+                <div>
+                    <p class="text-red-300 font-medium text-sm">Setup failed</p>
+                    <p class="text-red-400/80 text-xs mt-1">${error}</p>
+                </div>
+            </div>
+            <button click.trigger="retry()"
+                class="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-white text-sm transition-colors">
+                Retry
+            </button>
+        </div>
+
+    </div>
+</template>

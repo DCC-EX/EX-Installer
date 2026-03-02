@@ -120,6 +120,14 @@ export interface ArduinoCliElectronApi {
     upload: (sketchPath: string, fqbn: string, port: string) => Promise<UploadResult>
     initConfig: () => Promise<{ success: boolean; error?: string }>
     updateIndex: () => Promise<{ success: boolean; error?: string }>
+    getBundledVersion: () => Promise<string>
+    browseBinary: () => Promise<string | null>
+    browsePlatformArchive: () => Promise<string | null>
+    validateBinary: (binaryPath: string) => Promise<{ success: boolean; version?: string; error?: string }>
+    setCustomPath: (binaryPath: string) => Promise<{ success: boolean }>
+    installFromArchive: (archivePath: string) => Promise<{ success: boolean; error?: string }>
+    checkPlatform: (platformId: string) => Promise<{ installed: boolean; version: string | null }>
+    installPlatformFromArchive: (archivePath: string, platformId: string, version: string) => Promise<{ success: boolean; error?: string }>
     onProgress: (cb: (payload: { phase: string; message: string }) => void) => () => void
 }
 

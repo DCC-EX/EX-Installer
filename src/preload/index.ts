@@ -139,6 +139,30 @@ const arduinoCliApi = {
     updateIndex: (): Promise<{ success: boolean; error?: string }> =>
         ipcRenderer.invoke('arduino-cli:update-index'),
 
+    getBundledVersion: (): Promise<string> =>
+        ipcRenderer.invoke('arduino-cli:get-bundled-version'),
+
+    browseBinary: (): Promise<string | null> =>
+        ipcRenderer.invoke('arduino-cli:browse-binary'),
+
+    browsePlatformArchive: (): Promise<string | null> =>
+        ipcRenderer.invoke('arduino-cli:browse-platform-archive'),
+
+    validateBinary: (binaryPath: string): Promise<{ success: boolean; version?: string; error?: string }> =>
+        ipcRenderer.invoke('arduino-cli:validate-binary', binaryPath),
+
+    setCustomPath: (binaryPath: string): Promise<{ success: boolean }> =>
+        ipcRenderer.invoke('arduino-cli:set-custom-path', binaryPath),
+
+    installFromArchive: (archivePath: string): Promise<{ success: boolean; error?: string }> =>
+        ipcRenderer.invoke('arduino-cli:install-from-archive', archivePath),
+
+    checkPlatform: (platformId: string): Promise<{ installed: boolean; version: string | null }> =>
+        ipcRenderer.invoke('arduino-cli:check-platform', platformId),
+
+    installPlatformFromArchive: (archivePath: string, platformId: string, version: string): Promise<{ success: boolean; error?: string }> =>
+        ipcRenderer.invoke('arduino-cli:install-platform-from-archive', archivePath, platformId, version),
+
     onProgress: (cb: (payload: { phase: string; message: string }) => void) => {
         const handler = (_: IpcRendererEvent, p: { phase: string; message: string }) => cb(p)
         ipcRenderer.on('arduino-cli:progress', handler)

@@ -1,4 +1,4 @@
-import { ipcMain, BrowserWindow } from 'electron'
+import { ipcMain, BrowserWindow, dialog } from 'electron'
 import type { ArduinoCliService } from '../arduino-cli'
 import { IS_DEV_MOCK, MOCK_SERIAL_PORTS } from '../dev-mock'
 
@@ -83,5 +83,64 @@ export function registerArduinoCliIpcHandlers(arduinoCliService: ArduinoCliServi
 
     ipcMain.handle('arduino-cli:update-index', async () => {
         return arduinoCliService.updateIndex()
+    })
+
+    ipcMain.handle('arduino-cli:get-bundled-version', () => {
+        return arduinoCliService.getBundledVersion()
+    })
+
+    // ── File-picker helpers ──────────────────────────────────────────────────
+
+    ipcMain.handle('arduino-cli:browse-binary', async () => {
+        const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0]
+        const result = await dialog.showOpenDialog(win, {
+            title: 'Select Arduino CLI Binary or Archive',
+            properties: ['openFile'],
+            filters: [
+                { name: 'Arduino CLI Binary', extensions: process.platform === 'win32' ? ['exe'] : [''] },
+                { name: 'Archive', extensions: ['tar.gz', 'tgz', 'zip'] },
+                { name: 'All Files', extensions: ['*'] },
+            ],
+        })
+        return result.canceled ? null : (result.filePaths[0] ?? null)
+    })
+
+    ipcMain.handle('arduino-cli:browse-platform-archive', async () => {
+        const win = BrowserWindow.getFocusedWindow() ?? BrowserWindow.getAllWindows()[0]
+        const result = await dialog.showOpenDialog(win, {
+            title: 'Select Platform Archive (.tar.gz / .zip)',
+            properties: ['openFile'],
+            filters: [
+                { name: 'Archive', extensions: ['tar.gz', 'tgz', 'zip'] },
+                { name: 'All Files', extensions: ['*'] },
+            ],
+        })
+        return result.canceled ? null : (result.filePaths[0] ?? null)
+    })
+
+    ipcMain.handle('arduino-cli:validate-binary', async (_event, binaryPath: string) => {
+        return arduinoCliService.validateBinary(binaryPath)
+    })
+
+    ipcMain.handle('arduino-cli:set-custom-path', (_event, binaryPath: string) => {
+        arduinoCliService.setCustomBinaryPath(binaryPath)
+        return { success: true }
+    })
+
+    ipcMain.handle('arduino-cli:install-from-archive', async (_event, archivePath: string) => {
+        return arduinoCliService.installFromArchive(archivePath)
+    })
+
+    ipcMain.handle('arduino-cli:check-platform', async (_event, platformId: string) => {
+        return arduinoCliService.checkPlatformInstalled(platformId)
+    })
+
+    ipcMain.handle('arduino-cli:install-platform-from-archive', async (
+        _event,
+        archivePath: string,
+        platformId: string,
+        version: string,
+    ) => {
+        return arduinoCliService.installPlatformFromArchive(archivePath, platformId, version)
     })
 }

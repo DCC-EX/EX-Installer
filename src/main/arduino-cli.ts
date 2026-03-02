@@ -1,7 +1,8 @@
 import { app } from 'electron'
 import { join, basename } from 'path'
 import { existsSync, mkdirSync, createWriteStream, chmodSync, unlinkSync } from 'fs'
-import { readdir, rm } from 'fs/promises'
+import { readdir, rm, mkdtemp, cp } from 'fs/promises'
+import { tmpdir } from 'os'
 import { execFile, spawn } from 'child_process'
 import { get as httpsGet } from 'https'
 import { extract as tarExtract } from 'tar'
@@ -24,6 +25,7 @@ function getPlatformDownloadUrl(): string {
 
 export class ArduinoCliService {
     private progressCallback?: (phase: string, message: string) => void
+    private customBinaryPath: string | null = null
 
     get installDir(): string {
         const base = join(app.getPath('home'), 'ex-installer', 'arduino-cli')
@@ -32,8 +34,13 @@ export class ArduinoCliService {
     }
 
     get cliBinaryPath(): string {
+        if (this.customBinaryPath) return this.customBinaryPath
         const name = process.platform === 'win32' ? 'arduino-cli.exe' : 'arduino-cli'
         return join(this.installDir, name)
+    }
+
+    setCustomBinaryPath(path: string): void {
+        this.customBinaryPath = path
     }
 
     setProgressCallback(cb: (phase: string, message: string) => void): void {
@@ -46,6 +53,90 @@ export class ArduinoCliService {
 
     isInstalled(): boolean {
         return existsSync(this.cliBinaryPath)
+    }
+
+    getBundledVersion(): string {
+        return ARDUINO_CLI_VERSION
+    }
+
+    async validateBinary(binaryPath: string): Promise<{ success: boolean; version?: string; error?: string }> {
+        return new Promise((resolve) => {
+            execFile(binaryPath, ['version', '--format', 'json'], { timeout: 10000 }, (err, stdout) => {
+                if (err) return resolve({ success: false, error: 'Not a valid Arduino CLI binary' })
+                try {
+                    const data = JSON.parse(stdout)
+                    const version = (data.VersionString ?? data.version ?? stdout.trim()) as string
+                    resolve({ success: true, version })
+                } catch {
+                    resolve({ success: false, error: 'Could not parse version output' })
+                }
+            })
+        })
+    }
+
+    async installFromArchive(archivePath: string): Promise<{ success: boolean; error?: string }> {
+        try {
+            this.emitProgress('extract', 'Extracting Arduino CLI...')
+            if (archivePath.endsWith('.zip')) {
+                await this.extractZipTo(archivePath, this.installDir)
+            } else {
+                await this.extractTarGzTo(archivePath, this.installDir)
+            }
+            if (process.platform !== 'win32') chmodSync(this.cliBinaryPath, 0o755)
+            this.emitProgress('extract', 'Arduino CLI extracted successfully')
+            return { success: true }
+        } catch (err) {
+            return { success: false, error: (err as Error).message }
+        }
+    }
+
+    async checkPlatformInstalled(platformId: string): Promise<{ installed: boolean; version: string | null }> {
+        const platforms = await this.getPlatforms()
+        const found = platforms.find((p) => p.id === platformId || p.id.startsWith(platformId))
+        if (found?.installed) return { installed: true, version: found.installed }
+        return { installed: false, version: null }
+    }
+
+    getArduinoDataDir(): string {
+        const home = app.getPath('home')
+        if (process.platform === 'win32') {
+            return join(process.env['LOCALAPPDATA'] ?? home, 'Arduino15')
+        } else if (process.platform === 'darwin') {
+            return join(home, 'Library', 'Arduino15')
+        } else {
+            return join(home, '.arduino15')
+        }
+    }
+
+    async installPlatformFromArchive(
+        archivePath: string,
+        platformId: string,
+        version: string,
+    ): Promise<{ success: boolean; error?: string }> {
+        let tempDir: string | null = null
+        try {
+            tempDir = await mkdtemp(join(tmpdir(), 'ez-platform-'))
+            this.emitProgress('extract', 'Extracting platform archive...')
+            if (archivePath.endsWith('.zip')) {
+                await this.extractZipTo(archivePath, tempDir)
+            } else {
+                await this.extractTarGzTo(archivePath, tempDir)
+            }
+            const entries = await readdir(tempDir)
+            const srcDir = entries.length === 1 ? join(tempDir, entries[0]) : tempDir
+            const parts = platformId.split(':')
+            const vendor = parts[0]
+            const arch = parts[1] ?? parts[0]
+            const destDir = join(this.getArduinoDataDir(), 'packages', vendor, 'hardware', arch, version)
+            if (!existsSync(destDir)) mkdirSync(destDir, { recursive: true })
+            this.emitProgress('extract', 'Copying platform files...')
+            await cp(srcDir, destDir, { recursive: true })
+            return { success: true }
+        } catch (err) {
+            return { success: false, error: (err as Error).message }
+        } finally {
+            if (tempDir) await rm(tempDir, { recursive: true, force: true }).catch(() => { })
+        }
     }
 
     async getVersion(): Promise<string | null> {
@@ -73,9 +164,9 @@ export class ArduinoCliService {
             this.emitProgress('extract', 'Extracting Arduino CLI...')
 
             if (destFile.endsWith('.zip')) {
-                await this.extractZip(destFile)
+                await this.extractZipTo(destFile, this.installDir)
             } else {
-                await this.extractTarGz(destFile)
+                await this.extractTarGzTo(destFile, this.installDir)
             }
 
             // Make executable on Unix
@@ -271,22 +362,18 @@ export class ArduinoCliService {
         })
     }
 
-    private async extractTarGz(archivePath: string): Promise<void> {
-        await tarExtract({
-            file: archivePath,
-            cwd: this.installDir,
-        })
+    private async extractTarGzTo(archivePath: string, cwd: string): Promise<void> {
+        await tarExtract({ file: archivePath, cwd })
     }
 
-    private extractZip(archivePath: string): Promise<void> {
+    private extractZipTo(archivePath: string, cwd: string): Promise<void> {
         return new Promise((resolve, reject) => {
-            // Use Node's built-in facilities or shell unzip
             const { execFile: exec } = require('child_process')
             if (process.platform === 'win32') {
-                exec('powershell', ['-Command', `Expand-Archive -Path '${archivePath}' -DestinationPath '${this.installDir}' -Force`],
+                exec('powershell', ['-Command', `Expand-Archive -Path '${archivePath}' -DestinationPath '${cwd}' -Force`],
                     (err: Error | null) => err ? reject(err) : resolve())
             } else {
-                exec('unzip', ['-o', archivePath, '-d', this.installDir],
+                exec('unzip', ['-o', archivePath, '-d', cwd],
                     (err: Error | null) => err ? reject(err) : resolve())
             }
         })

@@ -13,25 +13,26 @@ import type { SavedConfiguration } from '../models/saved-configuration'
 import { STARTER_TEMPLATES } from '../../../types/starter-templates'
 
 /**
- * Known USB Vendor/Product IDs → human-readable board name.
+ * Known USB Vendor/Product IDs → board name and FQBN.
  * Used as a fallback when Arduino CLI doesn't recognise a detected serial port.
+ * Leave fqbn empty for generic serial adapters where the target board type is unknown.
  */
-const KNOWN_BOARDS: Record<string, string> = {
-    '2341:0042': 'Arduino Mega 2560',
-    '2341:0010': 'Arduino Mega 2560',
-    '2341:0242': 'Arduino Mega 2560 (DFU)',
-    '2341:0043': 'Arduino Uno',
-    '2341:0001': 'Arduino Uno',
-    '2341:0243': 'Arduino Uno (DFU)',
-    '2341:0058': 'Arduino Nano',
-    '2341:0037': 'Arduino Nano Every',
-    '1a86:7523': 'CH340 Serial (Nano/Mega clone)',
-    '10c4:ea60': 'CP2102 Serial (ESP32)',
-    '0403:6001': 'FTDI Serial Adapter',
-    '0403:6015': 'FTDI Serial Adapter',
-    '0483:374b': 'STM32 Nucleo (ST-Link)',
-    '0483:3748': 'STM32 ST-Link V2',
-    '303a:1001': 'EX-CSB1 (DCC-EX CommandStation Board 1)',
+const KNOWN_BOARDS: Record<string, { name: string; fqbn: string }> = {
+    '2341:0042': { name: 'Arduino Mega 2560', fqbn: 'arduino:avr:mega' },
+    '2341:0010': { name: 'Arduino Mega 2560', fqbn: 'arduino:avr:mega' },
+    '2341:0242': { name: 'Arduino Mega 2560 (DFU)', fqbn: 'arduino:avr:mega' },
+    '2341:0043': { name: 'Arduino Uno', fqbn: 'arduino:avr:uno' },
+    '2341:0001': { name: 'Arduino Uno', fqbn: 'arduino:avr:uno' },
+    '2341:0243': { name: 'Arduino Uno (DFU)', fqbn: 'arduino:avr:uno' },
+    '2341:0058': { name: 'Arduino Nano', fqbn: 'arduino:avr:nano' },
+    '2341:0037': { name: 'Arduino Nano Every', fqbn: 'arduino:megaavr:nanoevery' },
+    '1a86:7523': { name: 'CH340 Serial (Nano/Mega clone)', fqbn: '' },
+    '10c4:ea60': { name: 'CP2102 Serial (ESP32)', fqbn: '' },
+    '0403:6001': { name: 'FTDI Serial Adapter', fqbn: '' },
+    '0403:6015': { name: 'FTDI Serial Adapter', fqbn: '' },
+    '0483:374b': { name: 'STM32 Nucleo (ST-Link)', fqbn: '' },
+    '0483:3748': { name: 'STM32 ST-Link V2', fqbn: '' },
+    '303a:1001': { name: 'EX-CSB1 (DCC-EX CommandStation Board 1)', fqbn: 'esp32:esp32:esp32' },
 }
 
 export class DeviceWizard {
@@ -45,25 +46,16 @@ export class DeviceWizard {
     private readonly files = resolve(FileService)
     private readonly preferences = resolve(PreferencesService)
 
-    // ── Wizard step (0–4) ────────────────────────────────────────────────────
+    // ── Wizard step (0–3) ────────────────────────────────────────────────────
     step = 0
     readonly STEP_LABELS: StepModel[] = [
-        { label: 'Arduino CLI', iconCss: 'sf-icon-cart' },
         { label: 'Select Device', iconCss: 'sf-icon-cart' },
         { label: 'Select Product', iconCss: 'sf-icon-cart' },
         { label: 'Select Version', iconCss: 'sf-icon-cart' },
         { label: 'Confirm', iconCss: 'sf-icon-cart' },
     ];
 
-    // ── Step 0: CLI ──────────────────────────────────────────────────────────
-    cliInstalled = false
-    cliVersion = ''
-    cliInstalling = false
-    cliProgress = 0
-    cliStatus = ''
-    cliError: string | null = null
-
-    // ── Step 1: Device ───────────────────────────────────────────────────────
+    // ── Step 0: Device ───────────────────────────────────────────────────────
     boards: ArduinoCliBoardInfo[] = []
     selectedBoard: ArduinoCliBoardInfo | null = null
     scanning = false
@@ -104,7 +96,6 @@ export class DeviceWizard {
 
     // ── Lifecycle ────────────────────────────────────────────────────────
     async binding(): Promise<void> {
-        await this.checkCli()
         this.scanDevices() // background pre-scan
     }
 
@@ -127,56 +118,7 @@ export class DeviceWizard {
         this.sfStepper = undefined
     }
 
-    // ── Step 0: CLI ──────────────────────────────────────────────────────────
-    async checkCli(): Promise<void> {
-        try {
-            this.cliInstalled = await this.cli.isInstalled()
-            if (this.cliInstalled) {
-                this.cliVersion = (await this.cli.getVersion()) ?? 'installed'
-                this.state.cliReady = true
-            }
-        } catch {
-            this.cliInstalled = false
-        }
-    }
-
-    async installCli(): Promise<void> {
-        this.cliInstalling = true
-        this.cliError = null
-        this.cliProgress = 5
-        try {
-            this.cliStatus = 'Downloading Arduino CLI...'
-            const dl = await this.cli.downloadCli()
-            if (!dl.success) throw new Error(dl.error ?? 'Download failed')
-            this.cliProgress = 35
-
-            this.cliStatus = 'Initializing configuration...'
-            const init = await this.cli.initConfig()
-            if (!init.success) throw new Error(init.error ?? 'Init failed')
-            this.cliProgress = 50
-
-            this.cliStatus = 'Updating board index...'
-            const upd = await this.cli.updateIndex()
-            if (!upd.success) throw new Error(upd.error ?? 'Update failed')
-            this.cliProgress = 70
-
-            this.cliStatus = 'Installing Arduino AVR core...'
-            await this.cli.installPlatform('arduino:avr', '1.8.6')
-            this.cliProgress = 95
-
-            this.cliInstalled = true
-            this.state.cliReady = true
-            this.cliVersion = (await this.cli.getVersion()) ?? 'installed'
-            this.cliStatus = 'Ready!'
-            this.cliProgress = 100
-        } catch (err) {
-            this.cliError = (err as Error).message
-        } finally {
-            this.cliInstalling = false
-        }
-    }
-
-    // ── Step 1: Device ───────────────────────────────────────────────────────
+    // ── Step 0: Device ───────────────────────────────────────────────────────
     async scanDevices(): Promise<void> {
         this.scanning = true
         this.scanError = null
@@ -186,7 +128,7 @@ export class DeviceWizard {
             const serial = this.usb.serialPorts
 
             const cliMap = new Map<string, ArduinoCliBoardInfo>()
-            if (this.cliInstalled) {
+            if (this.state.cliReady) {
                 try {
                     const cliBoards = await this.cli.listBoards()
                     for (const b of cliBoards) cliMap.set(b.port, b)
@@ -199,9 +141,10 @@ export class DeviceWizard {
                 const vid = sp.vendorId?.toLowerCase() ?? ''
                 const pid = sp.productId?.toLowerCase() ?? ''
                 const vidPid = vid && pid ? `${vid}:${pid}` : ''
+                const knownBoard = KNOWN_BOARDS[vidPid]
                 return {
-                    name: KNOWN_BOARDS[vidPid] ?? sp.manufacturer ?? 'Unknown device',
-                    fqbn: '',
+                    name: knownBoard?.name ?? sp.manufacturer ?? 'Unknown device',
+                    fqbn: knownBoard?.fqbn ?? '',
                     port: sp.path,
                     protocol: 'serial',
                     serialNumber: sp.serialNumber,
@@ -276,29 +219,27 @@ export class DeviceWizard {
 
     // ── Navigation ───────────────────────────────────────────────────────────
     get canGoNext(): boolean {
-        if (this.step === 0) return this.cliInstalled
-        if (this.step === 1) return this.selectedBoard !== null
-        if (this.step === 2) return this.selectedProduct !== null
-        if (this.step === 3) return this.selectedVersion !== null && !this.versionBusy
-        if (this.step === 4) return this.deviceNickname.trim().length > 0
+        if (this.step === 0) return this.selectedBoard !== null
+        if (this.step === 1) return this.selectedProduct !== null
+        if (this.step === 2) return this.selectedVersion !== null && !this.versionBusy
+        if (this.step === 3) return this.deviceNickname.trim().length > 0
         return false
     }
 
     async goNext(): Promise<void> {
         if (!this.canGoNext) return
-        if (this.step === 4) {
+        if (this.step === 3) {
             await this.finish()
             return
         }
         this.step++
         this.sfStepper?.nextStep();
-        if (this.step === 3) await this.loadVersions()
+        if (this.step === 2) await this.loadVersions()
     }
 
     goBack(): void {
         if (this.step > 0) {
             this.step--
-            //this.syncStepper()
             this.sfStepper?.previousStep();
         }
     }
