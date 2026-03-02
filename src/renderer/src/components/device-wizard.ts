@@ -10,6 +10,7 @@ import { PreferencesService } from '../services/preferences.service'
 import { productDetails, extractVersionDetails } from '../models/product-details'
 import type { ArduinoCliBoardInfo } from '../../../types/ipc'
 import type { SavedConfiguration } from '../models/saved-configuration'
+import { STARTER_TEMPLATES } from '../../../types/starter-templates'
 
 /**
  * Known USB Vendor/Product IDs → human-readable board name.
@@ -388,17 +389,33 @@ export class DeviceWizard {
             await copySourceDir(repoPath, scratchPath)
 
             // ── Resolve user config files ────────────────────────────────────
-            // Priority: 1) previously-saved user edit, 2) file in source repo, 3) .example in source
+            // Priority: 1) previously-saved user edit
+            //           2) bundled starter template (curated, known-good default)
+            //           3) file in source repo
+            //           4) example file in source repo ("config.h.example")
+            //           5) example file in source repo ("config.example.h")
             const configFiles: Array<{ name: string; content: string }> = []
             for (const fileName of product.minimumConfigFiles) {
                 let content = savedUserFiles.get(fileName) ?? ''
                 if (!content) {
+                    // 2) bundled starter template
+                    content = STARTER_TEMPLATES[repoFolder]?.[fileName] ?? ''
+                }
+                if (!content) {
                     const filePath = `${repoPath}/${fileName}`
-                    const examplePath = `${repoPath}/${fileName}.example`
+                    // Repos may name the example file either "config.h.example" or
+                    // "config.example.h" — probe both conventions.
+                    const examplePathSuffix = `${repoPath}/${fileName}.example`
+                    const dotIdx = fileName.lastIndexOf('.')
+                    const examplePathInfix = dotIdx !== -1
+                        ? `${repoPath}/${fileName.slice(0, dotIdx)}.example${fileName.slice(dotIdx)}`
+                        : null
                     if (await this.files.exists(filePath)) {
                         content = await this.files.readFile(filePath)
-                    } else if (await this.files.exists(examplePath)) {
-                        content = await this.files.readFile(examplePath)
+                    } else if (await this.files.exists(examplePathSuffix)) {
+                        content = await this.files.readFile(examplePathSuffix)
+                    } else if (examplePathInfix && await this.files.exists(examplePathInfix)) {
+                        content = await this.files.readFile(examplePathInfix)
                     }
                 }
                 configFiles.push({ name: fileName, content })

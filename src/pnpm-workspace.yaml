@@ -1,0 +1,5 @@
+onlyBuiltDependencies:
+  - '@serialport/bindings-cpp'
+  - electron
+  - esbuild
+  - usb
