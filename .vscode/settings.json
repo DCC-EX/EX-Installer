@@ -10,6 +10,8 @@
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true,
     "cSpell.words": [
-        "fqbn"
+        "DBUS",
+        "fqbn",
+        "maximizable"
     ]
 }
