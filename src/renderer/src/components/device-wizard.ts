@@ -7,6 +7,7 @@ import { UsbService } from '../services/usb.service'
 import { GitService } from '../services/git.service'
 import { FileService } from '../services/file.service'
 import { PreferencesService } from '../services/preferences.service'
+import { ConfigService } from '../services/config.service'
 import { productDetails, extractVersionDetails } from '../models/product-details'
 import type { ArduinoCliBoardInfo } from '../../../types/ipc'
 import type { SavedConfiguration } from '../models/saved-configuration'
@@ -45,6 +46,7 @@ export class DeviceWizard {
     private readonly git = resolve(GitService)
     private readonly files = resolve(FileService)
     private readonly preferences = resolve(PreferencesService)
+    private readonly config = resolve(ConfigService)
 
     // ── Wizard step (0–3) ────────────────────────────────────────────────────
     step = 0
@@ -83,8 +85,7 @@ export class DeviceWizard {
     finishing = false
     finishError: string | null = null
 
-    /** True when running under `pnpm dev`. */
-    readonly isMock = import.meta.env.DEV
+    isMock = false
 
     // ── Syncfusion Stepper ───────────────────────────────────────────────────
     stepperContainer!: HTMLElement
@@ -96,6 +97,8 @@ export class DeviceWizard {
 
     // ── Lifecycle ────────────────────────────────────────────────────────
     async binding(): Promise<void> {
+        await this.config.ready
+        this.isMock = this.config.isMock
         this.scanDevices() // background pre-scan
     }
 

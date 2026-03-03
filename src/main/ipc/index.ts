@@ -4,6 +4,7 @@ import { registerArduinoCliIpcHandlers } from './arduino-cli-ipc'
 import { registerGitIpcHandlers } from './git-ipc'
 import { registerFileIpcHandlers } from './file-ipc'
 import { registerPreferencesIpcHandlers } from './preferences-ipc'
+import { registerConfigIpcHandlers } from './config-ipc'
 import type { UsbManager } from '../usb-manager'
 import type { PythonRunner } from '../python-runner'
 import type { ArduinoCliService } from '../arduino-cli'
@@ -31,4 +32,5 @@ export function registerAllIpcHandlers(services: IpcServices): void {
     registerGitIpcHandlers(services.gitService)
     registerFileIpcHandlers(services.fileService)
     registerPreferencesIpcHandlers(services.preferencesService)
+    registerConfigIpcHandlers()
 }

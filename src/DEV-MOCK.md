@@ -26,7 +26,7 @@ Compile and upload operations always use the scratch path, never the git source 
 
 | Command | Mock mode |
 |---|---|
-| `pnpm dev` | **ON** (`app.isPackaged` is `false` in dev) |
+| `pnpm dev` | **OFF** |
 | `pnpm build` (packaged) | **OFF** |
 
 A small amber **DEV MOCK** badge is shown in the wizard header and the workspace top bar whenever mock mode is active.
@@ -35,7 +35,17 @@ A small amber **DEV MOCK** badge is shown in the wizard header and the workspace
 
 ## Controlling mock mode
 
-Mock mode is determined by `!app.isPackaged` in the main process (`src/main/dev-mock.ts`). There is no runtime toggle — dev builds are always mock, packaged builds are never mock.
+Mock mode is controlled via the `--mock` command-line flag in the main process (`src/main/index.ts`):
+
+| Launch command | Mock mode |
+|---|---|
+| `pnpm dev` | **OFF** |
+| `pnpm dev -- --mock` | **ON** |
+| `electron . --mock` | **ON** (explicit flag) |
+| `./EX-Installer --mock` (packaged executable) | **ON** (explicit flag) |
+| `pnpm build` (packaged) | **OFF** |
+
+Mock mode is enabled only when `--mock` is provided.
 
 ---
 
@@ -81,7 +91,8 @@ Common VID:PID values (full list in `arduino-cli-ipc.ts`):
 ```
 src/
 ├── main/
-│   ├── dev-mock.ts           ← MOCK_SERIAL_PORTS, IS_DEV_MOCK flag
+│   ├── index.ts              ← IS_DEV_MOCK flag detection (command-line args)
+│   ├── dev-mock.ts           ← MOCK_SERIAL_PORTS, mock data
 │   └── ipc/
 │       ├── arduino-cli-ipc.ts  ← list-boards mocked; all other CLI calls are real
 │       ├── git-ipc.ts          ← all real (no mock guards)

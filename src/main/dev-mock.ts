@@ -1,11 +1,7 @@
-import { app } from 'electron'
 import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 import type { SerialDeviceInfo } from '../types/ipc'
 import { STARTER_TEMPLATES } from '../types/starter-templates'
-
-/** True in `pnpm dev`; always false in a packaged app. */
-export const IS_DEV_MOCK = !app.isPackaged
 
 export const MOCK_SERIAL_PORTS: SerialDeviceInfo[] = [
     {

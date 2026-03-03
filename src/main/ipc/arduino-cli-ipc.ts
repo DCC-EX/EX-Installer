@@ -1,6 +1,7 @@
 import { ipcMain, BrowserWindow, dialog } from 'electron'
 import type { ArduinoCliService } from '../arduino-cli'
-import { IS_DEV_MOCK, MOCK_SERIAL_PORTS } from '../dev-mock'
+import { IS_DEV_MOCK } from '../index'
+import { MOCK_SERIAL_PORTS } from '../dev-mock'
 
 /** VID:PID → board name + FQBN (used for mock board identification). */
 const KNOWN_BOARDS: Record<string, { name: string; fqbn: string }> = {

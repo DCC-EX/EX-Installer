@@ -26,6 +26,21 @@
                 "panel": "shared"
             },
             "problemMatcher": []
+        },
+        // ── Run (mock mode) ─────────────────────────────────────────────────
+        {
+            "label": "electron-vite: dev (mock)",
+            "type": "shell",
+            "command": "pnpm exec electron-vite dev -- --mock",
+            "options": {
+                "cwd": "${workspaceFolder}/src"
+            },
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
         }
     ]
 }

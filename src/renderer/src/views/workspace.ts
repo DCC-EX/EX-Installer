@@ -5,6 +5,7 @@ import { InstallerState } from '../models/installer-state'
 import { PreferencesService } from '../services/preferences.service'
 import { FileService } from '../services/file.service'
 import { ArduinoCliService } from '../services/arduino-cli.service'
+import { ConfigService } from '../services/config.service'
 import { DeviceWizard } from '../components/device-wizard'
 import { productDetails } from '../models/product-details'
 import type { SavedConfiguration } from '../models/saved-configuration'
@@ -16,12 +17,12 @@ export class Workspace {
     private readonly preferences = resolve(PreferencesService)
     private readonly files = resolve(FileService)
     private readonly cli = resolve(ArduinoCliService)
+    private readonly config = resolve(ConfigService)
 
     // ── Active config file being edited ─────────────────────────────────────
     activeFileIndex = 0
 
-    /** Exposes mock flag to the template. */
-    readonly isMock = import.meta.env.DEV
+    isMock = false
 
     // ── Compile / upload state ───────────────────────────────────────────────
     isCompiling = false
@@ -35,6 +36,8 @@ export class Workspace {
     savedConfigs: SavedConfiguration[] = []
 
     async binding(): Promise<void> {
+        await this.config.ready
+        this.isMock = this.config.isMock
         if (!this.state.selectedDevice) {
             await this.router.load('home')
             return

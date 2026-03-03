@@ -172,6 +172,12 @@ export interface PreferencesElectronApi {
     getAll: () => Promise<Record<string, unknown>>
 }
 
+// ── Config ───────────────────────────────────────────────────────────────────
+
+export interface ConfigElectronApi {
+    getMock: () => Promise<boolean>
+}
+
 declare global {
     interface Window {
         usb: UsbElectronApi
@@ -180,5 +186,6 @@ declare global {
         git: GitElectronApi
         files: FileElectronApi
         preferences: PreferencesElectronApi
+        config: ConfigElectronApi
     }
 }

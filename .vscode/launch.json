@@ -39,6 +39,39 @@
                 "${workspaceFolder}/src/node_modules/**"
             ]
         },
+        {
+            "name": "Main Process (Mock)",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "${workspaceFolder}/src/node_modules/.bin/electron-vite",
+            "runtimeArgs": [
+                "dev",
+                "--inspect=9229",
+                "--",
+                "--mock"
+            ],
+            "cwd": "${workspaceFolder}/src",
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+            "attachSimplePort": 9229,
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/src/out/main/**/*.js",
+                "${workspaceFolder}/src/out/preload/**/*.js"
+            ],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/src/**",
+                "!**/node_modules/**"
+            ],
+            "sourceMapPathOverrides": {
+                "../../main/*": "${workspaceFolder}/src/main/*",
+                "../../preload/*": "${workspaceFolder}/src/preload/*"
+            },
+            "skipFiles": [
+                "<node_internals>/**",
+                "${workspaceFolder}/src/node_modules/**"
+            ]
+        },
         // ── Renderer process (Chromium) ───────────────────────────────────────
         // Start "Main Process" first, then attach this.
         // Or use the "Debug All" compound to launch both together.
@@ -65,6 +98,14 @@
             "name": "Debug All",
             "configurations": [
                 "Main Process",
+                "Renderer Process"
+            ],
+            "stopAll": true
+        },
+        {
+            "name": "Debug All (Mock)",
+            "configurations": [
+                "Main Process (Mock)",
                 "Renderer Process"
             ],
             "stopAll": true

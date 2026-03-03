@@ -237,3 +237,10 @@ contextBridge.exposeInMainWorld('arduinoCli', arduinoCliApi)
 contextBridge.exposeInMainWorld('git', gitApi)
 contextBridge.exposeInMainWorld('files', filesApi)
 contextBridge.exposeInMainWorld('preferences', preferencesApi)
+// ── Config API ───────────────────────────────────────────────────────────────
+const configApi = {
+    getMock: (): Promise<boolean> =>
+        ipcRenderer.invoke('config:get-mock'),
+}
+
+contextBridge.exposeInMainWorld('config', configApi)

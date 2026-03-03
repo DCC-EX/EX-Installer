@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import type { UsbManager } from '../usb-manager'
-import { IS_DEV_MOCK, MOCK_SERIAL_PORTS } from '../dev-mock'
+import { IS_DEV_MOCK } from '../index'
+import { MOCK_SERIAL_PORTS } from '../dev-mock'
 
 /**
  * IPC handlers for USB / serial-port operations.

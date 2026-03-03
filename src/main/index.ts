@@ -9,6 +9,16 @@ import { GitService } from './git-client'
 import { FileService } from './file-manager'
 import { PreferencesService } from './preferences'
 
+// ── Mock mode flag ──────────────────────────────────────────────────────────
+/**
+ * Runtime mock mode flag.
+ *
+ * Works for both `electron-vite dev -- --mock` and packaged executables
+ * launched with `./EX-Installer --mock`.
+ */
+export const IS_DEV_MOCK =
+    app.commandLine.hasSwitch('mock') || process.argv.includes('--mock')
+
 if (config.disableHardwareAcceleration) app.disableHardwareAcceleration()
 
 if (config.disableDBus && process.platform === 'linux') {
