@@ -1,0 +1,73 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        // ── Main process (Node.js) ────────────────────────────────────────────
+        // Follows the official Electron docs pattern: "request": "launch" so
+        // VS Code owns the process — no preLaunchTask / background task needed.
+        // electron-vite dev --inspect=9229 builds, starts Vite servers, then
+        // spawns Electron with --inspect=9229 for the Node.js debugger to attach.
+        {
+            "name": "Main Process",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "${workspaceFolder}/src/node_modules/.bin/electron-vite",
+            "runtimeArgs": [
+                "dev",
+                "--inspect=9229"
+            ],
+            "cwd": "${workspaceFolder}/src",
+            "outputCapture": "std",
+            "console": "integratedTerminal",
+            // Don't inject VS Code's own inspector into electron-vite.
+            // Instead, simply attach to the port that Electron opens via --inspect=9229.
+            "attachSimplePort": 9229,
+            "sourceMaps": true,
+            "outFiles": [
+                "${workspaceFolder}/src/out/main/**/*.js",
+                "${workspaceFolder}/src/out/preload/**/*.js"
+            ],
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/src/**",
+                "!**/node_modules/**"
+            ],
+            "sourceMapPathOverrides": {
+                "../../main/*": "${workspaceFolder}/src/main/*",
+                "../../preload/*": "${workspaceFolder}/src/preload/*"
+            },
+            "skipFiles": [
+                "<node_internals>/**",
+                "${workspaceFolder}/src/node_modules/**"
+            ]
+        },
+        // ── Renderer process (Chromium) ───────────────────────────────────────
+        // Start "Main Process" first, then attach this.
+        // Or use the "Debug All" compound to launch both together.
+        {
+            "name": "Renderer Process",
+            "type": "chrome",
+            "request": "attach",
+            "port": 9222,
+            "urlFilter": "http://localhost:*",
+            "webRoot": "${workspaceFolder}/src/renderer/src",
+            "sourceMaps": true,
+            "resolveSourceMapLocations": [
+                "${workspaceFolder}/src/**",
+                "!**/node_modules/**"
+            ],
+            "skipFiles": [
+                "${workspaceFolder}/src/node_modules/**"
+            ]
+        }
+    ],
+    // ── Compound: debug main + renderer together ──────────────────────────────
+    "compounds": [
+        {
+            "name": "Debug All",
+            "configurations": [
+                "Main Process",
+                "Renderer Process"
+            ],
+            "stopAll": true
+        }
+    ]
+}

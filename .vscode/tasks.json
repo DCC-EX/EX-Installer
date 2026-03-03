@@ -1,0 +1,31 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        // ── Kill lingering Electron processes ─────────────────────────────────
+        {
+            "label": "kill-electron",
+            "type": "shell",
+            "command": "pkill -f electron || true",
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        },
+        // ── Build ─────────────────────────────────────────────────────────────
+        {
+            "label": "electron-vite: build",
+            "type": "shell",
+            "command": "pnpm build",
+            "options": {
+                "cwd": "${workspaceFolder}/src"
+            },
+            "group": "build",
+            "presentation": {
+                "reveal": "always",
+                "panel": "shared"
+            },
+            "problemMatcher": []
+        }
+    ]
+}
