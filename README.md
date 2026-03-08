@@ -63,7 +63,7 @@ In this instance, it is recommended to run in a virtual environment. Assuming Py
 
 - Clone the repository with `git clone https://github.com/DCC-EX/EX-Installer.git`
 - Change into the newly created directory
-- Create a virtual environment with `virtualenv venv`
+- Create a virtual environment with `python -m venv venv`
 - Activate the virtual environment:
   - Windows: `venv\scripts\activate`
   - Linux/macOS: `source venv/bin/activate`
