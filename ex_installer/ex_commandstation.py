@@ -288,7 +288,7 @@ class EXCommandStation(WindowLayout):
 
         # Set up WiFi widgets
         self.wifi_type = ctk.IntVar(self, value=0)
-        self.wifi_channel = ctk.StringVar(self, value=1)
+        self.wifi_channel = ctk.StringVar(self, value=11) # default to channel 11
         self.wifi_enabled = ctk.StringVar(self, value="off")
         self.wifi_switch = ctk.CTkSwitch(self.switch_frame, text="I have WiFi", width=200,
                                          onvalue="on", offvalue="off", variable=self.wifi_enabled,
@@ -386,6 +386,26 @@ class EXCommandStation(WindowLayout):
                                           font=self.instruction_font, width=60, fg_color="white")
         self.track_b_combo.set("MAIN")  # default to MAIN and PROG
         self.track_b_combo.set("PROG")
+        
+        # Track C configuration
+        self.track_c_label = ctk.CTkLabel(self.track_modes_frame, text="Track C:")
+        self.track_c_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
+                                             width=100, font=self.instruction_font, command=self.set_c_mode)
+        self.track_c_id = ctk.StringVar(self, value="3")
+        self.track_c_id_label = ctk.CTkLabel(self.track_modes_frame, text="Track C loco/cab ID:",
+                                             font=self.instruction_font)
+        self.track_c_entry = ctk.CTkEntry(self.track_modes_frame, textvariable=self.track_c_id,
+                                          font=self.instruction_font, width=60, fg_color="white")
+        
+        # Track D configuration
+        self.track_d_label = ctk.CTkLabel(self.track_modes_frame, text="Track D:")
+        self.track_d_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
+                                             width=100, font=self.instruction_font, command=self.set_d_mode)
+        self.track_d_id = ctk.StringVar(self, value="4")
+        self.track_d_id_label = ctk.CTkLabel(self.track_modes_frame, text="Track D loco/cab ID:",
+                                             font=self.instruction_font)
+        self.track_d_entry = ctk.CTkEntry(self.track_modes_frame, textvariable=self.track_d_id,
+                                          font=self.instruction_font, width=60, fg_color="white")
 
         # Set track power on startup
         self.power_on_switch = ctk.CTkSwitch(self.switch_frame, text="Start with power on", width=200,
@@ -473,7 +493,7 @@ class EXCommandStation(WindowLayout):
         self.track_tab_frame.grid_columnconfigure(0, weight=1)
         self.track_tab_frame.grid_rowconfigure(0, weight=1)
         self.track_modes_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
-        self.track_modes_frame.grid_rowconfigure((0, 1), weight=1)
+        self.track_modes_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
         self.track_a_label.grid(column=0, row=0, sticky="e", **grid_options)
         self.track_a_combo.grid(column=1, row=0, sticky="w", **grid_options)
         self.track_a_id_label.grid(column=2, row=0, sticky="e", **grid_options)
@@ -482,6 +502,17 @@ class EXCommandStation(WindowLayout):
         self.track_b_combo.grid(column=1, row=1, sticky="w", **grid_options)
         self.track_b_id_label.grid(column=2, row=1, sticky="e", **grid_options)
         self.track_b_entry.grid(column=3, row=1, sticky="w", **grid_options)
+        self.track_c_label.grid(column=0, row=2, sticky="e", **grid_options)
+        self.track_c_combo.grid(column=1, row=2, sticky="w", **grid_options)
+        self.track_c_id_label.grid(column=2, row=2, sticky="e", **grid_options)
+        self.track_c_entry.grid(column=3, row=2, sticky="w", **grid_options)
+        self.track_d_label.grid(column=0, row=3, sticky="e", **grid_options)
+        self.track_d_combo.grid(column=1, row=3, sticky="w", **grid_options)
+        self.track_d_id_label.grid(column=2, row=3, sticky="e", **grid_options)
+        self.track_d_entry.grid(column=3, row=3, sticky="w", **grid_options)
+        
+        # Hide tracks C and D by default
+        self.hide_extra_tracks()
 
         # Layout general tab
         self.general_tab_frame.grid_columnconfigure(0, weight=1)
@@ -603,11 +634,39 @@ class EXCommandStation(WindowLayout):
             self.log.debug("Track modes frame hidden")
         self.set_a_mode()
         self.set_b_mode()
+        self.set_c_mode()
+        self.set_d_mode()
+
+    def enforce_prog_constraint(self, track_letter):
+        """
+        Ensure only one track can have PROG mode at a time.
+        When a track is set to PROG, resets any other track with PROG to NONE.
+        
+        Args:
+            track_letter: The letter of the track being set ('A', 'B', 'C', or 'D')
+        """
+        track_combos = {
+            'A': self.track_a_combo,
+            'B': self.track_b_combo,
+            'C': self.track_c_combo,
+            'D': self.track_d_combo
+        }
+        
+        # Check if the current track is being set to PROG
+        current_combo = track_combos[track_letter]
+        if current_combo.get() == "PROG":
+            # Reset all other tracks from PROG to NONE
+            for letter, combo in track_combos.items():
+                if letter != track_letter and combo.get() == "PROG":
+                    combo.set("NONE")
+                    self.log.debug("Track %s PROG mode removed, conflict with Track %s", letter, track_letter)
 
     def set_a_mode(self, event=None):
         """
         If setting track A to DC or DCX, allow setting loco/cab ID
+        Also enforces PROG constraint
         """
+        self.enforce_prog_constraint('A')
         if self.track_a_combo.get() == "DC" or self.track_a_combo.get() == "DCX":
             self.track_a_id_label.grid()
             self.track_a_entry.grid()
@@ -618,13 +677,71 @@ class EXCommandStation(WindowLayout):
     def set_b_mode(self, event=None):
         """
         If setting track B to DC or DCX, allow setting loco/cab ID
+        Also enforces PROG constraint
         """
+        self.enforce_prog_constraint('B')
         if self.track_b_combo.get() == "DC" or self.track_b_combo.get() == "DCX":
             self.track_b_id_label.grid()
             self.track_b_entry.grid()
         else:
             self.track_b_id_label.grid_remove()
             self.track_b_entry.grid_remove()
+
+    def set_c_mode(self, event=None):
+        """
+        If setting track C to DC or DCX, allow setting loco/cab ID
+        Also enforces PROG constraint
+        """
+        self.enforce_prog_constraint('C')
+        if self.track_c_combo.get() == "DC" or self.track_c_combo.get() == "DCX":
+            self.track_c_id_label.grid()
+            self.track_c_entry.grid()
+        else:
+            self.track_c_id_label.grid_remove()
+            self.track_c_entry.grid_remove()
+
+    def set_d_mode(self, event=None):
+        """
+        If setting track D to DC or DCX, allow setting loco/cab ID
+        Also enforces PROG constraint
+        """
+        self.enforce_prog_constraint('D')
+        if self.track_d_combo.get() == "DC" or self.track_d_combo.get() == "DCX":
+            self.track_d_id_label.grid()
+            self.track_d_entry.grid()
+        else:
+            self.track_d_id_label.grid_remove()
+            self.track_d_entry.grid_remove()
+
+    def hide_extra_tracks(self):
+        """
+        Hide tracks C and D (used by default)
+        """
+        self.track_c_label.grid_remove()
+        self.track_c_combo.grid_remove()
+        self.track_c_id_label.grid_remove()
+        self.track_c_entry.grid_remove()
+        self.track_d_label.grid_remove()
+        self.track_d_combo.grid_remove()
+        self.track_d_id_label.grid_remove()
+        self.track_d_entry.grid_remove()
+        self.log.debug("Extra tracks (C and D) hidden")
+
+    def show_extra_tracks(self):
+        """
+        Show tracks C and D (used for 4-output motor shields)
+        """
+        self.track_c_label.grid()
+        self.track_c_combo.grid()
+        self.track_c_id_label.grid_remove()  # Hide ID by default
+        self.track_c_entry.grid_remove()
+        self.track_d_label.grid()
+        self.track_d_combo.grid()
+        self.track_d_id_label.grid_remove()  # Hide ID by default
+        self.track_d_entry.grid_remove()
+        self.set_c_mode()
+        self.set_d_mode()
+        self.log.debug("Extra tracks (C and D) shown")
 
     def set_advanced_config(self):
         """
@@ -795,11 +912,26 @@ class EXCommandStation(WindowLayout):
     def check_motor_driver(self, value):
         """
         Function ensure a motor driver has been selected
+        
+        Also automatically enables TrackManager and Advanced Config when EXCSB1_WITH_EX8874 is selected
+        Shows 4-track configuration for motors with 4 outputs
         """
         if value == "Select motor driver":
             self.next_back.disable_next()
         else:
             self.next_back.enable_next()
+        
+        # Automatically enable TrackManager and Advanced Config for EXCSB1_WITH_EX8874
+        if value == "EXCSB1_WITH_EX8874" and self.trackmanager_available:
+            self.track_modes_switch.select()
+            self.set_track_modes()
+            self.advanced_config_switch.select()
+            self.set_advanced_config()
+            self.show_extra_tracks()
+            self.log.debug("TrackManager, Advanced Config, and 4-track mode enabled for EXCSB1_WITH_EX8874")
+        else:
+            self.hide_extra_tracks()
+            self.log.debug("Extra tracks hidden for motor driver: %s", value)
 
     def check_invalid_wifi_password(self):
         """
@@ -1021,6 +1153,20 @@ class EXCommandStation(WindowLayout):
             else:
                 if int(self.track_b_id.get()) < 1 or int(self.track_b_id.get()) > 10293:
                     param_errors.append("Track B loco/cab ID must be from 1 to 10293")
+            try:
+                int(self.track_c_id.get())
+            except Exception:
+                param_errors.append("Track C loco/cab ID must be from 1 to 10293")
+            else:
+                if int(self.track_c_id.get()) < 1 or int(self.track_c_id.get()) > 10293:
+                    param_errors.append("Track C loco/cab ID must be from 1 to 10293")
+            try:
+                int(self.track_d_id.get())
+            except Exception:
+                param_errors.append("Track D loco/cab ID must be from 1 to 10293")
+            else:
+                if int(self.track_d_id.get()) < 1 or int(self.track_d_id.get()) > 10293:
+                    param_errors.append("Track D loco/cab ID must be from 1 to 10293")
             if (self.track_a_combo.get().startswith("DC")):
                 line = (f"SETLOCO({self.track_a_id.get()}) SET_TRACK(A," + self.track_a_combo.get() + ")\n")
                 roster_lines.append(f"ROSTER({self.track_a_id.get()},\"DC TRACK A\",\"/* /\")\n")
@@ -1032,6 +1178,18 @@ class EXCommandStation(WindowLayout):
                 roster_lines.append(f"ROSTER({self.track_b_id.get()},\"DC TRACK B\",\"/* /\")\n")
             else:
                 line = "SET_TRACK(B," + self.track_b_combo.get() + ")\n"
+            config_list.append(line)
+            if (self.track_c_combo.get().startswith("DC")):
+                line = (f"SETLOCO({self.track_c_id.get()}) SET_TRACK(C," + self.track_c_combo.get() + ")\n")
+                roster_lines.append(f"ROSTER({self.track_c_id.get()},\"DC TRACK C\",\"/* /\")\n")
+            else:
+                line = "SET_TRACK(C," + self.track_c_combo.get() + ")\n"
+            config_list.append(line)
+            if (self.track_d_combo.get().startswith("DC")):
+                line = (f"SETLOCO({self.track_d_id.get()}) SET_TRACK(D," + self.track_d_combo.get() + ")\n")
+                roster_lines.append(f"ROSTER({self.track_d_id.get()},\"DC TRACK D\",\"/* /\")\n")
+            else:
+                line = "SET_TRACK(D," + self.track_d_combo.get() + ")\n"
             config_list.append(line)
         # Single AUTOSTART if either option enabled
         if self.power_on_switch.get() == "on" or self.track_modes_enabled.get() == "on":
