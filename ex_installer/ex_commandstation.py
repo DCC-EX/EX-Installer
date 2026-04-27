@@ -297,10 +297,15 @@ class EXCommandStation(WindowLayout):
                       "https://dcc-ex.com/ex-commandstation/advanced-setup/supported-wifi/index.html")
         self.wifi_options_frame = ctk.CTkFrame(self.wifi_tab_frame, border_width=0)
         self.wifi_ap_radio = ctk.CTkRadioButton(self.wifi_options_frame, width=400,
-                                                text="Use my EX-CommandStation as an access point",
+                                                text="Use my EX-CommandStation as an access point, with default or custom SSID and password",
                                                 variable=self.wifi_type,
                                                 command=self.set_wifi_widgets,
                                                 value=0)
+        # self.wifi_force_ap_radio = ctk.CTkRadioButton(self.wifi_options_frame, width=400,
+        #                                         text="Use my EX-CommandStation as an access point, with custom SSID and password",
+        #                                         variable=self.wifi_type,
+        #                                         command=self.set_wifi_widgets,
+        #                                         value=0)
         self.wifi_st_radio = ctk.CTkRadioButton(self.wifi_options_frame, width=400,
                                                 text="Connect my EX-CommandStation to my existing wireless network",
                                                 variable=self.wifi_type,
@@ -427,7 +432,7 @@ class EXCommandStation(WindowLayout):
         self.wifi_options_frame.grid_columnconfigure((0, 1, 2, 3), weight=1)
         self.wifi_options_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
         self.wifi_channel_frame.grid_columnconfigure(0, weight=1)
-        self.wifi_channel_frame.grid_rowconfigure((0, 1, 2, 3), weight=1)
+        self.wifi_channel_frame.grid_rowconfigure((0, 1, 2, 3, 4), weight=1)
         self.wifi_options_frame.grid(column=1, row=0)
         self.wifi_ap_radio.grid(column=0, row=0, columnspan=4, **grid_options)
         self.wifi_st_radio.grid(column=0, row=1, columnspan=4, **grid_options)
@@ -437,7 +442,7 @@ class EXCommandStation(WindowLayout):
         self.wifi_pwd_entry.grid(column=3, row=2, sticky="w", **grid_options)
         self.wifi_hostname_label.grid(column=0, row=3, sticky="e", **grid_options)
         self.wifi_hostname_entry.grid(column=1, row=3, sticky="w", **grid_options)
-        self.wifi_channel_frame.grid(column=0, row=2, columnspan=2, **grid_options)
+        self.wifi_channel_frame.grid(column=1, row=3, columnspan=2, **grid_options)
         self.wifi_channel_label.grid(column=0, row=0, **grid_options)
         self.wifi_channel_minus.grid(column=1, row=0, sticky="e")
         self.wifi_channel_entry.grid(column=2, row=0)
@@ -653,11 +658,14 @@ class EXCommandStation(WindowLayout):
         Function to display correct widgets for WiFi config
         """
         if self.wifi_type.get() == 0:
-            self.wifi_ssid_label.grid_remove()
-            self.wifi_ssid_entry.grid_remove()
+            # self.wifi_ssid_label.grid_()
+            # self.wifi_ssid_label.grid_remove()
+            # self.wifi_ssid_entry.grid_remove()
             self.wifi_hostname_label.grid_remove()
             self.wifi_hostname_entry.grid_remove()
             self.wifi_channel_frame.grid()
+            if self.wifi_ssid_entry.get() == "":
+                self.wifi_ssid_entry.configure(placeholder_text="Custom WiFi SSID")
             if self.wifi_pwd_entry.get() == "":
                 self.wifi_pwd_entry.configure(placeholder_text="Custom WiFi password")
             self.log.debug("WiFi AP mode selected")
@@ -667,6 +675,8 @@ class EXCommandStation(WindowLayout):
             self.wifi_hostname_label.grid()
             self.wifi_hostname_entry.grid()
             self.wifi_channel_frame.grid_remove()
+            if self.wifi_ssid_entry.get() == "":
+                self.wifi_ssid_entry.configure(placeholder_text="Enter your WiFi SSID")
             if self.wifi_pwd_entry.get() == "":
                 self.wifi_pwd_entry.configure(placeholder_text="Enter your WiFi password")
             self.log.debug("WiFi ST mode selected")
@@ -889,7 +899,21 @@ class EXCommandStation(WindowLayout):
             line = '#define WIFI_HOSTNAME "' + self.wifi_hostname.get() + '"\n'
             config_list.append(line)
             if self.wifi_type.get() == 0:
-                config_list.append('#define WIFI_SSID "Your network name"\n')
+                if self.wifi_ssid_entry.get() == "":
+                    config_list.append('#define WIFI_SSID "Your network name"\n')
+                else:
+                    # Probably should check for invalid characters in the SSID, but not doing that now
+                    # invalid, issue = self.check_invalid_wifi_ssid()
+                    # if invalid:
+                    #     param_errors.append(issue)
+                    # else:
+                    if self.wifi_pwd_entry.get() == "":
+                        param_errors.append("WiFi password not set")
+                    else:
+                        line = '#define WIFI_SSID "' + self.wifi_ssid_entry.get() + '"\n'
+                        config_list.append(line)
+                        line = '#define FORCE_AP true\n'
+                        config_list.append(line)
                 if self.wifi_pwd_entry.get() == "":
                     config_list.append('#define WIFI_PASSWORD "Your network passwd"\n')
                 else:
@@ -1042,6 +1066,7 @@ class EXCommandStation(WindowLayout):
                 self.log.error("Could not write config file: %s", write_config)
             else:
                 generate_myautomation = True
+                self.process_error("")
         else:
             message = ", ".join(list)
             self.process_error(message)
