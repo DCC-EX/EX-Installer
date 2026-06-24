@@ -199,10 +199,11 @@ class ArduinoCLI:
     # Currently force usage of 0.35.3 due to changes in 1.0.x output that have not been fully tested yet.
     urlbase = "https://github.com/arduino/arduino-cli/releases/download/v0.35.3/arduino-cli_0.35.3_"
     arduino_downloads = {
-        "Linux64":   urlbase + "Linux_64bit.tar.gz",
-        "Darwin64":  urlbase + "macOS_64bit.tar.gz",
-        "Windows32": urlbase + "Windows_32bit.zip",
-        "Windows64": urlbase + "Windows_64bit.zip"
+        "Linux64":     urlbase + "Linux_64bit.tar.gz",
+        "Darwin64":    urlbase + "macOS_64bit.tar.gz",
+        "DarwinARM64": urlbase + "macOS_ARM64.tar.gz",
+        "Windows32":   urlbase + "Windows_32bit.zip",
+        "Windows64":   urlbase + "Windows_64bit.zip"
     }
 
     """
@@ -435,6 +436,9 @@ class ArduinoCLI:
                 _installer = platform.system() + "64"
             else:
                 _installer = platform.system() + "32"
+            # Check for Apple Silicon (ARM64) on macOS
+            if platform.system() == "Darwin" and platform.machine() == "arm64":
+                _installer = "DarwinARM64"
             self.log.debug(_installer)
             if _installer in ArduinoCLI.arduino_downloads:
                 _target_file = os.path.join(
@@ -547,6 +551,7 @@ class ArduinoCLI:
         if fqbn.startswith('esp32:esp32'):
             params = ["upload", "-v", "-t", "-b", fqbn, "-p", port, sketch_dir, "--format", "jsonmini"] #, "--before", "default_reset", "--after", "hard_reset"]
             params = params + ["--board-options", "UploadSpeed=115200"]#, "--before", "default_reset", "--after", "hard_reset"] # upload speeds of 230400 and 460800 are possible, but for now go slow
+            # params = params + ["--board-options", "UploadSpeed=460800"]#, "--before", "default_reset", "--after", "hard_reset"] # upload speeds of 230400 and 460800 are possible, but for now go slow
         elif fqbn.startswith('STMicroelectronics:stm32:'):
             fqbn_nucleo = fqbn
             # fqbn_nucleo += ",upload_method=swdMethod" # this allows use of SWD upload, sadly this requires STM32CubeProgrammer to be installed
