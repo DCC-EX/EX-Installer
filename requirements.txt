@@ -34,7 +34,7 @@ macholib==1.16.3
 multidict==6.0.5
 packaging==24.1
 pefile==2023.2.7
-pillow==10.3.0
+# pillow==10.3.0
 platformdirs==4.0.0
 pycparser==2.21
 pyenchant==3.2.2

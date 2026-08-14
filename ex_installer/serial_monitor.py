@@ -180,13 +180,16 @@ class SerialMonitor(ctk.CTkToplevel):
                                             command=self.send_command)
         self.save_log_button = ctk.CTkButton(self.command_frame, text="Save Log", font=self.button_font, width=80,
                                              command=self.show_save_log_popup)
+        self.clear_button = ctk.CTkButton(self.command_frame, text="Clear Log", font=self.button_font, width=80,
+                                          command=self.clear_log)
         self.close_button = ctk.CTkButton(self.command_frame, text="Close", font=self.button_font, width=80,
                                           command=self.close_monitor)
         self.command_label.grid(column=0, row=0, sticky="w", **grid_options)
         self.command_entry.grid(column=1, row=0, sticky="ew", **grid_options)
         self.command_button.grid(column=2, row=0, sticky="e", pady=5)
         self.save_log_button.grid(column=3, row=0, sticky="e", padx=(5, 0), pady=5)
-        self.close_button.grid(column=4, row=0, sticky="e", **grid_options)
+        self.clear_button.grid(column=4, row=0, sticky="e" padx=10, pady=10)
+        self.close_button.grid(column=5, row=0, sticky="e", **grid_options)
 
         # Create monitor frame widgets and layout frame
         self.output_textbox = ctk.CTkTextbox(self.monitor_frame, border_width=3, border_spacing=5,
@@ -221,6 +224,12 @@ class SerialMonitor(ctk.CTkToplevel):
 
         # Start serial monitor process
         self.monitor()
+
+    def clear_log(self):
+        """ Clears all text from the log window widget. """
+        # '1.0' targets line 1, character 0; 'end' targets the final index
+        self.log_textbox.delete("1.0", "end")
+
 
     def close_monitor(self):
         """

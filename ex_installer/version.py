@@ -7,11 +7,12 @@ This file is read by the application at runtime if run as a module, and is also
 read by the application build process to embed in the application details
 """
 
-ex_installer_version = "0.0.20"
+ex_installer_version = "0.0.21"
 
 """
 Version history:
 
+0.0.21      - Add feature to clear the log in the serial monitor - fnd
 0.0.20      - Fix bug with Windows file system path preventing cloning repositories
 0.0.19      - NOTE: Support for Windows 32bit is deprecated in this release
             - Building STM32 platforms on Windows 32bit is no longer possible
