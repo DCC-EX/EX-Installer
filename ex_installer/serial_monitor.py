@@ -228,6 +228,7 @@ class SerialMonitor(ctk.CTkToplevel):
     def clear_log(self):
         """ Clears all text from the log window widget. """
         # '1.0' targets line 1, character 0; 'end' targets the final index
+        self.output_textbox.insert("insert", f"Trying to clear log window...\n")
         self.output_textbox.delete("1.0", "end")
 
 
