@@ -188,7 +188,7 @@ class SerialMonitor(ctk.CTkToplevel):
         self.command_entry.grid(column=1, row=0, sticky="ew", **grid_options)
         self.command_button.grid(column=2, row=0, sticky="e", pady=5)
         self.save_log_button.grid(column=3, row=0, sticky="e", padx=(5, 0), pady=5)
-        self.clear_button.grid(column=4, row=0, sticky="e" padx=10, pady=10)
+        self.clear_button.grid(column=4, row=0, sticky="e", padx=10, pady=10)
         self.close_button.grid(column=5, row=0, sticky="e", **grid_options)
 
         # Create monitor frame widgets and layout frame
