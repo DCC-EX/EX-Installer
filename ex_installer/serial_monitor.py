@@ -187,9 +187,13 @@ class SerialMonitor(ctk.CTkToplevel):
         self.command_label.grid(column=0, row=0, sticky="w", **grid_options)
         self.command_entry.grid(column=1, row=0, sticky="ew", **grid_options)
         self.command_button.grid(column=2, row=0, sticky="e", pady=5)
+
+        # layout: Save | Clear | Close
         self.save_log_button.grid(column=3, row=0, sticky="e", padx=(5, 0), pady=5)
-        self.clear_button.grid(column=4, row=0, sticky="e", padx=5, pady=5)
+        self.clear_button.grid(column=4, row=0, sticky="e", padx=(5, 0), pady=5)
         self.close_button.grid(column=5, row=0, sticky="e", **grid_options)
+        # flag used to avoid a race between reader thread and clearing UI
+        self.clearing = False
 
         # Create monitor frame widgets and layout frame
         self.output_textbox = ctk.CTkTextbox(self.monitor_frame, border_width=3, border_spacing=5,
@@ -226,10 +230,20 @@ class SerialMonitor(ctk.CTkToplevel):
         self.monitor()
 
     def clear_log(self):
-        """ Clears all text from the log window widget. """
-        # '1.0' targets line 1, character 0; 'end' targets the final index
-        self.output_textbox.insert("insert", f"Trying to clear log window...\n")
-        self.output_textbox.delete("1.0", "end")
+        """
+        Clear the device monitor textbox safely.
+        """
+        self.log.debug("Clearing device monitor output")
+        # set flag so the reader thread avoids inserting while we clear
+        self.clearing = True
+        try:
+            self.output_textbox.configure(state="normal")
+            self.output_textbox.delete("1.0", ctk.END)
+            self.output_textbox.update_idletasks()
+        finally:
+            self.output_textbox.configure(state="disabled")
+            # release the flag shortly after to avoid dropping a lot of incoming text
+            self.after(50, lambda: setattr(self, "clearing", False))
 
 
     def close_monitor(self):
@@ -292,6 +306,9 @@ class SerialMonitor(ctk.CTkToplevel):
                     if self.close_clicked:
                         return
                     output = output.decode().strip()
+                    # If we're currently clearing the textbox, drop this read to avoid races
+                    if getattr(self, "clearing", False):
+                        continue
                     self.update_textbox(output)
             except OSError as e:
                 if not self.close_clicked:
