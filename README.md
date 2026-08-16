@@ -63,12 +63,16 @@ In this instance, it is recommended to run in a virtual environment. Assuming Py
 
 - Clone the repository with `git clone https://github.com/DCC-EX/EX-Installer.git`
 - Change into the newly created directory
-- Create a virtual environment with `virtualenv venv`
+- Create a virtual environment with `python -m venv venv` (Python 3.10 or newer)
 - Activate the virtual environment:
   - Windows: `venv\scripts\activate`
   - Linux/macOS: `source venv/bin/activate`
 - Install required modules with `pip install -r requirements.txt`
 - Run as a module with `python -m ex_installer`
+
+EX-Installer checks the Python version and the `pyserial` upload dependency before
+starting the GUI. If either is unavailable, the command prints the exact corrective
+command and exits without opening the application.
 
 ## Versioning
 
