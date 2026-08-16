@@ -29,13 +29,24 @@ import os
 import argparse
 import sys
 
-# Import local modules
-from ex_installer.ex_installer import EXInstaller
-from ex_installer.file_manager import FileManager as fm
+from ex_installer.preflight import check_environment, format_errors
+
+
+def run_preflight():
+    """Check interpreter and upload dependencies before loading the GUI."""
+    errors = check_environment()
+    if errors:
+        print(format_errors(errors), file=sys.stderr)
+        return False
+    return True
 
 
 def main(debug, fake):
     """
+    # Import GUI modules only after preflight so missing dependencies are actionable.
+    from ex_installer.ex_installer import EXInstaller
+    from ex_installer.file_manager import FileManager as fm
+
     Main method to start the application.
 
     Arguments:
@@ -103,6 +114,9 @@ def main(debug, fake):
 
 
 if __name__ == "__main__":
+    if not run_preflight():
+        sys.exit(1)
+
     # Setup command line parser with debug argument
     parser = argparse.ArgumentParser()
     parser.add_argument("-D", "--debug", action="store_true", help="Set debug log level")
