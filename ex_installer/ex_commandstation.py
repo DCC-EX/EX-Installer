@@ -872,10 +872,6 @@ class EXCommandStation(WindowLayout):
         if self.power_on_switch.get() == "on" or self.track_modes_enabled.get() == "on":
             config_list.append("AUTOSTART\n")
 
-        # Enable join on startup if enabled
-        if self.power_on_switch.get() == "on":
-            config_list.append("POWERON\n")
-
         # write out trackmanager config, including roster entries if DCx
         if self.track_modes_enabled.get() == "on":
             try:
@@ -904,6 +900,12 @@ class EXCommandStation(WindowLayout):
             else:
                 line = "SET_TRACK(B," + self.track_b_combo.get() + ")\n"
             config_list.append(line)
+
+        # Power on after TrackManager modes have been configured so both tracks
+        # are available when the command is executed.
+        if self.power_on_switch.get() == "on":
+            config_list.append("POWERON\n")
+
         # Single AUTOSTART if either option enabled
         if self.power_on_switch.get() == "on" or self.track_modes_enabled.get() == "on":
             config_list.append("DONE\n\n")
