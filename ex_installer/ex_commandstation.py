@@ -30,6 +30,7 @@ import re
 from .common_widgets import WindowLayout, CreateToolTip
 from .product_details import product_details as pd
 from .file_manager import FileManager as fm
+from .config_flow import ap_config_lines, csb1_track_defaults, validate_static_ip
 
 
 class EXCommandStation(WindowLayout):
@@ -378,6 +379,14 @@ class EXCommandStation(WindowLayout):
                                              font=self.instruction_font)
         self.track_b_entry = ctk.CTkEntry(self.track_modes_frame, textvariable=self.track_b_id,
                                           font=self.instruction_font, width=60, fg_color="white")
+        self.track_c_label = ctk.CTkLabel(self.track_modes_frame, text="Track C:")
+        self.track_c_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
+                                             width=100, font=self.instruction_font)
+        self.track_d_label = ctk.CTkLabel(self.track_modes_frame, text="Track D:")
+        self.track_d_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
+                                             width=100, font=self.instruction_font)
+        self.track_c_combo.set("MAIN")
+        self.track_d_combo.set("MAIN")
         self.track_b_combo.set("MAIN")  # default to MAIN and PROG
         self.track_b_combo.set("PROG")
 
@@ -474,7 +483,11 @@ class EXCommandStation(WindowLayout):
         self.track_b_label.grid(column=0, row=1, sticky="e", **grid_options)
         self.track_b_combo.grid(column=1, row=1, sticky="w", **grid_options)
         self.track_b_id_label.grid(column=2, row=1, sticky="e", **grid_options)
-        self.track_b_entry.grid(column=3, row=1, sticky="w", **grid_options)    
+        self.track_b_entry.grid(column=3, row=1, sticky="w", **grid_options)
+        self.track_c_label.grid(column=0, row=2, sticky="e", **grid_options)
+        self.track_c_combo.grid(column=1, row=2, sticky="w", **grid_options)
+        self.track_d_label.grid(column=2, row=2, sticky="e", **grid_options)
+        self.track_d_combo.grid(column=3, row=2, sticky="w", **grid_options)
 
         # Layout ethernet_frame
         self.ethernet_tab_frame.grid_columnconfigure(0, weight=1)
@@ -633,8 +646,8 @@ class EXCommandStation(WindowLayout):
         Function to display correct widgets for WiFi config
         """
         if self.wifi_type.get() == 0:
-            self.wifi_ssid_label.grid_remove()
-            self.wifi_ssid_entry.grid_remove()
+            self.wifi_ssid_label.grid()
+            self.wifi_ssid_entry.grid()
             self.wifi_hostname_label.grid_remove()
             self.wifi_hostname_entry.grid_remove()
             self.wifi_channel_frame.grid()
@@ -785,6 +798,12 @@ class EXCommandStation(WindowLayout):
             self.next_back.disable_next()
         else:
             self.next_back.enable_next()
+            defaults = csb1_track_defaults(value)
+            if defaults:
+                self.track_modes_switch.select()
+                self.track_c_combo.set(defaults["C"])
+                self.track_d_combo.set(defaults["D"])
+                self.set_track_modes()
 
     def check_invalid_wifi_password(self):
         """
@@ -922,16 +941,13 @@ class EXCommandStation(WindowLayout):
             line = '#define WIFI_HOSTNAME "' + self.wifi_hostname.get() + '"\n'
             config_list.append(line)
             if self.wifi_type.get() == 0:
-                config_list.append('#define WIFI_SSID "Your network name"\n')
-                if self.wifi_pwd_entry.get() == "":
-                    config_list.append('#define WIFI_PASSWORD "Your network passwd"\n')
-                else:
-                    invalid, issue = self.check_invalid_wifi_password()
-                    if invalid:
-                        param_errors.append(issue)
-                    else:
-                        line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
-                        config_list.append(line)
+                try:
+                    config_list += ap_config_lines(self.wifi_ssid_entry.get(), self.wifi_pwd_entry.get())
+                except ValueError as issue:
+                    param_errors.append(str(issue))
+                invalid, issue = self.check_invalid_wifi_password()
+                if invalid:
+                    param_errors.append(issue)
             elif self.wifi_type.get() == 1:
                 if self.wifi_ssid_entry.get() == "":
                     param_errors.append("WiFi SSID/name not set")
@@ -972,11 +988,12 @@ class EXCommandStation(WindowLayout):
                     
                     if ip_data:                        
                         #check for know ip addresses
-                        if self.ethernet_check_for_reserved_ips(ip_data):
-                            param_errors.append("IP value is reserved")
-                        else:                 
-                            line = "#define IP_ADDRESS { " + str(ip_data[0]) + ', ' + str(ip_data[1]) + ', ' + str(ip_data[2]) + ', ' + str(ip_data[3]) + ' }\n'
-                            config_list.append(line)
+                        try:
+                            address = validate_static_ip(ip_data)
+                        except ValueError as issue:
+                            param_errors.append(str(issue))
+                        else:
+                            config_list.append("#define IP_ADDRESS { " + address.replace(".", ", ") + " }\n")
         if self.override_current_limit.get() == "on":
             try:
                 int(self.current_limit.get())
@@ -1037,6 +1054,9 @@ class EXCommandStation(WindowLayout):
             else:
                 line = "SET_TRACK(A," + self.track_a_combo.get() + ")\n"
             config_list.append(line)
+            if self.track_modes_enabled.get() == "on":
+                config_list.append("SET_TRACK(C," + self.track_c_combo.get() + ")\n")
+                config_list.append("SET_TRACK(D," + self.track_d_combo.get() + ")\n")
             if (self.track_b_combo.get().startswith("DC")):
                 line = (f"SETLOCO({self.track_b_id.get()}) SET_TRACK(B," + self.track_b_combo.get() + ")\n")
                 roster_lines.append(f"ROSTER({self.track_b_id.get()},\"DC TRACK B\",\"/* /\")\n")

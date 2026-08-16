@@ -125,6 +125,7 @@ class EXInstaller(ctk.CTk):
         self.view = None
         self.use_existing = False  # needed for backing up to select_version_config
         self.advanced_config = False  # needed for backing up
+        self.compile_only = False  # compile without flashing the selected device
         self.fake = False  # set fake Arduino USB device to false by default
 
         # Create basic menu for Info -> About
