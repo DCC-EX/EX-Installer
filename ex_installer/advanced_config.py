@@ -61,8 +61,17 @@ class AdvancedConfig(WindowLayout):
         # Set up and configure the edit frame, which will contain the editboxes
         self.edit_frame = ctk.CTkFrame(self.main_frame, height=360)
         self.edit_frame.grid(column=0, row=0, sticky="nsew")
+        self.compile_only = ctk.StringVar(self, value="off")
+        self.compile_only_switch = ctk.CTkSwitch(
+            self.edit_frame, text="Compile only (do not flash hardware)",
+            variable=self.compile_only, onvalue="on", offvalue="off",
+            command=self.set_compile_only, font=self.instruction_font)
+        self.compile_only_switch.grid(column=0, row=3, columnspan=2, padx=5, pady=5)
 
         self.edit_list = []  # remember list of files to edit
+
+    def set_compile_only(self):
+        self.master.compile_only = self.compile_only.get() == "on"
 
     def set_product(self, product):
         """
@@ -71,6 +80,7 @@ class AdvancedConfig(WindowLayout):
         """
         self.log.debug("in set_product(%s)", product)
         self.product = product
+        self.set_compile_only()
         self.reload_view()  # paint/repaint the screen stuff
 
     def save_config_files(self):

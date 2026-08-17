@@ -30,6 +30,7 @@ import re
 from .common_widgets import WindowLayout, CreateToolTip
 from .product_details import product_details as pd
 from .file_manager import FileManager as fm
+from .config_flow import ap_config_lines, csb1_track_defaults, validate_static_ip
 
 
 class EXCommandStation(WindowLayout):
@@ -208,7 +209,8 @@ class EXCommandStation(WindowLayout):
         tab_list = [
             "General",
             "WiFi Options",
-            "TrackManager Config"
+            "TrackManager Config",
+            "Ethernet Options"
         ]
         for tab in tab_list:
             self.config_tabview.add(tab)
@@ -223,6 +225,8 @@ class EXCommandStation(WindowLayout):
         self.wifi_tab_frame.grid(**tab_frame_options)
         self.track_tab_frame = ctk.CTkFrame(self.config_tabview.tab("TrackManager Config"), border_width=0)
         self.track_tab_frame.grid(**tab_frame_options)
+        self.ethernet_tab_frame = ctk.CTkFrame(self.config_tabview.tab("Ethernet Options"), border_width=0)
+        self.ethernet_tab_frame.grid(**tab_frame_options)
 
         # Create options frames
         self.switch_frame = ctk.CTkFrame(self.general_tab_frame, border_width=0)
@@ -330,6 +334,27 @@ class EXCommandStation(WindowLayout):
         CreateToolTip(self.ethernet_switch, ethernet_tip,
                       "https://dcc-ex.com/reference/hardware/ethernet-boards.html")
 
+        # Set up Ethernet Widgets
+        self.ethernet_static_ip_switch = ctk.CTkSwitch(self.ethernet_tab_frame, text="Static IP address",
+                                                    onvalue="on", offvalue="off",
+                                                    width=100, command=self.set_ethernet_static_ip,
+                                                    font=self.instruction_font)
+        self.ethernet_ip_frame = ctk.CTkFrame(self.ethernet_tab_frame, border_width=0)
+        self.ethernet_ip_label = ctk.CTkLabel(self.ethernet_ip_frame, text="IP:",
+                                           font=self.instruction_font)
+        self.ethernet_ip_a_entry = ctk.CTkEntry(self.ethernet_ip_frame,
+                                           placeholder_text="192",
+                                           width=50, fg_color="white", font=self.instruction_font)
+        self.ethernet_ip_b_entry = ctk.CTkEntry(self.ethernet_ip_frame,
+                                           placeholder_text="168",
+                                           width=50, fg_color="white", font=self.instruction_font)
+        self.ethernet_ip_c_entry = ctk.CTkEntry(self.ethernet_ip_frame,
+                                           placeholder_text="1",
+                                           width=50, fg_color="white", font=self.instruction_font)
+        self.ethernet_ip_d_entry = ctk.CTkEntry(self.ethernet_ip_frame,
+                                           placeholder_text="200",
+                                           width=50, fg_color="white", font=self.instruction_font)
+
         # Track Manager Options
         self.track_modes_enabled = ctk.StringVar(self, value="off")
         self.track_modes_switch = ctk.CTkSwitch(self.switch_frame, text="Configure TrackManager", width=200,
@@ -354,6 +379,14 @@ class EXCommandStation(WindowLayout):
                                              font=self.instruction_font)
         self.track_b_entry = ctk.CTkEntry(self.track_modes_frame, textvariable=self.track_b_id,
                                           font=self.instruction_font, width=60, fg_color="white")
+        self.track_c_label = ctk.CTkLabel(self.track_modes_frame, text="Track C:")
+        self.track_c_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
+                                             width=100, font=self.instruction_font)
+        self.track_d_label = ctk.CTkLabel(self.track_modes_frame, text="Track D:")
+        self.track_d_combo = ctk.CTkComboBox(self.track_modes_frame, values=list(self.trackmanager_modes),
+                                             width=100, font=self.instruction_font)
+        self.track_c_combo.set("MAIN")
+        self.track_d_combo.set("MAIN")
         self.track_b_combo.set("MAIN")  # default to MAIN and PROG
         self.track_b_combo.set("PROG")
 
@@ -451,6 +484,25 @@ class EXCommandStation(WindowLayout):
         self.track_b_combo.grid(column=1, row=1, sticky="w", **grid_options)
         self.track_b_id_label.grid(column=2, row=1, sticky="e", **grid_options)
         self.track_b_entry.grid(column=3, row=1, sticky="w", **grid_options)
+        self.track_c_label.grid(column=0, row=2, sticky="e", **grid_options)
+        self.track_c_combo.grid(column=1, row=2, sticky="w", **grid_options)
+        self.track_d_label.grid(column=2, row=2, sticky="e", **grid_options)
+        self.track_d_combo.grid(column=3, row=2, sticky="w", **grid_options)
+
+        # Layout ethernet_frame
+        self.ethernet_tab_frame.grid_columnconfigure(0, weight=1)
+        self.ethernet_tab_frame.grid_rowconfigure((0, 1), weight=1)
+        self.ethernet_static_ip_switch.grid(column=0, row=0, **grid_options)
+        self.ethernet_ip_frame.grid_columnconfigure((0, 1, 2, 3, 4), weight=1)
+        self.ethernet_ip_frame.grid_rowconfigure(0, weight=1)
+        self.ethernet_ip_label.grid(column=0, row=0,sticky="e", **grid_options)
+        self.ethernet_ip_a_entry.grid(column=1, row=0,sticky="e", **grid_options)
+        self.ethernet_ip_b_entry.grid(column=2, row=0,sticky="e", **grid_options)
+        self.ethernet_ip_c_entry.grid(column=3, row=0,sticky="e", **grid_options)
+        self.ethernet_ip_d_entry.grid(column=4, row=0,sticky="e", **grid_options)
+
+        # Layout WiFi tab
+        self.wifi_options_frame.grid(column=0, row=0, sticky="nsew")
 
         # Layout general tab
         self.general_tab_frame.grid_columnconfigure(0, weight=1)
@@ -459,11 +511,11 @@ class EXCommandStation(WindowLayout):
         self.switch_frame.grid(column=0, row=0, **grid_options)
         self.options_frame.grid(column=1, row=0, **grid_options)
 
-        # Layout WiFi tab
-        self.wifi_options_frame.grid(column=0, row=0, sticky="nsew")
-
         # Layout TrackManager tab
         self.track_modes_frame.grid(column=0, row=0, sticky="nsew")
+
+        # Layout Ethernet tab
+        self.ethernet_ip_frame.grid(column=0, row=1)
 
         # Layout config_frame
         self.config_frame.grid_columnconfigure(0, weight=1)
@@ -581,6 +633,7 @@ class EXCommandStation(WindowLayout):
         if self.wifi_switch.get() == "on":
             if self.ethernet_switch.get() == "on":
                 self.ethernet_switch.deselect()
+                self.refresh_ethernet_tab_option()
             self.config_tabview._segmented_button._buttons_dict["WiFi Options"].configure(state="normal")
             self.set_wifi_widgets()
             self.log.debug("WiFi enabled")
@@ -593,8 +646,8 @@ class EXCommandStation(WindowLayout):
         Function to display correct widgets for WiFi config
         """
         if self.wifi_type.get() == 0:
-            self.wifi_ssid_label.grid_remove()
-            self.wifi_ssid_entry.grid_remove()
+            self.wifi_ssid_label.grid()
+            self.wifi_ssid_entry.grid()
             self.wifi_hostname_label.grid_remove()
             self.wifi_hostname_entry.grid_remove()
             self.wifi_channel_frame.grid()
@@ -611,6 +664,16 @@ class EXCommandStation(WindowLayout):
                 self.wifi_pwd_entry.configure(placeholder_text="Enter your WiFi password")
             self.log.debug("WiFi ST mode selected")
 
+    def refresh_ethernet_tab_option(self):
+        """
+        Function to refresh the tab button (used by wifi too)
+        """
+        if self.ethernet_switch.get() == "on":
+            self.config_tabview._segmented_button._buttons_dict["Ethernet Options"].configure(state="normal")
+        else:
+            self.config_tabview._segmented_button._buttons_dict["Ethernet Options"].configure(state="disabled")
+        self.set_ethernet_static_ip()
+
     def set_ethernet(self):
         """
         Function to enable Ethernet support
@@ -622,6 +685,23 @@ class EXCommandStation(WindowLayout):
             self.log.debug("Ethernet enabled")
         else:
             self.log.debug("Ethernet disabled")
+        self.refresh_ethernet_tab_option()
+
+    def set_ethernet_static_ip(self):
+        if self.ethernet_static_ip_switch.get() == "on":
+            self.ethernet_ip_label.grid()
+            self.ethernet_ip_a_entry.grid()
+            self.ethernet_ip_b_entry.grid()
+            self.ethernet_ip_c_entry.grid()
+            self.ethernet_ip_d_entry.grid()
+            self.log.debug("Static IP enabled")
+        else:
+            self.ethernet_ip_label.grid_remove()
+            self.ethernet_ip_a_entry.grid_remove()
+            self.ethernet_ip_b_entry.grid_remove()
+            self.ethernet_ip_c_entry.grid_remove()
+            self.ethernet_ip_d_entry.grid_remove()
+            self.log.debug("Static IP disabled")
 
     def decrement_channel(self):
         """
@@ -648,6 +728,8 @@ class EXCommandStation(WindowLayout):
         self.config_frame.grid()
         self.set_display()
         self.set_wifi()
+        self.set_ethernet()
+        self.set_ethernet_static_ip()
         self.set_track_modes()
         self.set_advanced_config()
         self.check_motor_driver(self.motor_driver_combo.get())
@@ -716,6 +798,12 @@ class EXCommandStation(WindowLayout):
             self.next_back.disable_next()
         else:
             self.next_back.enable_next()
+            defaults = csb1_track_defaults(value)
+            if defaults:
+                self.track_modes_switch.select()
+                self.track_c_combo.set(defaults["C"])
+                self.track_d_combo.set(defaults["D"])
+                self.set_track_modes()
 
     def check_invalid_wifi_password(self):
         """
@@ -780,6 +868,57 @@ class EXCommandStation(WindowLayout):
             self.process_error(f"Failed to delete one or more files: {file_list}")
             self.log.error("Failed to delete: %s", file_list)
 
+    def ethernet_is_ip_equal(self, ip1, ip2):
+        for i in range(4):
+            if(ip1[i] != ip2[i]):
+                return False
+        return True
+
+    def ethernet_check_for_reserved_ips(self, ip):
+        # from https://en.wikipedia.org/wiki/Reserved_IP_addresses
+        if self.ethernet_is_ip_equal(ip, [255, 255, 255, 255]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [240, 0, 0, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [233, 252, 0, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [224, 0, 0, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [203, 0, 113, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [198, 0, 0, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [198, 51, 100, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [192, 0, 0, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [192, 0, 2, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [192, 88, 99, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [192, 168, 0, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [172, 16, 0, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [169, 254, 0, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [127, 0, 0, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [100, 64, 0, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [10, 0, 0, 0]):
+            return True
+        if self.ethernet_is_ip_equal(ip, [0, 0, 0, 0]):
+            return True
+        return False
+
+    def ethernet_get_ip_number(self, entry):
+        num = entry.get()
+        if not num.isnumeric():
+            return (False, num)
+        num = int(num)
+        return ((num >= 0) and (num <= 255), num)
+
     def generate_config(self):
         """
         Function to validate options and return any errors
@@ -802,16 +941,13 @@ class EXCommandStation(WindowLayout):
             line = '#define WIFI_HOSTNAME "' + self.wifi_hostname.get() + '"\n'
             config_list.append(line)
             if self.wifi_type.get() == 0:
-                config_list.append('#define WIFI_SSID "Your network name"\n')
-                if self.wifi_pwd_entry.get() == "":
-                    config_list.append('#define WIFI_PASSWORD "Your network passwd"\n')
-                else:
-                    invalid, issue = self.check_invalid_wifi_password()
-                    if invalid:
-                        param_errors.append(issue)
-                    else:
-                        line = '#define WIFI_PASSWORD "' + self.wifi_pwd_entry.get() + '"\n'
-                        config_list.append(line)
+                try:
+                    config_list += ap_config_lines(self.wifi_ssid_entry.get(), self.wifi_pwd_entry.get())
+                except ValueError as issue:
+                    param_errors.append(str(issue))
+                invalid, issue = self.check_invalid_wifi_password()
+                if invalid:
+                    param_errors.append(issue)
             elif self.wifi_type.get() == 1:
                 if self.wifi_ssid_entry.get() == "":
                     param_errors.append("WiFi SSID/name not set")
@@ -838,6 +974,26 @@ class EXCommandStation(WindowLayout):
                 param_errors.append("Can not have both Ethernet and WiFi enabled")
             else:
                 config_list.append("#define ENABLE_ETHERNET true\n")
+                if self.ethernet_static_ip_switch.get() == "on":
+                    ip_entries = [self.ethernet_ip_a_entry, self.ethernet_ip_b_entry, self.ethernet_ip_c_entry, self.ethernet_ip_d_entry]
+                    ip_data = []
+                    for entry in ip_entries:
+                        ip_num = self.ethernet_get_ip_number(entry)
+                        if not ip_num[0]:
+                            param_errors.append("Invalid static IP value")
+                            ip_data = None
+                            break
+
+                        ip_data.append(ip_num[1])
+
+                    if ip_data:
+                        #check for know ip addresses
+                        try:
+                            address = validate_static_ip(ip_data)
+                        except ValueError as issue:
+                            param_errors.append(str(issue))
+                        else:
+                            config_list.append("#define IP_ADDRESS { " + address.replace(".", ", ") + " }\n")
         if self.override_current_limit.get() == "on":
             try:
                 int(self.current_limit.get())
@@ -898,6 +1054,9 @@ class EXCommandStation(WindowLayout):
             else:
                 line = "SET_TRACK(A," + self.track_a_combo.get() + ")\n"
             config_list.append(line)
+            if self.track_modes_enabled.get() == "on":
+                config_list.append("SET_TRACK(C," + self.track_c_combo.get() + ")\n")
+                config_list.append("SET_TRACK(D," + self.track_d_combo.get() + ")\n")
             if (self.track_b_combo.get().startswith("DC")):
                 line = (f"SETLOCO({self.track_b_id.get()}) SET_TRACK(B," + self.track_b_combo.get() + ")\n")
                 roster_lines.append(f"ROSTER({self.track_b_id.get()},\"DC TRACK B\",\"/* /\")\n")

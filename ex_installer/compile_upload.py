@@ -30,6 +30,7 @@ import logging
 from .common_widgets import WindowLayout
 from .product_details import product_details as pd
 from .file_manager import FileManager as fm
+from .config_flow import post_flash_verification, should_upload
 from . import images
 
 
@@ -166,7 +167,13 @@ class CompileUpload(WindowLayout):
         elif self.process_phase == "compiling":
             if self.process_status == "success":
                 self.set_details(self.process_data)
-                if self.parent.fake is True:
+                if not should_upload(self.master.compile_only):
+                    self.process_stop()
+                    self.upload_success(compile_only=True)
+                    self.next_back.show_next()
+                    self.next_back.show_log_button()
+                    self.show_backup_button()
+                elif self.parent.fake is True:
                     self.process_phase = "uploading"
                     self.process_status = "success"
                     self.process_start("uploading",
@@ -201,7 +208,7 @@ class CompileUpload(WindowLayout):
             self.next_back.show_next()
             self.show_backup_button()
 
-    def upload_success(self):
+    def upload_success(self, compile_only=False):
         """
         Function to display successful outcome after upload
         """
@@ -209,8 +216,13 @@ class CompileUpload(WindowLayout):
         self.instruction_label.grid_remove()
         self.congrats_label.configure(text="Congratulations!")
         self.congrats_label.grid()
-        text = (f"{pd[self.product]['product_name']} has successfully been loaded on to your " +
-                f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']}")
+        if compile_only:
+            text = f"{pd[self.product]['product_name']} compiled successfully (compile-only mode; hardware was not flashed)."
+        else:
+            verified = post_flash_verification(self.process_data)
+            status = "verified" if verified else "completed; connect to the serial monitor to verify startup"
+            text = (f"{pd[self.product]['product_name']} was loaded successfully ({status}) on to your " +
+                    f"{self.acli.detected_devices[self.acli.selected_device]['matching_boards'][0]['name']}")
         self.success_label.configure(text=text)
         self.success_label.grid()
 
