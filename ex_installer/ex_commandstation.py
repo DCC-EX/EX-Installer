@@ -333,15 +333,15 @@ class EXCommandStation(WindowLayout):
                                              command=self.set_ethernet, font=self.instruction_font)
         CreateToolTip(self.ethernet_switch, ethernet_tip,
                       "https://dcc-ex.com/reference/hardware/ethernet-boards.html")
-        
-        # Set up Ethernet Widgets        
+
+        # Set up Ethernet Widgets
         self.ethernet_static_ip_switch = ctk.CTkSwitch(self.ethernet_tab_frame, text="Static IP address",
                                                     onvalue="on", offvalue="off",
                                                     width=100, command=self.set_ethernet_static_ip,
-                                                    font=self.instruction_font)        
+                                                    font=self.instruction_font)
         self.ethernet_ip_frame = ctk.CTkFrame(self.ethernet_tab_frame, border_width=0)
         self.ethernet_ip_label = ctk.CTkLabel(self.ethernet_ip_frame, text="IP:",
-                                           font=self.instruction_font)        
+                                           font=self.instruction_font)
         self.ethernet_ip_a_entry = ctk.CTkEntry(self.ethernet_ip_frame,
                                            placeholder_text="192",
                                            width=50, fg_color="white", font=self.instruction_font)
@@ -502,19 +502,19 @@ class EXCommandStation(WindowLayout):
         self.ethernet_ip_d_entry.grid(column=4, row=0,sticky="e", **grid_options)
 
         # Layout WiFi tab
-        self.wifi_options_frame.grid(column=0, row=0, sticky="nsew")        
+        self.wifi_options_frame.grid(column=0, row=0, sticky="nsew")
 
         # Layout general tab
         self.general_tab_frame.grid_columnconfigure(0, weight=1)
         self.general_tab_frame.grid_columnconfigure(1, weight=2)
         self.general_tab_frame.grid_rowconfigure(0, weight=1)
         self.switch_frame.grid(column=0, row=0, **grid_options)
-        self.options_frame.grid(column=1, row=0, **grid_options)        
+        self.options_frame.grid(column=1, row=0, **grid_options)
 
         # Layout TrackManager tab
         self.track_modes_frame.grid(column=0, row=0, sticky="nsew")
 
-        # Layout Ethernet tab        
+        # Layout Ethernet tab
         self.ethernet_ip_frame.grid(column=0, row=1)
 
         # Layout config_frame
@@ -669,7 +669,7 @@ class EXCommandStation(WindowLayout):
         Function to refresh the tab button (used by wifi too)
         """
         if self.ethernet_switch.get() == "on":
-            self.config_tabview._segmented_button._buttons_dict["Ethernet Options"].configure(state="normal") 
+            self.config_tabview._segmented_button._buttons_dict["Ethernet Options"].configure(state="normal")
         else:
             self.config_tabview._segmented_button._buttons_dict["Ethernet Options"].configure(state="disabled")
         self.set_ethernet_static_ip()
@@ -681,10 +681,10 @@ class EXCommandStation(WindowLayout):
         if self.ethernet_switch.get() == "on":
             if self.wifi_switch.get() == "on":
                 self.wifi_switch.deselect()
-                self.set_wifi()                           
+                self.set_wifi()
             self.log.debug("Ethernet enabled")
         else:
-            self.log.debug("Ethernet disabled")    
+            self.log.debug("Ethernet disabled")
         self.refresh_ethernet_tab_option()
 
     def set_ethernet_static_ip(self):
@@ -700,7 +700,7 @@ class EXCommandStation(WindowLayout):
             self.ethernet_ip_a_entry.grid_remove()
             self.ethernet_ip_b_entry.grid_remove()
             self.ethernet_ip_c_entry.grid_remove()
-            self.ethernet_ip_d_entry.grid_remove()                        
+            self.ethernet_ip_d_entry.grid_remove()
             self.log.debug("Static IP disabled")
 
     def decrement_channel(self):
@@ -871,7 +871,7 @@ class EXCommandStation(WindowLayout):
     def ethernet_is_ip_equal(self, ip1, ip2):
         for i in range(4):
             if(ip1[i] != ip2[i]):
-                return False 
+                return False
         return True
 
     def ethernet_check_for_reserved_ips(self, ip):
@@ -915,7 +915,7 @@ class EXCommandStation(WindowLayout):
     def ethernet_get_ip_number(self, entry):
         num = entry.get()
         if not num.isnumeric():
-            return (False, num)        
+            return (False, num)
         num = int(num)
         return ((num >= 0) and (num <= 255), num)
 
@@ -985,8 +985,8 @@ class EXCommandStation(WindowLayout):
                             break
 
                         ip_data.append(ip_num[1])
-                    
-                    if ip_data:                        
+
+                    if ip_data:
                         #check for know ip addresses
                         try:
                             address = validate_static_ip(ip_data)
