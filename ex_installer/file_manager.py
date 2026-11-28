@@ -332,10 +332,7 @@ class FileManager:
 
         Returns True if so, False if not
         """
-        if os.listdir(dir) > 0:
-            return False
-        else:
-            return True
+        return not os.listdir(dir)
 
     @staticmethod
     def copy_config_files(source_dir, dest_dir, file_list):
